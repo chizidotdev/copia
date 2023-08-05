@@ -1,0 +1,13 @@
+version: "1"
+packages:
+  - name: "repository"
+    path: "./internal/repository/"
+    queries: "./internal/repository/query/"
+    schema: "./internal/repository/migration/"
+    engine: "postgresql"
+    emit_json_tags: true
+    emit_prepared_queries: false
+    emit_interface: true
+    emit_exact_table_names: false
+    emit_empty_slices: true
+    output_db_file_name: "repository.go"
