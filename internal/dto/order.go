@@ -13,26 +13,26 @@ type DeleteOrderParams struct {
 
 type Order struct {
 	ID                    uuid.UUID   `json:"id"`
-	UserEmail             string      `json:"user_email"`
+	UserEmail             string      `json:"user_email" binding:"required"`
 	CustomerID            uuid.UUID   `json:"customer_id"`
-	Status                string      `json:"status"`
-	ShippingDetails       string      `json:"shipping_details"`
-	EstimatedDeliveryDate time.Time   `json:"estimated_delivery_date"`
-	OrderDate             time.Time   `json:"order_date"`
-	TotalAmount           float32     `json:"total_amount"`
-	PaymentStatus         string      `json:"payment_status"`
-	PaymentMethod         string      `json:"payment_method"`
-	BillingAddress        string      `json:"billing_address"`
-	ShippingAddress       string      `json:"shipping_address"`
-	Notes                 string      `json:"notes"`
-	OrderItems            []OrderItem `json:"order_items"`
+	Status                string      `json:"status" binding:"required"`
+	ShippingDetails       string      `json:"shipping_details" binding:"required"`
+	EstimatedDeliveryDate time.Time   `json:"estimated_delivery_date" binding:"required"`
+	OrderDate             time.Time   `json:"order_date" binding:"required"`
+	TotalAmount           float32     `json:"total_amount" binding:"required"`
+	PaymentStatus         string      `json:"payment_status" binding:"required"`
+	PaymentMethod         string      `json:"payment_method" binding:"required"`
+	BillingAddress        string      `json:"billing_address" binding:"required"`
+	ShippingAddress       string      `json:"shipping_address" binding:"required"`
+	Notes                 string      `json:"notes" binding:"required"`
+	OrderItems            []OrderItem `json:"order_items" binding:"required"`
 }
 
 type OrderItem struct {
 	ID        uuid.UUID `json:"id"`
-	OrderID   uuid.UUID `json:"order_id"`
-	ProductID uuid.UUID `json:"product_id"`
-	Quantity  int64     `json:"quantity"`
-	UnitPrice float32   `json:"unit_price"`
-	SubTotal  float32   `json:"sub_total"`
+	OrderID   uuid.UUID `json:"order_id" binding:"required"`
+	ProductID uuid.UUID `json:"product_id" binding:"required"`
+	Quantity  int64     `json:"quantity" binding:"required"`
+	UnitPrice float32   `json:"unit_price" binding:"required"`
+	SubTotal  float32   `json:"sub_total" binding:"required"`
 }

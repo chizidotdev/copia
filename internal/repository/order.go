@@ -9,13 +9,13 @@ import (
 
 func (s *Store) ListOrders(_ context.Context, userEmail string) ([]Order, error) {
 	var orders []Order
-	result := s.DB.Find(&orders, "user_email = ?", userEmail)
+	result := s.DB.Preload("OrderItems").Find(&orders, "user_email = ?", userEmail)
 	return orders, result.Error
 }
 
 func (s *Store) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
 	var order Order
-	result := s.DB.First(&order, "id = ?", id)
+	result := s.DB.Preload("OrderItems").First(&order, "id = ?", id)
 	return order, result.Error
 }
 

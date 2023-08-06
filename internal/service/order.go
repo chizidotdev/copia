@@ -49,8 +49,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 			return err
 		}
 
-		orderItems := req.OrderItems
-		for _, orderItem := range orderItems {
+		for _, orderItem := range req.OrderItems {
 			orderItem.OrderID = order.ID
 			_, err = store.CreateOrderItem(ctx, datastruct.CreateOrderItemParams{
 				OrderID:   orderItem.OrderID,

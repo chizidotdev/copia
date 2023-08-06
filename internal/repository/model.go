@@ -43,7 +43,7 @@ type Order struct {
 	Notes                 string    `gorm:"not null" json:"notes"`
 
 	OrderItems []OrderItem `gorm:"foreignKey:OrderID" json:"order_items"`
-	CustomerID uuid.UUID   `gorm:"not null" json:"customer_id"`
+	CustomerID uuid.UUID   `json:"customer_id"`
 	UserEmail  string      `gorm:"not null" json:"user_email"`
 }
 
@@ -69,5 +69,5 @@ type Products struct {
 
 type Customer struct {
 	Base
-	Orders []Order `gorm:"foreignKey:CustomerID" json:"orders"`
+	// Orders []Order `gorm:"foreignKey:CustomerID" json:"orders"`
 }
