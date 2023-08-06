@@ -13,6 +13,7 @@ func createRoutes(server *Server) {
 		})
 	})
 
+	server.router.Use(server.isAuth)
 	// OrderService routes
 	orderRoutes := server.router.Group("/orders")
 	{

@@ -17,15 +17,11 @@ func (server *Server) deleteOrder(ctx *gin.Context) {
 		return
 	}
 
-	userEmail := ctx.Query("email")
-	if userEmail == "" {
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse("email is required"))
-		return
-	}
+	user := server.getUser(ctx)
 
 	arg := dto.DeleteOrderParams{
 		ID:        orderID,
-		UserEmail: userEmail,
+		UserEmail: user.Email,
 	}
 
 	err = server.OrderService.DeleteOrder(ctx, arg)

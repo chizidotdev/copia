@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/chizidotdev/copia/internal/dto"
 	"github.com/chizidotdev/copia/internal/service"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -45,4 +46,10 @@ func corsConfig(server *Server) {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 	}))
+}
+
+func (server *Server) getUser(ctx *gin.Context) *dto.Claims {
+	user := ctx.MustGet("user").(*dto.Claims)
+
+	return user
 }

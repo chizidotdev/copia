@@ -8,13 +8,9 @@ import (
 )
 
 func (server *Server) listOrders(ctx *gin.Context) {
-	userEmail := ctx.Query("email")
-	if userEmail == "" {
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse("email is required"))
-		return
-	}
+	user := server.getUser(ctx)
 
-	items, err := server.OrderService.ListOrders(ctx, userEmail)
+	items, err := server.OrderService.ListOrders(ctx, user.Email)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err.Error()))
 		return
