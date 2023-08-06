@@ -25,7 +25,7 @@ type Order struct {
 	BillingAddress        string      `json:"billing_address" binding:"required"`
 	ShippingAddress       string      `json:"shipping_address" binding:"required"`
 	Notes                 string      `json:"notes" binding:"required"`
-	OrderItems            []OrderItem `json:"order_items" binding:"required"`
+	OrderItems            []OrderItem `json:"order_items"`
 }
 
 type OrderItem struct {
@@ -35,4 +35,9 @@ type OrderItem struct {
 	Quantity  int64     `json:"quantity" binding:"required"`
 	UnitPrice float32   `json:"unit_price" binding:"required"`
 	SubTotal  float32   `json:"sub_total" binding:"required"`
+}
+
+type UpdateOrderItemsRequest struct {
+	OrderID    uuid.UUID `json:"order_id" binding:"required"`
+	OrderItems []OrderItem
 }

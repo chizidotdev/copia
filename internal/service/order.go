@@ -82,41 +82,23 @@ func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repo
 }
 
 func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (repository.Order, error) {
-	var order repository.Order
-	txErr := o.Store.ExecTx(ctx, func(store *repository.Store) error {
-		var err error
-		order, err = store.UpdateOrder(ctx, datastruct.UpdateOrderParams{
-			ID:                    req.ID,
-			UserEmail:             req.UserEmail,
-			CustomerID:            req.CustomerID,
-			Status:                req.Status,
-			ShippingDetails:       req.ShippingDetails,
-			EstimatedDeliveryDate: req.EstimatedDeliveryDate,
-			OrderDate:             req.OrderDate,
-			TotalAmount:           req.TotalAmount,
-			PaymentStatus:         req.PaymentStatus,
-			PaymentMethod:         req.PaymentMethod,
-			BillingAddress:        req.BillingAddress,
-			ShippingAddress:       req.ShippingAddress,
-			Notes:                 req.Notes,
-		})
-		if err != nil {
-			return err
-		}
-
-		orderItems := req.OrderItems
-		for _, orderItem := range orderItems {
-			_, err = store.UpdateOrderItem(ctx, datastruct.UpdateOrderItemParams(orderItem))
-			if err != nil {
-				return err
-			}
-
-		}
-
-		return err
+	order, err := o.Store.UpdateOrder(ctx, datastruct.UpdateOrderParams{
+		ID:                    req.ID,
+		UserEmail:             req.UserEmail,
+		CustomerID:            req.CustomerID,
+		Status:                req.Status,
+		ShippingDetails:       req.ShippingDetails,
+		EstimatedDeliveryDate: req.EstimatedDeliveryDate,
+		OrderDate:             req.OrderDate,
+		TotalAmount:           req.TotalAmount,
+		PaymentStatus:         req.PaymentStatus,
+		PaymentMethod:         req.PaymentMethod,
+		BillingAddress:        req.BillingAddress,
+		ShippingAddress:       req.ShippingAddress,
+		Notes:                 req.Notes,
 	})
-	if txErr != nil {
-		return repository.Order{}, txErr
+	if err != nil {
+		return repository.Order{}, err
 	}
 
 	return order, nil
