@@ -8,16 +8,16 @@ import (
 	"math"
 )
 
-type DashboardService interface {
-	GetDashboard(ctx context.Context, userEmail string) (ReportRow, error)
+type ReportService interface {
+	GetReport(ctx context.Context, userEmail string) (ReportRow, error)
 }
 
-type dashboardService struct {
+type reportService struct {
 	Store *repository2.Repository
 }
 
-func NewDashboardService(store *repository2.Repository) DashboardService {
-	return &dashboardService{
+func NewDashboardService(store *repository2.Repository) ReportService {
+	return &reportService{
 		Store: store,
 	}
 }
@@ -32,29 +32,29 @@ type ReportRow struct {
 	PriceSoldByWeek  []repository2.PriceSoldByWeekRow `json:"price_sold_by_week"`
 }
 
-func (d *dashboardService) GetDashboard(ctx context.Context, userEmail string) (ReportRow, error) {
-	inventory, err := d.Store.GetInventoryStats(ctx, userEmail)
+func (r *reportService) GetReport(ctx context.Context, userEmail string) (ReportRow, error) {
+	inventory, err := r.Store.GetInventoryStats(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get inventory stats: %w", err)
 		return ReportRow{}, errMsg
 	}
 
-	salesPerformance, err := d.getSalesPerformance(ctx, userEmail)
+	salesPerformance, err := r.getSalesPerformance(ctx, userEmail)
 	if err != nil {
 		return ReportRow{}, err
 	}
 
-	priceSoldByDate, err := d.getPriceSoldByDate(ctx, userEmail)
+	priceSoldByDate, err := r.getPriceSoldByDate(ctx, userEmail)
 	if err != nil {
 		return ReportRow{}, err
 	}
 
-	priceSoldByWeek, err := d.getPriceSoldByWeek(ctx, userEmail)
+	priceSoldByWeek, err := r.getPriceSoldByWeek(ctx, userEmail)
 	if err != nil {
 		return ReportRow{}, err
 	}
 
-	dashboard := ReportRow{
+	report := ReportRow{
 		TotalItems:    inventory.TotalItems,
 		LowStockItems: inventory.LowStockItems,
 		RecentSales:   inventory.RecentSales,
@@ -64,17 +64,17 @@ func (d *dashboardService) GetDashboard(ctx context.Context, userEmail string) (
 		PriceSoldByWeek:  priceSoldByWeek,
 	}
 
-	return dashboard, nil
+	return report, nil
 }
 
-func (d *dashboardService) getSalesPerformance(ctx context.Context, userEmail string) (float64, error) {
-	currWeekSale, err := d.Store.CurrentWeekSales(ctx, userEmail)
+func (r *reportService) getSalesPerformance(ctx context.Context, userEmail string) (float64, error) {
+	currWeekSale, err := r.Store.CurrentWeekSales(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get current week sales: %w", err)
 		return 0, errMsg
 	}
 
-	lastWeekSales, err := d.Store.LastWeekSales(ctx, userEmail)
+	lastWeekSales, err := r.Store.LastWeekSales(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get last week sales: %w", err)
 		return 0, errMsg
@@ -95,8 +95,8 @@ func (d *dashboardService) getSalesPerformance(ctx context.Context, userEmail st
 	return salesPerformance, nil
 }
 
-func (d *dashboardService) getPriceSoldByDate(ctx context.Context, userEmail string) ([]repository2.PriceSoldByDateRow, error) {
-	priceSoldByDate, err := d.Store.PriceSoldByDate(ctx, userEmail)
+func (r *reportService) getPriceSoldByDate(ctx context.Context, userEmail string) ([]repository2.PriceSoldByDateRow, error) {
+	priceSoldByDate, err := r.Store.PriceSoldByDate(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get price sold by date: %w", err)
 		return nil, errMsg
@@ -105,8 +105,8 @@ func (d *dashboardService) getPriceSoldByDate(ctx context.Context, userEmail str
 	return priceSoldByDate, nil
 }
 
-func (d *dashboardService) getPriceSoldByWeek(ctx context.Context, userEmail string) ([]repository2.PriceSoldByWeekRow, error) {
-	priceSoldByWeek, err := d.Store.PriceSoldByWeek(ctx, userEmail)
+func (r *reportService) getPriceSoldByWeek(ctx context.Context, userEmail string) ([]repository2.PriceSoldByWeekRow, error) {
+	priceSoldByWeek, err := r.Store.PriceSoldByWeek(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get price sold by week: %w", err)
 		return nil, errMsg
