@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	repository2 "github.com/chizidotdev/copia/repository"
+	"github.com/chizidotdev/copia/repository"
 	"github.com/chizidotdev/copia/util"
 	"math"
 )
@@ -13,10 +13,10 @@ type ReportService interface {
 }
 
 type reportService struct {
-	Store *repository2.Repository
+	Store *repository.Repository
 }
 
-func NewDashboardService(store *repository2.Repository) ReportService {
+func NewDashboardService(store *repository.Repository) ReportService {
 	return &reportService{
 		Store: store,
 	}
@@ -27,9 +27,9 @@ type ReportRow struct {
 	LowStockItems int64 `json:"low_stock_items"`
 	RecentSales   int64 `json:"recent_sales"`
 	//PendingOrders    int64                `json:"pending_orders"`
-	SalesPerformance float64                          `json:"sales_performance"`
-	PriceSoldByDate  []repository2.PriceSoldByDateRow `json:"price_sold_by_date"`
-	PriceSoldByWeek  []repository2.PriceSoldByWeekRow `json:"price_sold_by_week"`
+	SalesPerformance float64                         `json:"sales_performance"`
+	PriceSoldByDate  []repository.PriceSoldByDateRow `json:"price_sold_by_date"`
+	PriceSoldByWeek  []repository.PriceSoldByWeekRow `json:"price_sold_by_week"`
 }
 
 func (r *reportService) GetReport(ctx context.Context, userEmail string) (ReportRow, error) {
@@ -95,7 +95,7 @@ func (r *reportService) getSalesPerformance(ctx context.Context, userEmail strin
 	return salesPerformance, nil
 }
 
-func (r *reportService) getPriceSoldByDate(ctx context.Context, userEmail string) ([]repository2.PriceSoldByDateRow, error) {
+func (r *reportService) getPriceSoldByDate(ctx context.Context, userEmail string) ([]repository.PriceSoldByDateRow, error) {
 	priceSoldByDate, err := r.Store.PriceSoldByDate(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get price sold by date: %w", err)
@@ -105,7 +105,7 @@ func (r *reportService) getPriceSoldByDate(ctx context.Context, userEmail string
 	return priceSoldByDate, nil
 }
 
-func (r *reportService) getPriceSoldByWeek(ctx context.Context, userEmail string) ([]repository2.PriceSoldByWeekRow, error) {
+func (r *reportService) getPriceSoldByWeek(ctx context.Context, userEmail string) ([]repository.PriceSoldByWeekRow, error) {
 	priceSoldByWeek, err := r.Store.PriceSoldByWeek(ctx, userEmail)
 	if err != nil {
 		errMsg := fmt.Errorf("failed to get price sold by week: %w", err)
