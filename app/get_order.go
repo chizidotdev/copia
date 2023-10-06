@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (server *Server) getOrderByID(ctx *gin.Context) {
+func (s *Server) getOrderByID(ctx *gin.Context) {
 	idParam := ctx.Params.ByName("id")
 	orderID, err := uuid.Parse(idParam)
 	if err != nil {
@@ -16,7 +16,7 @@ func (server *Server) getOrderByID(ctx *gin.Context) {
 		return
 	}
 
-	item, err := server.OrderService.GetOrderByID(ctx, orderID)
+	item, err := s.OrderService.GetOrderByID(ctx, orderID)
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, util.ErrorResponse(err.Error()))
 		return

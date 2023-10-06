@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (server *Server) updateOrder(ctx *gin.Context) {
+func (s *Server) updateOrder(ctx *gin.Context) {
 	var req dto.Order
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, util.ErrorResponse("invalid request"))
@@ -17,7 +17,7 @@ func (server *Server) updateOrder(ctx *gin.Context) {
 
 	arg := dto.Order(req)
 
-	item, err := server.OrderService.UpdateOrder(ctx, arg)
+	item, err := s.OrderService.UpdateOrder(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
 		return

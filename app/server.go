@@ -32,8 +32,8 @@ func NewServer(service *service.Service) *Server {
 }
 
 // Start runs the HTTP server on a specific address
-func (server *Server) Start(address string) error {
-	return server.router.Run(address)
+func (s *Server) Start(address string) error {
+	return s.router.Run(address)
 }
 
 // corsConfig sets up the CORS configuration

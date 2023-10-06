@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (server *Server) getReport(ctx *gin.Context) {
+func (s *Server) getReport(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, "Report")
 }

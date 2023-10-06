@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (server *Server) deleteOrder(ctx *gin.Context) {
+func (s *Server) deleteOrder(ctx *gin.Context) {
 	idParam := ctx.Params.ByName("id")
 	orderID, err := uuid.Parse(idParam)
 	if err != nil {
@@ -17,14 +17,14 @@ func (server *Server) deleteOrder(ctx *gin.Context) {
 		return
 	}
 
-	user := server.getUser(ctx)
+	user := s.getUser(ctx)
 
 	arg := dto.DeleteOrderParams{
 		ID:        orderID,
 		UserEmail: user.Email,
 	}
 
-	err = server.OrderService.DeleteOrder(ctx, arg)
+	err = s.OrderService.DeleteOrder(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
 		return

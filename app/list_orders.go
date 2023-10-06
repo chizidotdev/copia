@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (server *Server) listOrders(ctx *gin.Context) {
-	user := server.getUser(ctx)
+func (s *Server) listOrders(ctx *gin.Context) {
+	user := s.getUser(ctx)
 
-	items, err := server.OrderService.ListOrders(ctx, user.Email)
+	items, err := s.OrderService.ListOrders(ctx, user.Email)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
 		return

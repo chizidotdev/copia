@@ -8,14 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (server *Server) isAuth(ctx *gin.Context) {
+func (s *Server) isAuth(ctx *gin.Context) {
 	reqToken := ctx.Request.Header.Get("Authorization")
 	if reqToken == "" {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse("Unauthorized"))
 		return
 	}
 
-	user, err := server.TokenManager.Parse(reqToken)
+	user, err := s.TokenManager.Parse(reqToken)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse(err.Error()))
 		return
@@ -25,7 +25,7 @@ func (server *Server) isAuth(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func (server *Server) getUser(ctx *gin.Context) *dto.Claims {
+func (s *Server) getUser(ctx *gin.Context) *dto.Claims {
 	user := ctx.MustGet("user").(*dto.Claims)
 
 	return user
