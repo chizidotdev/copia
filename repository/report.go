@@ -14,7 +14,7 @@ type GetInventoryStatsRow struct {
 	//PendingOrders int64 `json:"pending_orders"`
 }
 
-func (s *Store) GetInventoryStats(_ context.Context, userEmail string) (GetInventoryStatsRow, error) {
+func (s *Repository) GetInventoryStats(_ context.Context, userEmail string) (GetInventoryStatsRow, error) {
 	var result GetInventoryStatsRow
 	err := s.DB.Model(&Order{}).Where("user_email = ?", userEmail).Count(&result.TotalItems).Error
 	if err != nil {
@@ -39,7 +39,7 @@ type PriceSoldByWeekRow struct {
 	TotalSalePrice int64     `json:"total_sale_price"`
 }
 
-func (s *Store) PriceSoldByWeek(_ context.Context, userEmail string) ([]PriceSoldByWeekRow, error) {
+func (s *Repository) PriceSoldByWeek(_ context.Context, userEmail string) ([]PriceSoldByWeekRow, error) {
 	var results []PriceSoldByWeekRow
 	err := s.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('week', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
@@ -56,7 +56,7 @@ type PriceSoldByDateRow struct {
 	TotalSalePrice int64     `json:"total_sale_price"`
 }
 
-func (s *Store) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSoldByDateRow, error) {
+func (s *Repository) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSoldByDateRow, error) {
 	var results []PriceSoldByDateRow
 	err := s.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('day', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
@@ -76,7 +76,7 @@ func (s *Store) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSol
 //  AND user_id = $1
 //`
 
-func (s *Store) CurrentWeekSales(_ context.Context, userEmail string) (int32, error) {
+func (s *Repository) CurrentWeekSales(_ context.Context, userEmail string) (int32, error) {
 	return 0, nil
 }
 
@@ -90,6 +90,6 @@ func (s *Store) CurrentWeekSales(_ context.Context, userEmail string) (int32, er
 //  AND user_id = $1
 //`
 
-func (s *Store) LastWeekSales(_ context.Context, userEmail string) (int32, error) {
+func (s *Repository) LastWeekSales(_ context.Context, userEmail string) (int32, error) {
 	return 0, nil
 }

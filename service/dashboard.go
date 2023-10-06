@@ -13,10 +13,10 @@ type DashboardService interface {
 }
 
 type dashboardService struct {
-	Store *repository2.Store
+	Store *repository2.Repository
 }
 
-func NewDashboardService(store *repository2.Store) DashboardService {
+func NewDashboardService(store *repository2.Repository) DashboardService {
 	return &dashboardService{
 		Store: store,
 	}

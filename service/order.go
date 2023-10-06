@@ -17,10 +17,10 @@ type OrderService interface {
 }
 
 type orderService struct {
-	Store *repository2.Store
+	Store *repository2.Repository
 }
 
-func NewOrderService(store *repository2.Store) OrderService {
+func NewOrderService(store *repository2.Repository) OrderService {
 	return &orderService{
 		Store: store,
 	}
@@ -28,7 +28,7 @@ func NewOrderService(store *repository2.Store) OrderService {
 
 func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (repository2.Order, error) {
 	var order repository2.Order
-	txErr := o.Store.ExecTx(ctx, func(store *repository2.Store) error {
+	txErr := o.Store.ExecTx(ctx, func(store *repository2.Repository) error {
 		var err error
 		order, err = store.CreateOrder(ctx, repository2.CreateOrderParams{
 			UserEmail:             req.UserEmail,

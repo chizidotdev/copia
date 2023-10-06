@@ -19,7 +19,7 @@ func main() {
 		log.Fatal("Cannot connect to db:", err)
 	}
 
-	store := repository.NewStore(conn)
+	store := repository.NewRepository(conn)
 	newService := service.NewService(store)
 	server := app.NewServer(newService)
 

@@ -25,13 +25,13 @@ type Queries interface {
 	// GetReports(ctx context.Context, userEmail string) (datastruct.ReportRow, error)
 }
 
-var _ Queries = (*Store)(nil)
+var _ Queries = (*Repository)(nil)
 
-type Store struct {
+type Repository struct {
 	DB *gorm.DB
 }
 
-func NewStore(db *gorm.DB) *Store {
+func NewRepository(db *gorm.DB) *Repository {
 	err := db.AutoMigrate(
 		&UserProfile{},
 		&Customer{},
@@ -43,19 +43,19 @@ func NewStore(db *gorm.DB) *Store {
 		log.Panic("Cannot migrate db:", err)
 	}
 
-	return &Store{
+	return &Repository{
 		DB: db,
 	}
 }
 
-func (s *Store) WithTx(tx *gorm.DB) *Store {
-	return &Store{
+func (s *Repository) WithTx(tx *gorm.DB) *Repository {
+	return &Repository{
 		DB: tx,
 	}
 }
 
 // ExecTx executes a function within a transaction.
-func (s *Store) ExecTx(ctx context.Context, fn func(*Store) error) error {
+func (s *Repository) ExecTx(ctx context.Context, fn func(*Repository) error) error {
 	tx := s.DB.Begin()
 
 	qtx := s.WithTx(tx)

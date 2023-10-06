@@ -7,13 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Store) ListOrders(_ context.Context, userEmail string) ([]Order, error) {
+func (s *Repository) ListOrders(_ context.Context, userEmail string) ([]Order, error) {
 	var orders []Order
 	result := s.DB.Preload("OrderItems").Find(&orders, "user_email = ?", userEmail)
 	return orders, result.Error
 }
 
-func (s *Store) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
+func (s *Repository) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
 	var order Order
 	result := s.DB.Preload("OrderItems").First(&order, "id = ?", id)
 	return order, result.Error
@@ -34,7 +34,7 @@ type CreateOrderParams struct {
 	Notes                 string    `json:"notes"`
 }
 
-func (s *Store) CreateOrder(_ context.Context, arg CreateOrderParams) (Order, error) {
+func (s *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Order, error) {
 	order := Order{
 		Status:                arg.Status,
 		ShippingDetails:       arg.ShippingDetails,
@@ -69,7 +69,7 @@ type UpdateOrderParams struct {
 	Notes                 string    `json:"notes"`
 }
 
-func (s *Store) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
+func (s *Repository) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
 	var order Order
 	if err := s.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserEmail).Error; err != nil {
 		return order, err
@@ -97,7 +97,7 @@ type DeleteOrderParams struct {
 	UserEmail string    `json:"user_email"`
 }
 
-func (s *Store) DeleteOrder(_ context.Context, arg DeleteOrderParams) error {
+func (s *Repository) DeleteOrder(_ context.Context, arg DeleteOrderParams) error {
 	result := s.DB.Delete(&Order{}, "id = ? AND user_email = ?", arg.ID, arg.UserEmail)
 	return result.Error
 }

@@ -10,7 +10,7 @@ type Service struct {
 	TokenManager
 }
 
-func NewService(store *repository.Store) *Service {
+func NewService(store *repository.Repository) *Service {
 	order := NewOrderService(store)
 	tokenManager := NewTokenManagerService(util.EnvVars.AuthSecret)
 
