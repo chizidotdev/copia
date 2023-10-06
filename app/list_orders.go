@@ -1,9 +1,9 @@
 package app
 
 import (
+	"github.com/chizidotdev/copia/util"
 	"net/http"
 
-	"github.com/chizidotdev/copia/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +12,7 @@ func (server *Server) listOrders(ctx *gin.Context) {
 
 	items, err := server.OrderService.ListOrders(ctx, user.Email)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, utils.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
 		return
 	}
 

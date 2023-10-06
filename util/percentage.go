@@ -1,4 +1,4 @@
-package utils
+package util
 
 func CalcPercentageDiff(a, b int32) float64 {
 	oldValue := float64(a)

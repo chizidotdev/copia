@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/chizidotdev/copia/internal/datastruct"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +18,15 @@ func (s *Store) GetOrderItem(_ context.Context, id uuid.UUID) (OrderItem, error)
 	return orderItem, result.Error
 }
 
-func (s *Store) CreateOrderItem(_ context.Context, arg datastruct.CreateOrderItemParams) (OrderItem, error) {
+type CreateOrderItemParams struct {
+	OrderID   uuid.UUID `json:"order_id"`
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int64     `json:"quantity"`
+	UnitPrice float32   `json:"unit_price"`
+	SubTotal  float32   `json:"sub_total"`
+}
+
+func (s *Store) CreateOrderItem(_ context.Context, arg CreateOrderItemParams) (OrderItem, error) {
 	orderItem := OrderItem{
 		OrderID:   arg.OrderID,
 		ProductID: arg.ProductID,
@@ -31,7 +38,16 @@ func (s *Store) CreateOrderItem(_ context.Context, arg datastruct.CreateOrderIte
 	return orderItem, result.Error
 }
 
-func (s *Store) UpdateOrderItem(_ context.Context, arg datastruct.UpdateOrderItemParams) (OrderItem, error) {
+type UpdateOrderItemParams struct {
+	ID        uuid.UUID `json:"id"`
+	OrderID   uuid.UUID `json:"order_id"`
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int64     `json:"quantity"`
+	UnitPrice float32   `json:"unit_price"`
+	SubTotal  float32   `json:"sub_total"`
+}
+
+func (s *Store) UpdateOrderItem(_ context.Context, arg UpdateOrderItemParams) (OrderItem, error) {
 	var orderItem OrderItem
 	if err := s.DB.First(&orderItem, "id = ?", arg.ID).Error; err != nil {
 		return orderItem, err

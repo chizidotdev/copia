@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/chizidotdev/copia/internal/app"
-	"github.com/chizidotdev/copia/internal/repository"
-	"github.com/chizidotdev/copia/internal/service"
-	"github.com/chizidotdev/copia/pkg/utils"
+	"github.com/chizidotdev/copia/app"
+	"github.com/chizidotdev/copia/repository"
+	"github.com/chizidotdev/copia/service"
+	"github.com/chizidotdev/copia/util"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,9 +12,9 @@ import (
 )
 
 func main() {
-	utils.LoadConfig()
+	util.LoadConfig()
 
-	conn, err := gorm.Open(postgres.Open(utils.EnvVars.DBSource), &gorm.Config{})
+	conn, err := gorm.Open(postgres.Open(util.EnvVars.DBSource), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Cannot connect to db:", err)
 	}
@@ -23,7 +23,7 @@ func main() {
 	newService := service.NewService(store)
 	server := app.NewServer(newService)
 
-	port := utils.EnvVars.PORT
+	port := util.EnvVars.PORT
 	if port == "" {
 		port = "8080"
 	}

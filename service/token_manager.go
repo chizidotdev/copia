@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/chizidotdev/copia/dto"
 	"strings"
 
-	"github.com/chizidotdev/copia/internal/dto"
 	"github.com/golang-jwt/jwt/v5"
 )
 

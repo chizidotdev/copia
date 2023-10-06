@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"time"
 
-	"github.com/chizidotdev/copia/internal/datastruct"
 	"github.com/google/uuid"
 )
 
@@ -19,7 +19,22 @@ func (s *Store) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
 	return order, result.Error
 }
 
-func (s *Store) CreateOrder(_ context.Context, arg datastruct.CreateOrderParams) (Order, error) {
+type CreateOrderParams struct {
+	UserEmail             string    `json:"user_email"`
+	CustomerID            uuid.UUID `json:"customer_id"`
+	Status                string    `json:"status"`
+	ShippingDetails       string    `json:"shipping_details"`
+	EstimatedDeliveryDate time.Time `json:"estimated_delivery_date"`
+	OrderDate             time.Time `json:"order_date"`
+	TotalAmount           float32   `json:"total_amount"`
+	PaymentStatus         string    `json:"payment_status"`
+	PaymentMethod         string    `json:"payment_method"`
+	BillingAddress        string    `json:"billing_address"`
+	ShippingAddress       string    `json:"shipping_address"`
+	Notes                 string    `json:"notes"`
+}
+
+func (s *Store) CreateOrder(_ context.Context, arg CreateOrderParams) (Order, error) {
 	order := Order{
 		Status:                arg.Status,
 		ShippingDetails:       arg.ShippingDetails,
@@ -38,7 +53,23 @@ func (s *Store) CreateOrder(_ context.Context, arg datastruct.CreateOrderParams)
 	return order, result.Error
 }
 
-func (s *Store) UpdateOrder(_ context.Context, arg datastruct.UpdateOrderParams) (Order, error) {
+type UpdateOrderParams struct {
+	ID                    uuid.UUID `json:"id"`
+	UserEmail             string    `json:"user_email"`
+	CustomerID            uuid.UUID `json:"customer_id"`
+	Status                string    `json:"status"`
+	ShippingDetails       string    `json:"shipping_details"`
+	EstimatedDeliveryDate time.Time `json:"estimated_delivery_date"`
+	OrderDate             time.Time `json:"order_date"`
+	TotalAmount           float32   `json:"total_amount"`
+	PaymentStatus         string    `json:"payment_status"`
+	PaymentMethod         string    `json:"payment_method"`
+	BillingAddress        string    `json:"billing_address"`
+	ShippingAddress       string    `json:"shipping_address"`
+	Notes                 string    `json:"notes"`
+}
+
+func (s *Store) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
 	var order Order
 	if err := s.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserEmail).Error; err != nil {
 		return order, err
@@ -61,7 +92,12 @@ func (s *Store) UpdateOrder(_ context.Context, arg datastruct.UpdateOrderParams)
 	return order, err
 }
 
-func (s *Store) DeleteOrder(_ context.Context, arg datastruct.DeleteOrderParams) error {
+type DeleteOrderParams struct {
+	ID        uuid.UUID `json:"id"`
+	UserEmail string    `json:"user_email"`
+}
+
+func (s *Store) DeleteOrder(_ context.Context, arg DeleteOrderParams) error {
 	result := s.DB.Delete(&Order{}, "id = ? AND user_email = ?", arg.ID, arg.UserEmail)
 	return result.Error
 }

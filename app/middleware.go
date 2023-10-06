@@ -1,23 +1,23 @@
 package app
 
 import (
+	"github.com/chizidotdev/copia/dto"
+	"github.com/chizidotdev/copia/util"
 	"net/http"
 
-	"github.com/chizidotdev/copia/internal/dto"
-	"github.com/chizidotdev/copia/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func (server *Server) isAuth(ctx *gin.Context) {
 	reqToken := ctx.Request.Header.Get("Authorization")
 	if reqToken == "" {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse("Unauthorized"))
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse("Unauthorized"))
 		return
 	}
 
 	user, err := server.TokenManager.Parse(reqToken)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, utils.ErrorResponse(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse(err.Error()))
 		return
 	}
 

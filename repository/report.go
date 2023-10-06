@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"time"
 
-	"github.com/chizidotdev/copia/internal/datastruct"
 	"gorm.io/gorm/clause"
 )
 
@@ -34,8 +34,13 @@ func (s *Store) GetInventoryStats(_ context.Context, userEmail string) (GetInven
 	return result, err
 }
 
-func (s *Store) PriceSoldByWeek(_ context.Context, userEmail string) ([]datastruct.PriceSoldByWeekRow, error) {
-	var results []datastruct.PriceSoldByWeekRow
+type PriceSoldByWeekRow struct {
+	Date           time.Time `json:"date"`
+	TotalSalePrice int64     `json:"total_sale_price"`
+}
+
+func (s *Store) PriceSoldByWeek(_ context.Context, userEmail string) ([]PriceSoldByWeekRow, error) {
+	var results []PriceSoldByWeekRow
 	err := s.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('week', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
 		Where("user_email = ?", userEmail).
@@ -46,8 +51,13 @@ func (s *Store) PriceSoldByWeek(_ context.Context, userEmail string) ([]datastru
 	return results, err
 }
 
-func (s *Store) PriceSoldByDate(_ context.Context, userEmail string) ([]datastruct.PriceSoldByDateRow, error) {
-	var results []datastruct.PriceSoldByDateRow
+type PriceSoldByDateRow struct {
+	Date           time.Time `json:"date"`
+	TotalSalePrice int64     `json:"total_sale_price"`
+}
+
+func (s *Store) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSoldByDateRow, error) {
+	var results []PriceSoldByDateRow
 	err := s.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('day', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
 		Where("user_email = ?", userEmail).

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/chizidotdev/copia/internal/repository"
-	"github.com/chizidotdev/copia/pkg/utils"
+	"github.com/chizidotdev/copia/repository"
+	"github.com/chizidotdev/copia/util"
 )
 
 type Service struct {
@@ -12,7 +12,7 @@ type Service struct {
 
 func NewService(store *repository.Store) *Service {
 	order := NewOrderService(store)
-	tokenManager := NewTokenManagerService(utils.EnvVars.AuthSecret)
+	tokenManager := NewTokenManagerService(util.EnvVars.AuthSecret)
 
 	return &Service{
 		OrderService: order,

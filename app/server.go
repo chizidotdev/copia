@@ -1,7 +1,7 @@
 package app
 
 import (
-	"github.com/chizidotdev/copia/internal/service"
+	"github.com/chizidotdev/copia/service"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )

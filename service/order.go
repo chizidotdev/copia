@@ -2,36 +2,35 @@ package service
 
 import (
 	"context"
+	"github.com/chizidotdev/copia/dto"
+	repository2 "github.com/chizidotdev/copia/repository"
 
-	"github.com/chizidotdev/copia/internal/datastruct"
-	"github.com/chizidotdev/copia/internal/dto"
-	"github.com/chizidotdev/copia/internal/repository"
 	"github.com/google/uuid"
 )
 
 type OrderService interface {
-	ListOrders(ctx context.Context, userID string) ([]repository.Order, error)
-	CreateOrder(ctx context.Context, req dto.Order) (repository.Order, error)
-	UpdateOrder(ctx context.Context, req dto.Order) (repository.Order, error)
-	GetOrderByID(ctx context.Context, orderID uuid.UUID) (repository.Order, error)
+	ListOrders(ctx context.Context, userID string) ([]repository2.Order, error)
+	CreateOrder(ctx context.Context, req dto.Order) (repository2.Order, error)
+	UpdateOrder(ctx context.Context, req dto.Order) (repository2.Order, error)
+	GetOrderByID(ctx context.Context, orderID uuid.UUID) (repository2.Order, error)
 	DeleteOrder(ctx context.Context, req dto.DeleteOrderParams) error
 }
 
 type orderService struct {
-	Store *repository.Store
+	Store *repository2.Store
 }
 
-func NewOrderService(store *repository.Store) OrderService {
+func NewOrderService(store *repository2.Store) OrderService {
 	return &orderService{
 		Store: store,
 	}
 }
 
-func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (repository.Order, error) {
-	var order repository.Order
-	txErr := o.Store.ExecTx(ctx, func(store *repository.Store) error {
+func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (repository2.Order, error) {
+	var order repository2.Order
+	txErr := o.Store.ExecTx(ctx, func(store *repository2.Store) error {
 		var err error
-		order, err = store.CreateOrder(ctx, datastruct.CreateOrderParams{
+		order, err = store.CreateOrder(ctx, repository2.CreateOrderParams{
 			UserEmail:             req.UserEmail,
 			CustomerID:            req.CustomerID,
 			Status:                req.Status,
@@ -51,7 +50,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 
 		for _, orderItem := range req.OrderItems {
 			orderItem.OrderID = order.ID
-			_, err = store.CreateOrderItem(ctx, datastruct.CreateOrderItemParams{
+			_, err = store.CreateOrderItem(ctx, repository2.CreateOrderItemParams{
 				OrderID:   orderItem.OrderID,
 				ProductID: orderItem.ProductID,
 				Quantity:  orderItem.Quantity,
@@ -66,13 +65,13 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 		return err
 	})
 	if txErr != nil {
-		return repository.Order{}, txErr
+		return repository2.Order{}, txErr
 	}
 
 	return order, nil
 }
 
-func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repository.Order, error) {
+func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repository2.Order, error) {
 	orders, err := o.Store.ListOrders(ctx, userEmail)
 	if err != nil {
 		return nil, err
@@ -81,8 +80,8 @@ func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repo
 	return orders, nil
 }
 
-func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (repository.Order, error) {
-	order, err := o.Store.UpdateOrder(ctx, datastruct.UpdateOrderParams{
+func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (repository2.Order, error) {
+	order, err := o.Store.UpdateOrder(ctx, repository2.UpdateOrderParams{
 		ID:                    req.ID,
 		UserEmail:             req.UserEmail,
 		CustomerID:            req.CustomerID,
@@ -98,23 +97,23 @@ func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (reposito
 		Notes:                 req.Notes,
 	})
 	if err != nil {
-		return repository.Order{}, err
+		return repository2.Order{}, err
 	}
 
 	return order, nil
 }
 
-func (o *orderService) GetOrderByID(ctx context.Context, orderID uuid.UUID) (repository.Order, error) {
+func (o *orderService) GetOrderByID(ctx context.Context, orderID uuid.UUID) (repository2.Order, error) {
 	order, err := o.Store.GetOrder(ctx, orderID)
 	if err != nil {
-		return repository.Order{}, err
+		return repository2.Order{}, err
 	}
 
 	return order, nil
 }
 
 func (o *orderService) DeleteOrder(ctx context.Context, req dto.DeleteOrderParams) error {
-	err := o.Store.DeleteOrder(ctx, datastruct.DeleteOrderParams(req))
+	err := o.Store.DeleteOrder(ctx, repository2.DeleteOrderParams(req))
 	if err != nil {
 		return err
 	}

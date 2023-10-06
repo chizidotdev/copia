@@ -1,10 +1,10 @@
 package app
 
 import (
+	"github.com/chizidotdev/copia/dto"
+	"github.com/chizidotdev/copia/util"
 	"net/http"
 
-	"github.com/chizidotdev/copia/internal/dto"
-	"github.com/chizidotdev/copia/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,7 +12,7 @@ func (s *Server) createOrder(ctx *gin.Context) {
 	var req dto.Order
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
 		return
 	}
 
@@ -33,7 +33,7 @@ func (s *Server) createOrder(ctx *gin.Context) {
 		OrderItems:            req.OrderItems,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
 		return
 	}
 

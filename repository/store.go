@@ -5,23 +5,24 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/chizidotdev/copia/internal/datastruct"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type Queries interface {
 	ListOrders(ctx context.Context, userEmail string) ([]Order, error)
-	CreateOrder(ctx context.Context, arg datastruct.CreateOrderParams) (Order, error)
-	DeleteOrder(ctx context.Context, arg datastruct.DeleteOrderParams) error
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
+	DeleteOrder(ctx context.Context, arg DeleteOrderParams) error
 	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
-	UpdateOrder(ctx context.Context, arg datastruct.UpdateOrderParams) (Order, error)
+	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error)
 
 	ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
-	CreateOrderItem(ctx context.Context, arg datastruct.CreateOrderItemParams) (OrderItem, error)
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
 	DeleteOrderItem(ctx context.Context, id uuid.UUID) error
 	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
-	UpdateOrderItem(ctx context.Context, arg datastruct.UpdateOrderItemParams) (OrderItem, error)
+	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
+
+	// GetReports(ctx context.Context, userEmail string) (datastruct.ReportRow, error)
 }
 
 var _ Queries = (*Store)(nil)
