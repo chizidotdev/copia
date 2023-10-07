@@ -48,17 +48,17 @@ func NewRepository(db *gorm.DB) *Repository {
 	}
 }
 
-func (s *Repository) WithTx(tx *gorm.DB) *Repository {
+func (r *Repository) WithTx(tx *gorm.DB) *Repository {
 	return &Repository{
 		DB: tx,
 	}
 }
 
 // ExecTx executes a function within a transaction.
-func (s *Repository) ExecTx(ctx context.Context, fn func(*Repository) error) error {
-	tx := s.DB.Begin()
+func (r *Repository) ExecTx(ctx context.Context, fn func(*Repository) error) error {
+	tx := r.DB.Begin()
 
-	qtx := s.WithTx(tx)
+	qtx := r.WithTx(tx)
 
 	err := fn(qtx)
 	if err != nil {

@@ -7,15 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Repository) ListOrders(_ context.Context, userEmail string) ([]Order, error) {
+func (r *Repository) ListOrders(_ context.Context, userEmail string) ([]Order, error) {
 	var orders []Order
-	result := s.DB.Preload("OrderItems").Find(&orders, "user_email = ?", userEmail)
+	result := r.DB.Preload("OrderItems").Find(&orders, "user_email = ?", userEmail)
 	return orders, result.Error
 }
 
-func (s *Repository) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
+func (r *Repository) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
 	var order Order
-	result := s.DB.Preload("OrderItems").First(&order, "id = ?", id)
+	result := r.DB.Preload("OrderItems").First(&order, "id = ?", id)
 	return order, result.Error
 }
 
@@ -34,7 +34,7 @@ type CreateOrderParams struct {
 	Notes                 string    `json:"notes"`
 }
 
-func (s *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Order, error) {
+func (r *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Order, error) {
 	order := Order{
 		Status:                arg.Status,
 		ShippingDetails:       arg.ShippingDetails,
@@ -49,7 +49,7 @@ func (s *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Orde
 		CustomerID:            arg.CustomerID,
 		UserID:                arg.UserID,
 	}
-	result := s.DB.Create(&order)
+	result := r.DB.Create(&order)
 	return order, result.Error
 }
 
@@ -69,9 +69,9 @@ type UpdateOrderParams struct {
 	Notes                 string    `json:"notes"`
 }
 
-func (s *Repository) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
+func (r *Repository) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
 	var order Order
-	if err := s.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserID).Error; err != nil {
+	if err := r.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserID).Error; err != nil {
 		return order, err
 	}
 
@@ -88,7 +88,7 @@ func (s *Repository) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Orde
 	order.ShippingAddress = arg.ShippingAddress
 	order.Notes = arg.Notes
 
-	err := s.DB.Save(&order).Error
+	err := r.DB.Save(&order).Error
 	return order, err
 }
 
@@ -97,7 +97,7 @@ type DeleteOrderParams struct {
 	UserEmail string    `json:"user_email"`
 }
 
-func (s *Repository) DeleteOrder(_ context.Context, arg DeleteOrderParams) error {
-	result := s.DB.Delete(&Order{}, "id = ? AND user_email = ?", arg.ID, arg.UserEmail)
+func (r *Repository) DeleteOrder(_ context.Context, arg DeleteOrderParams) error {
+	result := r.DB.Delete(&Order{}, "id = ? AND user_email = ?", arg.ID, arg.UserEmail)
 	return result.Error
 }

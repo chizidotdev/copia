@@ -14,19 +14,19 @@ type GetInventoryStatsRow struct {
 	//PendingOrders int64 `json:"pending_orders"`
 }
 
-func (s *Repository) GetInventoryStats(_ context.Context, userEmail string) (GetInventoryStatsRow, error) {
+func (r *Repository) GetInventoryStats(_ context.Context, userEmail string) (GetInventoryStatsRow, error) {
 	var result GetInventoryStatsRow
-	err := s.DB.Model(&Order{}).Where("user_email = ?", userEmail).Count(&result.TotalItems).Error
+	err := r.DB.Model(&Order{}).Where("user_email = ?", userEmail).Count(&result.TotalItems).Error
 	if err != nil {
 		return result, err
 	}
 
-	err = s.DB.Model(&Order{}).Where("user_email = ? AND quantity < 5", userEmail).Count(&result.LowStockItems).Error
+	err = r.DB.Model(&Order{}).Where("user_email = ? AND quantity < 5", userEmail).Count(&result.LowStockItems).Error
 	if err != nil {
 		return result, err
 	}
 
-	err = s.DB.Model(&Customer{}).Where("user_email = ?", userEmail).Count(&result.RecentSales).Error
+	err = r.DB.Model(&Customer{}).Where("user_email = ?", userEmail).Count(&result.RecentSales).Error
 	if err != nil {
 		return result, err
 	}
@@ -39,9 +39,9 @@ type PriceSoldByWeekRow struct {
 	TotalSalePrice int64     `json:"total_sale_price"`
 }
 
-func (s *Repository) PriceSoldByWeek(_ context.Context, userEmail string) ([]PriceSoldByWeekRow, error) {
+func (r *Repository) PriceSoldByWeek(_ context.Context, userEmail string) ([]PriceSoldByWeekRow, error) {
 	var results []PriceSoldByWeekRow
-	err := s.DB.Model(&Customer{}).
+	err := r.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('week', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
 		Where("user_email = ?", userEmail).
 		Group("DATE_TRUNC('week', sale_date)").
@@ -56,9 +56,9 @@ type PriceSoldByDateRow struct {
 	TotalSalePrice int64     `json:"total_sale_price"`
 }
 
-func (s *Repository) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSoldByDateRow, error) {
+func (r *Repository) PriceSoldByDate(_ context.Context, userEmail string) ([]PriceSoldByDateRow, error) {
 	var results []PriceSoldByDateRow
-	err := s.DB.Model(&Customer{}).
+	err := r.DB.Model(&Customer{}).
 		Select("DATE_TRUNC('day', sale_date) AS date, SUM(sale_price * quantity_sold) AS total_sale_price").
 		Where("user_email = ?", userEmail).
 		Group("DATE_TRUNC('day', sale_date)").
@@ -76,7 +76,7 @@ func (s *Repository) PriceSoldByDate(_ context.Context, userEmail string) ([]Pri
 //  AND user_id = $1
 //`
 
-func (s *Repository) CurrentWeekSales(_ context.Context, userEmail string) (int32, error) {
+func (r *Repository) CurrentWeekSales(_ context.Context, userEmail string) (int32, error) {
 	return 0, nil
 }
 
@@ -90,6 +90,6 @@ func (s *Repository) CurrentWeekSales(_ context.Context, userEmail string) (int3
 //  AND user_id = $1
 //`
 
-func (s *Repository) LastWeekSales(_ context.Context, userEmail string) (int32, error) {
+func (r *Repository) LastWeekSales(_ context.Context, userEmail string) (int32, error) {
 	return 0, nil
 }
