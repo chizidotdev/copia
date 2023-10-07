@@ -33,7 +33,7 @@ type Repository struct {
 
 func NewRepository(db *gorm.DB) *Repository {
 	err := db.AutoMigrate(
-		&UserProfile{},
+		&User{},
 		&Customer{},
 		&OrderItem{},
 		&Order{},

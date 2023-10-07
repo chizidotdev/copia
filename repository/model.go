@@ -22,11 +22,13 @@ func (base *Base) BeforeCreate(db *gorm.DB) error {
 	return nil
 }
 
-type UserProfile struct {
+type User struct {
 	Base
-	FirstName string `gorm:"not null" json:"first_name"`
-	LastName  string `gorm:"not null" json:"last_name"`
-	UserEmail string `gorm:"not null" json:"user_email"`
+	FirstName string  `gorm:"not null" json:"first_name"`
+	LastName  string  `gorm:"not null" json:"last_name"`
+	UserEmail string  `gorm:"not null,unique" json:"email"`
+	Password  string  `gorm:"not null" json:"password"`
+	Orders    []Order `gorm:"foreignKey:UserID" json:"orders"`
 }
 
 type Order struct {
@@ -44,7 +46,7 @@ type Order struct {
 
 	OrderItems []OrderItem `gorm:"foreignKey:OrderID" json:"order_items"`
 	CustomerID uuid.UUID   `json:"customer_id"`
-	UserEmail  string      `gorm:"not null" json:"user_email"`
+	UserID     string      `gorm:"not null" json:"user_id"`
 }
 
 type OrderItem struct {

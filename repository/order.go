@@ -20,7 +20,7 @@ func (s *Repository) GetOrder(_ context.Context, id uuid.UUID) (Order, error) {
 }
 
 type CreateOrderParams struct {
-	UserEmail             string    `json:"user_email"`
+	UserID                string    `json:"user_id"`
 	CustomerID            uuid.UUID `json:"customer_id"`
 	Status                string    `json:"status"`
 	ShippingDetails       string    `json:"shipping_details"`
@@ -47,7 +47,7 @@ func (s *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Orde
 		ShippingAddress:       arg.ShippingAddress,
 		Notes:                 arg.Notes,
 		CustomerID:            arg.CustomerID,
-		UserEmail:             arg.UserEmail,
+		UserID:                arg.UserID,
 	}
 	result := s.DB.Create(&order)
 	return order, result.Error
@@ -55,7 +55,7 @@ func (s *Repository) CreateOrder(_ context.Context, arg CreateOrderParams) (Orde
 
 type UpdateOrderParams struct {
 	ID                    uuid.UUID `json:"id"`
-	UserEmail             string    `json:"user_email"`
+	UserID                string    `json:"user_id"`
 	CustomerID            uuid.UUID `json:"customer_id"`
 	Status                string    `json:"status"`
 	ShippingDetails       string    `json:"shipping_details"`
@@ -71,11 +71,11 @@ type UpdateOrderParams struct {
 
 func (s *Repository) UpdateOrder(_ context.Context, arg UpdateOrderParams) (Order, error) {
 	var order Order
-	if err := s.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserEmail).Error; err != nil {
+	if err := s.DB.First(&order, "id = ? AND user_email = ?", arg.ID, arg.UserID).Error; err != nil {
 		return order, err
 	}
 
-	order.UserEmail = arg.UserEmail
+	order.UserID = arg.UserID
 	order.CustomerID = arg.CustomerID
 	order.Status = arg.Status
 	order.ShippingDetails = arg.ShippingDetails
