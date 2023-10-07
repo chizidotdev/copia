@@ -8,9 +8,9 @@ import (
 )
 
 func (s *Server) listOrders(ctx *gin.Context) {
-	user := s.getUser(ctx)
+	//user := s.getUser(ctx)
 
-	items, err := s.OrderService.ListOrders(ctx, user.Email)
+	items, err := s.OrderService.ListOrders(ctx, "")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
 		return

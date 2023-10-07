@@ -1,7 +1,6 @@
 package app
 
 import (
-	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/util"
 	"net/http"
 
@@ -23,10 +22,4 @@ func (s *Server) isAuth(ctx *gin.Context) {
 
 	ctx.Set("user", user)
 	ctx.Next()
-}
-
-func (s *Server) getUser(ctx *gin.Context) *dto.Claims {
-	user := ctx.MustGet("user").(*dto.Claims)
-
-	return user
 }
