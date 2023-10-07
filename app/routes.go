@@ -13,6 +13,7 @@ func createRoutes(server *Server) {
 		})
 	})
 
+	server.router.POST("/user", server.createUser)
 	server.router.GET("/login", server.login)
 	server.router.GET("/callback", server.callback)
 	server.router.GET("/user", server.getUser)
