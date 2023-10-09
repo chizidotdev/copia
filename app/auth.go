@@ -3,6 +3,7 @@ package app
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/util"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,23 @@ import (
 )
 
 func (s *Server) login(ctx *gin.Context) {
+	var req dto.LoginUserParams
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		return
+	}
+
+	user, err := s.UserService.GetUser(ctx, req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
+}
+
+func (s *Server) loginWithSSO(ctx *gin.Context) {
 	state, err := generateRandomState()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))

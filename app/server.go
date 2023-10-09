@@ -29,10 +29,6 @@ func NewServer(service *service.Service) *Server {
 	corsConfig(server)
 	createRoutes(server)
 
-	//if err := server.Store.ConnDB.Ping(); err != nil {
-	//	log.Fatal("Cannot connect to db:", err)
-	//}
-
 	return server
 }
 
