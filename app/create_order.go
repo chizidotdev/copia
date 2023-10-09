@@ -16,9 +16,9 @@ func (s *Server) createOrder(ctx *gin.Context) {
 		return
 	}
 
-	user := s.getUser(ctx)
+	//user := s.getUser(ctx)
 	item, err := s.OrderService.CreateOrder(ctx, dto.Order{
-		UserEmail:             user.Email,
+		//UserEmail:             user.Email,
 		CustomerID:            req.CustomerID,
 		Status:                req.Status,
 		ShippingDetails:       req.ShippingDetails,

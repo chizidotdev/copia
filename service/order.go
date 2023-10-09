@@ -31,7 +31,7 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 	txErr := o.Store.ExecTx(ctx, func(store *repository.Repository) error {
 		var err error
 		order, err = store.CreateOrder(ctx, repository.CreateOrderParams{
-			UserEmail:             req.UserEmail,
+			UserID:                req.UserID,
 			CustomerID:            req.CustomerID,
 			Status:                req.Status,
 			ShippingDetails:       req.ShippingDetails,
@@ -83,7 +83,7 @@ func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repo
 func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (repository.Order, error) {
 	order, err := o.Store.UpdateOrder(ctx, repository.UpdateOrderParams{
 		ID:                    req.ID,
-		UserEmail:             req.UserEmail,
+		UserID:                req.UserID,
 		CustomerID:            req.CustomerID,
 		Status:                req.Status,
 		ShippingDetails:       req.ShippingDetails,

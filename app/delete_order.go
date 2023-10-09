@@ -17,11 +17,11 @@ func (s *Server) deleteOrder(ctx *gin.Context) {
 		return
 	}
 
-	user := s.getUser(ctx)
+	//user := s.getUser(ctx)
 
 	arg := dto.DeleteOrderParams{
-		ID:        orderID,
-		UserEmail: user.Email,
+		ID: orderID,
+		//UserEmail: user.Email,
 	}
 
 	err = s.OrderService.DeleteOrder(ctx, arg)

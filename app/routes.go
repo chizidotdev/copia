@@ -13,6 +13,12 @@ func createRoutes(server *Server) {
 		})
 	})
 
+	server.router.POST("/user", server.createUser)
+	server.router.POST("/login", server.login)
+	server.router.GET("/login/google", server.loginWithSSO)
+	server.router.GET("/callback", server.callback)
+	server.router.GET("/user", server.getUser)
+
 	server.router.Use(server.isAuth)
 	// OrderService routes
 	orderRoutes := server.router.Group("/orders")
@@ -25,5 +31,5 @@ func createRoutes(server *Server) {
 	}
 
 	// ReportService routes
-	server.router.GET("/inventory", server.getReport)
+	server.router.GET("/report", server.getReport)
 }

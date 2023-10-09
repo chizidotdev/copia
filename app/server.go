@@ -2,7 +2,10 @@ package app
 
 import (
 	"github.com/chizidotdev/copia/service"
+	"github.com/chizidotdev/copia/util"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,6 +18,8 @@ type Server struct {
 // NewServer creates a new HTTP server and setup routing
 func NewServer(service *service.Service) *Server {
 	router := gin.Default()
+	store := cookie.NewStore([]byte(util.EnvVars.AuthSecret))
+	router.Use(sessions.Sessions("copia_auth", store))
 
 	server := &Server{
 		router:  router,
@@ -23,10 +28,6 @@ func NewServer(service *service.Service) *Server {
 
 	corsConfig(server)
 	createRoutes(server)
-
-	//if err := server.Store.ConnDB.Ping(); err != nil {
-	//	log.Fatal("Cannot connect to db:", err)
-	//}
 
 	return server
 }

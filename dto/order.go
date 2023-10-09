@@ -13,7 +13,7 @@ type DeleteOrderParams struct {
 
 type Order struct {
 	ID                    uuid.UUID   `json:"id"`
-	UserEmail             string      `json:"user_email" binding:"required"`
+	UserID                string      `json:"user_id" binding:"required"`
 	CustomerID            uuid.UUID   `json:"customer_id"`
 	Status                string      `json:"status" binding:"required"`
 	ShippingDetails       string      `json:"shipping_details" binding:"required"`
