@@ -13,7 +13,7 @@ func (s *Server) deleteOrder(ctx *gin.Context) {
 	idParam := ctx.Params.ByName("id")
 	orderID, err := uuid.Parse(idParam)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 
@@ -26,7 +26,7 @@ func (s *Server) deleteOrder(ctx *gin.Context) {
 
 	err = s.OrderService.DeleteOrder(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusInternalServerError, util.ErrorMessage(err.Error()))
 		return
 	}
 

@@ -14,13 +14,13 @@ func (s *Server) login(ctx *gin.Context) {
 	var req dto.LoginUserParams
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 
 	user, err := s.UserService.GetUser(ctx, req)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(util.ErrorResponse(err))
 		return
 	}
 
@@ -30,13 +30,13 @@ func (s *Server) login(ctx *gin.Context) {
 func (s *Server) loginWithSSO(ctx *gin.Context) {
 	state, err := generateRandomState()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(util.ErrorResponse(err))
 		return
 	}
 	session := sessions.Default(ctx)
 	session.Set("state", state)
 	if err := session.Save(); err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(util.ErrorResponse(err))
 		return
 	}
 
@@ -47,20 +47,20 @@ func (s *Server) loginWithSSO(ctx *gin.Context) {
 func (s *Server) callback(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	if ctx.Query("state") != session.Get("state") {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse("Invalid state parameter."))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage("Invalid state parameter."))
 		return
 	}
 
 	code := ctx.Query("code")
 	userProfile, err := s.AuthService.GetUserData(code)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, util.ErrorResponse("Failed to exchange an authorization code for a token."))
+		ctx.JSON(http.StatusUnauthorized, util.ErrorMessage("Failed to exchange an authorization code for a token."))
 		return
 	}
 
 	session.Set("profile", userProfile)
 	if err := session.Save(); err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(util.ErrorResponse(err))
 		return
 	}
 
@@ -71,7 +71,7 @@ func (s *Server) getUser(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	profile := session.Get("profile")
 	if profile == nil {
-		ctx.JSON(http.StatusUnauthorized, util.ErrorResponse("Unauthorized"))
+		ctx.JSON(http.StatusUnauthorized, util.ErrorMessage("Unauthorized"))
 		return
 	}
 
@@ -80,7 +80,7 @@ func (s *Server) getUser(ctx *gin.Context) {
 
 func (s *Server) isAuthenticated(ctx *gin.Context) {
 	if sessions.Default(ctx).Get("profile") == nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse("Unauthorized"))
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorMessage("Unauthorized"))
 	} else {
 		ctx.Next()
 	}

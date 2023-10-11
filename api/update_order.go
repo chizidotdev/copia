@@ -11,7 +11,7 @@ import (
 func (s *Server) updateOrder(ctx *gin.Context) {
 	var req dto.Order
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse("invalid request"))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage("invalid request"))
 		return
 	}
 
@@ -19,7 +19,7 @@ func (s *Server) updateOrder(ctx *gin.Context) {
 
 	item, err := s.OrderService.UpdateOrder(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 

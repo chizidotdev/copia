@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/chizidotdev/copia/app"
+	"github.com/chizidotdev/copia/api"
 	"github.com/chizidotdev/copia/repository"
 	"github.com/chizidotdev/copia/service"
 	"github.com/chizidotdev/copia/util"
@@ -21,7 +21,7 @@ func main() {
 
 	store := repository.NewRepository(conn)
 	newService := service.NewService(store)
-	server := app.NewServer(newService)
+	server := api.NewServer(newService)
 
 	port := util.EnvVars.PORT
 	if port == "" {

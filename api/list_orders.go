@@ -12,7 +12,7 @@ func (s *Server) listOrders(ctx *gin.Context) {
 
 	items, err := s.OrderService.ListOrders(ctx, "")
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusInternalServerError, util.ErrorMessage(err.Error()))
 		return
 	}
 

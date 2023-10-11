@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/repository"
 	"github.com/chizidotdev/copia/token_manager"
@@ -35,7 +37,7 @@ func NewUserService(store *repository.Repository) UserService {
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) (dto.UserResponse, error) {
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
-		return dto.UserResponse{}, err
+		return dto.UserResponse{}, util.ErrorInternal
 	}
 
 	user, err := u.Store.CreateUser(ctx, repository.CreateUserParams{
@@ -45,7 +47,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) 
 		Password:  hashedPassword,
 	})
 	if err != nil {
-		return dto.UserResponse{}, err
+		return dto.UserResponse{}, util.ErrorForbidden
 	}
 	return dto.UserResponse{
 		ID:        user.ID,
@@ -60,17 +62,20 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) 
 func (u *userService) GetUser(ctx context.Context, req dto.LoginUserParams) (dto.LoginUserResponse, error) {
 	user, err := u.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return dto.LoginUserResponse{}, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return dto.LoginUserResponse{}, util.ErrorNotFound
+		}
+		return dto.LoginUserResponse{}, util.ErrorInternal
 	}
 
 	err = util.ComparePassword(user.Password, req.Password)
 	if err != nil {
-		return dto.LoginUserResponse{}, err
+		return dto.LoginUserResponse{}, util.ErrorUnauthorized
 	}
 
 	accessToken, err := u.TokenManager.CreateToken(req.Email, time.Minute*15)
 	if err != nil {
-		return dto.LoginUserResponse{}, err
+		return dto.LoginUserResponse{}, util.ErrorInternal
 	}
 
 	return dto.LoginUserResponse{

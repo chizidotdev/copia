@@ -12,7 +12,7 @@ func (s *Server) createOrder(ctx *gin.Context) {
 	var req dto.Order
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 
@@ -33,7 +33,7 @@ func (s *Server) createOrder(ctx *gin.Context) {
 		OrderItems:            req.OrderItems,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 

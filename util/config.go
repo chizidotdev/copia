@@ -35,7 +35,7 @@ func LoadConfig() {
 	EnvVars.PORT = viper.GetString("PORT")
 
 	EnvVars.AuthSecret = viper.GetString("AUTH_SECRET")
-	EnvVars.AuthDomain = viper.GetString("AUTH0_DOMAIN")
+	EnvVars.AuthDomain = viper.GetString("AUTH_DOMAIN")
 	EnvVars.AuthCallbackURL = viper.GetString("AUTH_CALLBACK_URL")
 	EnvVars.GoogleClientID = viper.GetString("GOOGLE_CLIENT_ID")
 	EnvVars.GoogleClientSecret = viper.GetString("GOOGLE_CLIENT_SECRET")

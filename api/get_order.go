@@ -12,13 +12,13 @@ func (s *Server) getOrderByID(ctx *gin.Context) {
 	idParam := ctx.Params.ByName("id")
 	orderID, err := uuid.Parse(idParam)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
 		return
 	}
 
 	item, err := s.OrderService.GetOrderByID(ctx, orderID)
 	if err != nil {
-		ctx.JSON(http.StatusNotFound, util.ErrorResponse(err.Error()))
+		ctx.JSON(http.StatusNotFound, util.ErrorMessage(err.Error()))
 		return
 	}
 
