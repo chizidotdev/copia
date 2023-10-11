@@ -37,7 +37,7 @@ func NewUserService(store *repository.Repository) UserService {
 func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) (dto.UserResponse, error) {
 	hashedPassword, err := util.HashPassword(req.Password)
 	if err != nil {
-		return dto.UserResponse{}, util.ErrorInternal
+		return dto.UserResponse{}, util.Errorf(util.ErrorInternal, "Failed to hash password")
 	}
 
 	user, err := u.Store.CreateUser(ctx, repository.CreateUserParams{
@@ -47,7 +47,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) 
 		Password:  hashedPassword,
 	})
 	if err != nil {
-		return dto.UserResponse{}, util.ErrorForbidden
+		return dto.UserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create user")
 	}
 	return dto.UserResponse{
 		ID:        user.ID,
@@ -63,19 +63,19 @@ func (u *userService) GetUser(ctx context.Context, req dto.LoginUserParams) (dto
 	user, err := u.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return dto.LoginUserResponse{}, util.ErrorNotFound
+			return dto.LoginUserResponse{}, util.Errorf(util.ErrorNotFound, "User not found")
 		}
-		return dto.LoginUserResponse{}, util.ErrorInternal
+		return dto.LoginUserResponse{}, util.Errorf(util.ErrorInternal, "Failed to get user")
 	}
 
 	err = util.ComparePassword(user.Password, req.Password)
 	if err != nil {
-		return dto.LoginUserResponse{}, util.ErrorUnauthorized
+		return dto.LoginUserResponse{}, util.Errorf(util.ErrorUnauthorized, "Invalid password")
 	}
 
 	accessToken, err := u.TokenManager.CreateToken(req.Email, time.Minute*15)
 	if err != nil {
-		return dto.LoginUserResponse{}, util.ErrorInternal
+		return dto.LoginUserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create token")
 	}
 
 	return dto.LoginUserResponse{

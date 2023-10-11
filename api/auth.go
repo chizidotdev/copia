@@ -20,7 +20,7 @@ func (s *Server) login(ctx *gin.Context) {
 
 	user, err := s.UserService.GetUser(ctx, req)
 	if err != nil {
-		ctx.JSON(util.ErrorResponse(err))
+		ctx.JSON(errorResponse(err))
 		return
 	}
 
@@ -30,13 +30,13 @@ func (s *Server) login(ctx *gin.Context) {
 func (s *Server) loginWithSSO(ctx *gin.Context) {
 	state, err := generateRandomState()
 	if err != nil {
-		ctx.JSON(util.ErrorResponse(err))
+		ctx.JSON(errorResponse(err))
 		return
 	}
 	session := sessions.Default(ctx)
 	session.Set("state", state)
 	if err := session.Save(); err != nil {
-		ctx.JSON(util.ErrorResponse(err))
+		ctx.JSON(errorResponse(err))
 		return
 	}
 
@@ -60,7 +60,7 @@ func (s *Server) callback(ctx *gin.Context) {
 
 	session.Set("profile", userProfile)
 	if err := session.Save(); err != nil {
-		ctx.JSON(util.ErrorResponse(err))
+		ctx.JSON(errorResponse(err))
 		return
 	}
 
