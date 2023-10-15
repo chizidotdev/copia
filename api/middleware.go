@@ -1,22 +1,16 @@
 package api
 
 import (
+	"github.com/chizidotdev/copia/util"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
-func (s *Server) isAuth(ctx *gin.Context) {
-	//reqToken := ctx.Request.Header.Get("Authorization")
-	//if reqToken == "" {
-	//	ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse("Unauthorized"))
-	//	return
-	//}
-	//
-	//user, err := s.TokenManager.Parse(reqToken)
-	//if err != nil {
-	//	ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorResponse(err.Error()))
-	//	return
-	//}
-	//
-	//ctx.Set("user", user)
-	//ctx.Next()
+func (s *Server) isAuthenticated(ctx *gin.Context) {
+	if sessions.Default(ctx).Get("profile") == nil {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorMessage("Unauthorized"))
+	} else {
+		ctx.Next()
+	}
 }

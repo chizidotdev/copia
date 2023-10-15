@@ -17,7 +17,7 @@ func (s *Server) createUser(ctx *gin.Context) {
 
 	user, err := s.UserService.CreateUser(ctx, req)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, util.ErrorMessage(err.Error()))
+		ctx.JSON(errorResponse(err))
 		return
 	}
 

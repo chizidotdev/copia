@@ -28,6 +28,10 @@ type UserResponse struct {
 }
 
 type LoginUserResponse struct {
-	AccessToken string       `json:"access_token"`
-	User        UserResponse `json:"user"`
+	UserResponse
 }
+
+//type LoginUserResponse struct {
+//	AccessToken string       `json:"access_token"`
+//	User        UserResponse `json:"user"`
+//}

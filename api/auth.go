@@ -1,8 +1,7 @@
 package api
 
 import (
-	"crypto/rand"
-	"encoding/base64"
+	"encoding/gob"
 	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/util"
 	"github.com/gin-contrib/sessions"
@@ -24,11 +23,19 @@ func (s *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	gob.Register(dto.LoginUserResponse{})
+	session := sessions.Default(ctx)
+	session.Set("profile", user)
+	if err := session.Save(); err != nil {
+		ctx.JSON(errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Successfully logged in.")
 }
 
 func (s *Server) loginWithSSO(ctx *gin.Context) {
-	state, err := generateRandomState()
+	state, err := util.GenerateRandomState()
 	if err != nil {
 		ctx.JSON(errorResponse(err))
 		return
@@ -63,8 +70,11 @@ func (s *Server) callback(ctx *gin.Context) {
 		ctx.JSON(errorResponse(err))
 		return
 	}
+	// - create user with profile if not exist
+	// - create token
+	// - pass token as query params
 
-	ctx.Redirect(http.StatusTemporaryRedirect, util.EnvVars.AuthDomain)
+	ctx.Redirect(http.StatusTemporaryRedirect, util.EnvVars.AuthDomain+"/dashboard")
 }
 
 func (s *Server) getUser(ctx *gin.Context) {
@@ -78,22 +88,14 @@ func (s *Server) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, profile)
 }
 
-func (s *Server) isAuthenticated(ctx *gin.Context) {
-	if sessions.Default(ctx).Get("profile") == nil {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, util.ErrorMessage("Unauthorized"))
-	} else {
-		ctx.Next()
-	}
-}
-
-func generateRandomState() (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
+func (s *Server) logout(ctx *gin.Context) {
+	session := sessions.Default(ctx)
+	session.Clear()
+	session.Options(sessions.Options{MaxAge: -1})
+	if err := session.Save(); err != nil {
+		ctx.JSON(errorResponse(err))
+		return
 	}
 
-	state := base64.StdEncoding.EncodeToString(b)
-
-	return state, nil
+	ctx.JSON(http.StatusOK, "Successfully logged out.")
 }

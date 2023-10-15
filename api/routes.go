@@ -17,11 +17,13 @@ func createRoutes(server *Server) {
 	server.router.POST("/login", server.login)
 	server.router.GET("/login/google", server.loginWithSSO)
 	server.router.GET("/callback", server.callback)
+	server.router.GET("/logout", server.logout)
 	server.router.GET("/user", server.getUser)
 
-	server.router.Use(server.isAuth)
+	//server.router.Use(server.isAuthenticated)
 	// OrderService routes
 	orderRoutes := server.router.Group("/orders")
+	orderRoutes.Use(server.isAuthenticated)
 	{
 		orderRoutes.POST("", server.createOrder)
 		orderRoutes.GET("", server.listOrders)

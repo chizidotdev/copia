@@ -8,7 +8,7 @@ import (
 
 func errorResponse(err error) (code int, obj any) {
 	code = http.StatusInternalServerError
-	obj = "Something went wrong."
+	obj = err.Error()
 
 	var customErr *util.ErrResponse
 	if !errors.As(err, &customErr) {

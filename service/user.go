@@ -2,14 +2,11 @@ package service
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/repository"
 	"github.com/chizidotdev/copia/token_manager"
 	"github.com/chizidotdev/copia/util"
 	"log"
-	"time"
 )
 
 type UserService interface {
@@ -47,7 +44,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) 
 		Password:  hashedPassword,
 	})
 	if err != nil {
-		return dto.UserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create user")
+		return dto.UserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create user: "+err.Error())
 	}
 	return dto.UserResponse{
 		ID:        user.ID,
@@ -62,10 +59,7 @@ func (u *userService) CreateUser(ctx context.Context, req dto.CreateUserParams) 
 func (u *userService) GetUser(ctx context.Context, req dto.LoginUserParams) (dto.LoginUserResponse, error) {
 	user, err := u.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return dto.LoginUserResponse{}, util.Errorf(util.ErrorNotFound, "User not found")
-		}
-		return dto.LoginUserResponse{}, util.Errorf(util.ErrorInternal, "Failed to get user")
+		return dto.LoginUserResponse{}, util.Errorf(util.ErrorNotFound, "User not found")
 	}
 
 	err = util.ComparePassword(user.Password, req.Password)
@@ -73,14 +67,13 @@ func (u *userService) GetUser(ctx context.Context, req dto.LoginUserParams) (dto
 		return dto.LoginUserResponse{}, util.Errorf(util.ErrorUnauthorized, "Invalid password")
 	}
 
-	accessToken, err := u.TokenManager.CreateToken(req.Email, time.Minute*15)
-	if err != nil {
-		return dto.LoginUserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create token")
-	}
+	//accessToken, err := u.TokenManager.CreateToken(req.Email, time.Minute*15)
+	//if err != nil {
+	//	return dto.LoginUserResponse{}, util.Errorf(util.ErrorInternal, "Failed to create token")
+	//}
 
 	return dto.LoginUserResponse{
-		AccessToken: accessToken,
-		User: dto.UserResponse{
+		UserResponse: dto.UserResponse{
 			ID:        user.ID,
 			FirstName: user.FirstName,
 			LastName:  user.LastName,

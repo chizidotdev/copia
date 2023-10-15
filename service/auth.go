@@ -67,3 +67,12 @@ func (a *AuthService) GetUserData(code string) (UserData, error) {
 
 	return user, nil
 }
+
+func (a *AuthService) GoogleCallback(code string) (UserData, error) {
+	user, err := a.GetUserData(code)
+	if err != nil {
+		return UserData{}, util.Errorf(util.ErrorForbidden, "Failed to get user data")
+	}
+
+	return user, nil
+}
