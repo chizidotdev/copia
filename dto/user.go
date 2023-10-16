@@ -26,12 +26,3 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
-
-type LoginUserResponse struct {
-	UserResponse
-}
-
-//type LoginUserResponse struct {
-//	AccessToken string       `json:"access_token"`
-//	User        UserResponse `json:"user"`
-//}

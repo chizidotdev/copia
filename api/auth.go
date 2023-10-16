@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/gob"
 	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/util"
 	"github.com/gin-contrib/sessions"
@@ -23,7 +22,6 @@ func (s *Server) login(ctx *gin.Context) {
 		return
 	}
 
-	gob.Register(dto.LoginUserResponse{})
 	session := sessions.Default(ctx)
 	session.Set("profile", user)
 	if err := session.Save(); err != nil {
@@ -47,11 +45,12 @@ func (s *Server) loginWithSSO(ctx *gin.Context) {
 		return
 	}
 
-	url := s.AuthService.Config.AuthCodeURL(state)
+	googleAuthConfig := s.UserService.GetGoogleAuthConfig()
+	url := googleAuthConfig.AuthCodeURL(state)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func (s *Server) callback(ctx *gin.Context) {
+func (s *Server) ssoCallback(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	if ctx.Query("state") != session.Get("state") {
 		ctx.JSON(http.StatusBadRequest, util.ErrorMessage("Invalid state parameter."))
@@ -59,7 +58,7 @@ func (s *Server) callback(ctx *gin.Context) {
 	}
 
 	code := ctx.Query("code")
-	userProfile, err := s.AuthService.GetUserData(code)
+	userProfile, err := s.UserService.GoogleCallback(ctx, code)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, util.ErrorMessage("Failed to exchange an authorization code for a token."))
 		return
@@ -70,9 +69,6 @@ func (s *Server) callback(ctx *gin.Context) {
 		ctx.JSON(errorResponse(err))
 		return
 	}
-	// - create user with profile if not exist
-	// - create token
-	// - pass token as query params
 
 	ctx.Redirect(http.StatusTemporaryRedirect, util.EnvVars.AuthDomain+"/dashboard")
 }

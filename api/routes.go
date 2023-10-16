@@ -16,7 +16,7 @@ func createRoutes(server *Server) {
 	server.router.POST("/user", server.createUser)
 	server.router.POST("/login", server.login)
 	server.router.GET("/login/google", server.loginWithSSO)
-	server.router.GET("/callback", server.callback)
+	server.router.GET("/callback", server.ssoCallback)
 	server.router.GET("/logout", server.logout)
 	server.router.GET("/user", server.getUser)
 

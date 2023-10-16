@@ -29,6 +29,6 @@ func (e *ErrResponse) Error() string {
 // ErrorMessage
 //
 // Deprecated: use local package errorMessage instead.
-func ErrorMessage(message string) *ErrResponse {
-	return &ErrResponse{Message: message}
+func ErrorMessage(message string) string {
+	return message
 }

@@ -27,7 +27,8 @@ type User struct {
 	FirstName string  `gorm:"not null" json:"first_name"`
 	LastName  string  `gorm:"not null" json:"last_name"`
 	Email     string  `gorm:"not null;unique" json:"email"`
-	Password  string  `gorm:"not null" json:"password"`
+	Password  string  `json:"password"`
+	GoogleID  string  `gorm:"unique" json:"google_id"`
 	Orders    []Order `gorm:"foreignKey:UserID" json:"orders"`
 }
 
