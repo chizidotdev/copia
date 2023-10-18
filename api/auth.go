@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/chizidotdev/copia/dto"
 	"github.com/chizidotdev/copia/util"
 	"github.com/gin-contrib/sessions"
@@ -33,15 +34,16 @@ func (s *Server) login(ctx *gin.Context) {
 }
 
 func (s *Server) loginWithSSO(ctx *gin.Context) {
+	errRedirectURL := util.EnvVars.AuthDomain + "/u/login/error"
 	state, err := util.GenerateRandomState()
 	if err != nil {
-		ctx.JSON(errorResponse(err))
+		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
 		return
 	}
 	session := sessions.Default(ctx)
 	session.Set("state", state)
 	if err := session.Save(); err != nil {
-		ctx.JSON(errorResponse(err))
+		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
 		return
 	}
 
@@ -51,26 +53,29 @@ func (s *Server) loginWithSSO(ctx *gin.Context) {
 }
 
 func (s *Server) ssoCallback(ctx *gin.Context) {
+	errRedirectURL := util.EnvVars.AuthDomain + "/u/login/error"
+	successRedirectURL := util.EnvVars.AuthDomain + "/u/login/success"
+
 	session := sessions.Default(ctx)
 	if ctx.Query("state") != session.Get("state") {
-		ctx.JSON(http.StatusBadRequest, util.ErrorMessage("Invalid state parameter."))
+		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s?error=invalid_state", errRedirectURL))
 		return
 	}
 
 	code := ctx.Query("code")
 	userProfile, err := s.UserService.GoogleCallback(ctx, code)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, util.ErrorMessage("Failed to exchange an authorization code for a token."))
+		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s?error=failed_to_exchange", errRedirectURL))
 		return
 	}
 
 	session.Set("profile", userProfile)
 	if err := session.Save(); err != nil {
-		ctx.JSON(errorResponse(err))
+		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
 		return
 	}
 
-	ctx.Redirect(http.StatusTemporaryRedirect, util.EnvVars.AuthDomain+"/dashboard")
+	ctx.Redirect(http.StatusPermanentRedirect, successRedirectURL)
 }
 
 func (s *Server) getUser(ctx *gin.Context) {
