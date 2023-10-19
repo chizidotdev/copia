@@ -35,19 +35,13 @@ type User struct {
 type Order struct {
 	Base
 	Status                string    `gorm:"not null" json:"status"`
-	ShippingDetails       string    `gorm:"not null" json:"shipping_details"`
 	EstimatedDeliveryDate time.Time `gorm:"not null" json:"estimated_delivery_date"`
 	OrderDate             time.Time `gorm:"not null" json:"order_date"`
 	TotalAmount           float32   `gorm:"not null" json:"total_amount"`
-	PaymentStatus         string    `gorm:"not null" json:"payment_status"`
-	PaymentMethod         string    `gorm:"not null" json:"payment_method"`
-	BillingAddress        string    `gorm:"not null" json:"billing_address"`
-	ShippingAddress       string    `gorm:"not null" json:"shipping_address"`
-	Notes                 string    `gorm:"not null" json:"notes"`
 
 	OrderItems []OrderItem `gorm:"foreignKey:OrderID" json:"order_items"`
 	CustomerID uuid.UUID   `json:"customer_id"`
-	UserID     string      `gorm:"not null" json:"user_id"`
+	UserID     uuid.UUID   `gorm:"not null" json:"user_id"`
 }
 
 type OrderItem struct {
