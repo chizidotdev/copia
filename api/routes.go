@@ -18,7 +18,7 @@ func createRoutes(server *Server) {
 	server.router.GET("/login/google", server.loginWithSSO)
 	server.router.GET("/callback", server.ssoCallback)
 	server.router.GET("/logout", server.logout)
-	server.router.GET("/user", server.getUser)
+	server.router.GET("/user", server.isAuthenticated, server.getUser)
 
 	//server.router.Use(server.isAuthenticated)
 	// OrderService routes

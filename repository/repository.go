@@ -10,17 +10,21 @@ import (
 )
 
 type Queries interface {
-	ListOrders(ctx context.Context, userEmail string) ([]Order, error)
+	CreateUser(_ context.Context, arg CreateUserParams) (User, error)
+	UpsertUser(_ context.Context, arg CreateUserParams) (User, error)
+	GetUserByEmail(_ context.Context, email string) (User, error)
+
+	ListOrders(ctx context.Context, userID uuid.UUID) ([]Order, error)
 	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
 	DeleteOrder(ctx context.Context, arg DeleteOrderParams) error
 	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
 	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error)
 
-	ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
-	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
-	DeleteOrderItem(ctx context.Context, id uuid.UUID) error
-	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
-	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
+	//ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
+	//CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
+	//DeleteOrderItem(ctx context.Context, id uuid.UUID) error
+	//GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
+	//UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
 
 	// GetReports(ctx context.Context, userEmail string) (datastruct.ReportRow, error)
 }

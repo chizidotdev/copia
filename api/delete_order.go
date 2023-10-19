@@ -21,7 +21,7 @@ func (s *Server) deleteOrder(ctx *gin.Context) {
 
 	arg := dto.DeleteOrderParams{
 		ID: orderID,
-		//UserEmail: user.Email,
+		//UserID: user.Email,
 	}
 
 	err = s.OrderService.DeleteOrder(ctx, arg)

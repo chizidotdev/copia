@@ -9,7 +9,7 @@ import (
 )
 
 type OrderService interface {
-	ListOrders(ctx context.Context, userID string) ([]repository.Order, error)
+	ListOrders(ctx context.Context, userID uuid.UUID) ([]repository.Order, error)
 	CreateOrder(ctx context.Context, req dto.Order) (repository.Order, error)
 	UpdateOrder(ctx context.Context, req dto.Order) (repository.Order, error)
 	GetOrderByID(ctx context.Context, orderID uuid.UUID) (repository.Order, error)
@@ -34,15 +34,9 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 			UserID:                req.UserID,
 			CustomerID:            req.CustomerID,
 			Status:                req.Status,
-			ShippingDetails:       req.ShippingDetails,
 			EstimatedDeliveryDate: req.EstimatedDeliveryDate,
 			OrderDate:             req.OrderDate,
 			TotalAmount:           req.TotalAmount,
-			PaymentStatus:         req.PaymentStatus,
-			PaymentMethod:         req.PaymentMethod,
-			BillingAddress:        req.BillingAddress,
-			ShippingAddress:       req.ShippingAddress,
-			Notes:                 req.Notes,
 		})
 		if err != nil {
 			return err
@@ -71,8 +65,8 @@ func (o *orderService) CreateOrder(ctx context.Context, req dto.Order) (reposito
 	return order, nil
 }
 
-func (o *orderService) ListOrders(ctx context.Context, userEmail string) ([]repository.Order, error) {
-	orders, err := o.Store.ListOrders(ctx, userEmail)
+func (o *orderService) ListOrders(ctx context.Context, userID uuid.UUID) ([]repository.Order, error) {
+	orders, err := o.Store.ListOrders(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,15 +80,9 @@ func (o *orderService) UpdateOrder(ctx context.Context, req dto.Order) (reposito
 		UserID:                req.UserID,
 		CustomerID:            req.CustomerID,
 		Status:                req.Status,
-		ShippingDetails:       req.ShippingDetails,
 		EstimatedDeliveryDate: req.EstimatedDeliveryDate,
 		OrderDate:             req.OrderDate,
 		TotalAmount:           req.TotalAmount,
-		PaymentStatus:         req.PaymentStatus,
-		PaymentMethod:         req.PaymentMethod,
-		BillingAddress:        req.BillingAddress,
-		ShippingAddress:       req.ShippingAddress,
-		Notes:                 req.Notes,
 	})
 	if err != nil {
 		return repository.Order{}, err

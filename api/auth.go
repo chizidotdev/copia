@@ -78,17 +78,6 @@ func (s *Server) ssoCallback(ctx *gin.Context) {
 	ctx.Redirect(http.StatusPermanentRedirect, successRedirectURL)
 }
 
-func (s *Server) getUser(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-	profile := session.Get("profile")
-	if profile == nil {
-		ctx.JSON(http.StatusUnauthorized, util.ErrorMessage("Unauthorized"))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, profile)
-}
-
 func (s *Server) logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Clear()
@@ -100,3 +89,4 @@ func (s *Server) logout(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, "Successfully logged out.")
 }
+

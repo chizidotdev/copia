@@ -16,20 +16,14 @@ func (s *Server) createOrder(ctx *gin.Context) {
 		return
 	}
 
-	//user := s.getUser(ctx)
+	//user := s.getAuthenticatedUser(ctx)
 	item, err := s.OrderService.CreateOrder(ctx, dto.Order{
-		//UserEmail:             user.Email,
+		//UserID:                user.ID,
 		CustomerID:            req.CustomerID,
 		Status:                req.Status,
-		ShippingDetails:       req.ShippingDetails,
 		EstimatedDeliveryDate: req.EstimatedDeliveryDate,
 		OrderDate:             req.OrderDate,
 		TotalAmount:           req.TotalAmount,
-		PaymentStatus:         req.PaymentStatus,
-		PaymentMethod:         req.PaymentMethod,
-		BillingAddress:        req.BillingAddress,
-		ShippingAddress:       req.ShippingAddress,
-		Notes:                 req.Notes,
 		OrderItems:            req.OrderItems,
 	})
 	if err != nil {

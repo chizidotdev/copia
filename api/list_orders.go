@@ -1,20 +1,19 @@
 package api
 
 import (
-	"github.com/chizidotdev/copia/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func (s *Server) listOrders(ctx *gin.Context) {
-	//user := s.getUser(ctx)
+	user := s.getAuthenticatedUser(ctx)
 
-	items, err := s.OrderService.ListOrders(ctx, "")
+	orders, err := s.OrderService.ListOrders(ctx, user.ID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, util.ErrorMessage(err.Error()))
+		errorResponse(err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, items)
+	ctx.JSON(http.StatusOK, orders)
 }

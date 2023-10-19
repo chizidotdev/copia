@@ -7,24 +7,18 @@ import (
 )
 
 type DeleteOrderParams struct {
-	ID        uuid.UUID `json:"id"`
-	UserEmail string    `json:"user_email"`
+	ID     uuid.UUID `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 type Order struct {
 	ID                    uuid.UUID   `json:"id"`
-	UserID                string      `json:"user_id" binding:"required"`
+	UserID                uuid.UUID   `json:"user_id" binding:"required"`
 	CustomerID            uuid.UUID   `json:"customer_id"`
 	Status                string      `json:"status" binding:"required"`
-	ShippingDetails       string      `json:"shipping_details" binding:"required"`
 	EstimatedDeliveryDate time.Time   `json:"estimated_delivery_date" binding:"required"`
 	OrderDate             time.Time   `json:"order_date" binding:"required"`
 	TotalAmount           float32     `json:"total_amount" binding:"required"`
-	PaymentStatus         string      `json:"payment_status" binding:"required"`
-	PaymentMethod         string      `json:"payment_method" binding:"required"`
-	BillingAddress        string      `json:"billing_address" binding:"required"`
-	ShippingAddress       string      `json:"shipping_address" binding:"required"`
-	Notes                 string      `json:"notes" binding:"required"`
 	OrderItems            []OrderItem `json:"order_items"`
 }
 
