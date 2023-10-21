@@ -25,9 +25,9 @@ func createRoutes(server *Server) {
 	orderRoutes := server.router.Group("/orders")
 	orderRoutes.Use(server.isAuthenticated)
 	{
-		orderRoutes.POST("", server.createOrder)
+		orderRoutes.POST("", server.handleCreateOrder)
 		orderRoutes.GET("", server.listOrders)
-		orderRoutes.GET("/:id", server.getOrderByID)
+		orderRoutes.GET("/:id", server.handleGetOrderByID)
 		orderRoutes.PUT("/:id", server.updateOrder)
 		orderRoutes.DELETE("/:id", server.deleteOrder)
 	}

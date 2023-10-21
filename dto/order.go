@@ -13,12 +13,12 @@ type DeleteOrderParams struct {
 
 type Order struct {
 	ID                    uuid.UUID   `json:"id"`
-	UserID                uuid.UUID   `json:"user_id" binding:"required"`
+	UserID                uuid.UUID   `json:"user_id"`
 	CustomerID            uuid.UUID   `json:"customer_id"`
 	Status                string      `json:"status" binding:"required"`
 	EstimatedDeliveryDate time.Time   `json:"estimated_delivery_date" binding:"required"`
 	OrderDate             time.Time   `json:"order_date" binding:"required"`
-	TotalAmount           float32     `json:"total_amount" binding:"required"`
+	//TotalAmount           float32     `json:"total_amount" binding:"required"`
 	OrderItems            []OrderItem `json:"order_items"`
 }
 

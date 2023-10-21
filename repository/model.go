@@ -10,9 +10,9 @@ import (
 // Base contains common columns for all tables.
 type Base struct {
 	ID        uuid.UUID      `gorm:"primaryKey" json:"id"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // BeforeCreate will set a UUID rather than numeric ID.
@@ -26,7 +26,7 @@ type User struct {
 	Base
 	FirstName string  `gorm:"not null" json:"first_name"`
 	LastName  string  `gorm:"not null" json:"last_name"`
-	Email     string  `gorm:"not null;unique" json:"email"`
+	Email     string  `gorm:"not null;uniqueIndex" json:"email"`
 	Password  string  `json:"password"`
 	GoogleID  string  `gorm:"unique" json:"google_id"`
 	Orders    []Order `gorm:"foreignKey:UserID" json:"orders"`

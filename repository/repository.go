@@ -36,13 +36,7 @@ type Repository struct {
 }
 
 func NewRepository(db *gorm.DB) *Repository {
-	err := db.AutoMigrate(
-		&User{},
-		&Customer{},
-		&OrderItem{},
-		&Order{},
-		&Products{},
-	)
+	err := db.AutoMigrate(&User{}, &OrderItem{}, &Order{})
 	if err != nil {
 		log.Panic("Cannot migrate db:", err)
 	}
