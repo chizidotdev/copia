@@ -20,13 +20,13 @@ type Queries interface {
 	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
 	UpdateOrder(ctx context.Context, arg UpdateOrderParams) (Order, error)
 
-	//ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, error)
-	//CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
-	//DeleteOrderItem(ctx context.Context, id uuid.UUID) error
-	//GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
-	//UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error)
+	//ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]OrderItem, errors)
+	//CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, errors)
+	//DeleteOrderItem(ctx context.Context, id uuid.UUID) errors
+	//GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, errors)
+	//UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, errors)
 
-	// GetReports(ctx context.Context, userEmail string) (datastruct.ReportRow, error)
+	// GetReports(ctx context.Context, userEmail string) (datastruct.ReportRow, errors)
 }
 
 var _ Queries = (*Repository)(nil)
@@ -61,7 +61,7 @@ func (r *Repository) ExecTx(ctx context.Context, fn func(*Repository) error) err
 	err := fn(qtx)
 	if err != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			return fmt.Errorf("tx error: %v, rb error: %v", err, rbErr)
+			return fmt.Errorf("tx errors: %v, rb errors: %v", err, rbErr)
 		}
 		return err
 	}
