@@ -24,16 +24,6 @@ type UserRepository interface {
 	GetUserByEmail(ctx context.Context, email string) (core.User, error)
 }
 
-type Services interface {
-	CreateUser(ctx context.Context, req core.CreateUserRequest) (core.UserResponse, error)
-	GetUser(ctx context.Context, req core.LoginUserRequest) (core.UserResponse, error)
-	GoogleCallback(ctx context.Context, code string) (core.UserResponse, error)
-	GetGoogleAuthConfig() oauth2.Config
-	GenerateAuthState() (string, error)
-}
-
-var _ Services = (*UserService)(nil)
-
 type UserService struct {
 	Store  UserRepository
 	Config oauth2.Config

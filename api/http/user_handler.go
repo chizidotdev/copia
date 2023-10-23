@@ -22,7 +22,7 @@ func NewUserHandler(userService *usecases.UserService) *UserHandler {
 	}
 }
 
-func (u *UserHandler) CreateUser(ctx *gin.Context) {
+func (u *UserHandler) createUser(ctx *gin.Context) {
 	var req core.CreateUserRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -36,7 +36,7 @@ func (u *UserHandler) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, user)
+	ctx.JSON(http.StatusCreated, user)
 }
 
 func (u *UserHandler) login(ctx *gin.Context) {

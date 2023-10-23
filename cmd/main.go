@@ -21,7 +21,14 @@ func main() {
 
 	userRepo := adapters.NewUserRepository(conn)
 	userService := usecases.NewUserService(userRepo)
-	server := http.NewHTTPServer(userService)
+
+	orderRepo := adapters.NewOrderRepository(conn)
+	orderService := usecases.NewOrderService(orderRepo)
+
+	server := http.NewHTTPServer(
+		userService,
+		orderService,
+	)
 
 	port := config.EnvVars.PORT
 	if port == "" {
