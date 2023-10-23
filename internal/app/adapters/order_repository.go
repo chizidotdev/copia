@@ -6,6 +6,7 @@ import (
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"log"
 	"time"
 )
 
@@ -23,11 +24,11 @@ type Order struct {
 
 type OrderItem struct {
 	Base
-	OrderID   uuid.UUID `gorm:"not null" json:"order_id"`
-	ProductID uuid.UUID `gorm:"not null" json:"product_id"`
-	Quantity  int64     `gorm:"not null" json:"quantity"`
-	UnitPrice float32   `gorm:"not null" json:"unit_price"`
-	SubTotal  float32   `gorm:"not null" json:"sub_total"`
+	OrderID     uuid.UUID `gorm:"not null" json:"order_id"`
+	ProductName string    `gorm:"not null" json:"product_name"`
+	Quantity    int64     `gorm:"not null" json:"quantity"`
+	UnitPrice   float32   `gorm:"not null" json:"unit_price"`
+	SubTotal    float32   `gorm:"not null" json:"sub_total"`
 }
 
 var _ usecases.OrderRepository = (*OrderRepositoryImpl)(nil)
@@ -37,6 +38,10 @@ type OrderRepositoryImpl struct {
 }
 
 func NewOrderRepository(db *gorm.DB) *OrderRepositoryImpl {
+	err := db.AutoMigrate(&Order{}, &OrderItem{})
+	if err != nil {
+		log.Panic("Failed to migrate Order and OrderItem", err)
+	}
 	return &OrderRepositoryImpl{DB: db}
 }
 
@@ -69,11 +74,11 @@ func (r *OrderRepositoryImpl) CreateOrder(_ context.Context, arg core.Order) (co
 		orderItems := make([]OrderItem, len(arg.OrderItems))
 		for i, orderItem := range arg.OrderItems {
 			orderItems[i] = OrderItem{
-				OrderID:   order.ID,
-				ProductID: orderItem.ProductID,
-				Quantity:  orderItem.Quantity,
-				UnitPrice: orderItem.UnitPrice,
-				SubTotal:  orderItem.SubTotal,
+				OrderID:     order.ID,
+				ProductName: orderItem.ProductName,
+				Quantity:    orderItem.Quantity,
+				UnitPrice:   orderItem.UnitPrice,
+				SubTotal:    orderItem.SubTotal,
 			}
 		}
 
