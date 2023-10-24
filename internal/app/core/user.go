@@ -6,19 +6,19 @@ import (
 
 type User struct {
 	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
-	GoogleID  string    `json:"google_id"`
+	GoogleID  string    `json:"googleID"`
 }
 
 type CreateUserRequest struct {
-	FirstName       string `json:"first_name" binding:"required"`
-	LastName        string `json:"last_name" binding:"required"`
+	FirstName       string `json:"firstName" binding:"required"`
+	LastName        string `json:"lastName" binding:"required"`
 	Email           string `json:"email" binding:"required"`
 	Password        string `json:"password" binding:"required,min=6"`
-	ConfirmPassword string `json:"confirm_password" binding:"required,min=6,eqfield=Password"`
+	//ConfirmPassword string `json:"confirm_password" binding:"required,min=6,eqfield=Password"`
 }
 
 type LoginUserRequest struct {
@@ -28,7 +28,7 @@ type LoginUserRequest struct {
 
 type UserResponse struct {
 	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 }

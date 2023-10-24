@@ -64,7 +64,7 @@ func createRoutes(server *Server) {
 
 	// User routes
 	userHandler := NewUserHandler(server.UserService)
-	server.router.POST("/user", userHandler.createUser)
+	server.router.POST("/register", userHandler.createUser)
 	server.router.POST("/login", userHandler.login)
 	server.router.GET("/login/google", userHandler.loginWithSSO)
 	server.router.GET("/callback", userHandler.ssoCallback)

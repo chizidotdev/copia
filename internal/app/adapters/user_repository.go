@@ -2,10 +2,12 @@ package adapters
 
 import (
 	"context"
+	"errors"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"log"
 )
 
 var _ usecases.UserRepository = (*UserRepositoryImpl)(nil)
@@ -15,18 +17,22 @@ type UserRepositoryImpl struct {
 }
 
 func NewUserRepository(db *gorm.DB) *UserRepositoryImpl {
+	err := db.AutoMigrate(&User{})
+	if err != nil {
+		log.Panic("Failed to migrate User", err)
+	}
 	return &UserRepositoryImpl{DB: db}
 }
 
 type User struct {
 	Base
-	FirstName string `gorm:"not null" json:"first_name"`
-	LastName  string `gorm:"not null" json:"last_name"`
+	FirstName string `gorm:"not null" json:"firstName"`
+	LastName  string `gorm:"not null" json:"lastName"`
 	Email     string `gorm:"not null;uniqueIndex" json:"email"`
 	Password  string `json:"password"`
-	GoogleID  string `gorm:"unique" json:"google_id"`
+	GoogleID  string `json:"googleID"`
 
-	Orders    []Order `gorm:"foreignKey:UserID" json:"orders"`
+	Orders []Order `gorm:"foreignKey:UserID" json:"orders"`
 }
 
 func (r *UserRepositoryImpl) CreateUser(_ context.Context, arg core.User) (core.User, error) {
@@ -37,6 +43,9 @@ func (r *UserRepositoryImpl) CreateUser(_ context.Context, arg core.User) (core.
 		Password:  arg.Password,
 	}
 	err := r.DB.Create(&user).Error
+	if errors.Is(err, gorm.ErrDuplicatedKey) {
+		return core.User{}, errors.New("email already exists")
+	}
 	return core.User{
 		ID:        user.ID,
 		FirstName: user.FirstName,

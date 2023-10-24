@@ -14,7 +14,9 @@ import (
 func main() {
 	config.LoadConfig()
 
-	conn, err := gorm.Open(postgres.Open(config.EnvVars.DBSource), &gorm.Config{})
+	conn, err := gorm.Open(postgres.Open(config.EnvVars.DBSource), &gorm.Config{
+		TranslateError: true,
+	})
 	if err != nil {
 		log.Fatal("Cannot connect to db:", err)
 	}
