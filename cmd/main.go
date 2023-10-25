@@ -24,11 +24,15 @@ func main() {
 	userRepo := adapters.NewUserRepository(conn)
 	userService := usecases.NewUserService(userRepo)
 
+	productRepo := adapters.NewProductRepository(conn)
+	productService := usecases.NewProductService(productRepo)
+
 	orderRepo := adapters.NewOrderRepository(conn)
 	orderService := usecases.NewOrderService(orderRepo)
 
 	server := http.NewHTTPServer(
 		userService,
+		productService,
 		orderService,
 	)
 

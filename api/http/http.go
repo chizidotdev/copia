@@ -13,12 +13,14 @@ import (
 type Server struct {
 	router *gin.Engine
 	*usecases.UserService
+	*usecases.ProductService
 	*usecases.OrderService
 }
 
 // NewHTTPServer creates a new HTTP server and sets up routing
 func NewHTTPServer(
 	userService *usecases.UserService,
+	productService *usecases.ProductService,
 	orderService *usecases.OrderService,
 ) *Server {
 	router := gin.Default()
@@ -26,9 +28,10 @@ func NewHTTPServer(
 	router.Use(sessions.Sessions("copia_auth", store))
 
 	server := &Server{
-		router:      router,
-		UserService: userService,
-		OrderService: orderService,
+		router:         router,
+		UserService:    userService,
+		ProductService: productService,
+		OrderService:   orderService,
 	}
 
 	corsConfig(server)
@@ -70,6 +73,18 @@ func createRoutes(server *Server) {
 	server.router.GET("/callback", userHandler.ssoCallback)
 	server.router.GET("/logout", userHandler.logout)
 	server.router.GET("/user", middleware.IsAuthenticated, userHandler.getUser)
+
+	// Product routes
+	productHandler := NewProductHandler(server.ProductService)
+	productRoutes := server.router.Group("/products")
+	productRoutes.Use(middleware.IsAuthenticated)
+	{
+		productRoutes.POST("", productHandler.createProduct)
+		productRoutes.GET("", productHandler.listProducts)
+		productRoutes.PUT("/:id", productHandler.updateProduct)
+		productRoutes.GET("/:id", productHandler.getProduct)
+		productRoutes.DELETE("/:id", productHandler.deleteProduct)
+	}
 
 	// Order routes
 	orderHandler := NewOrderHandler(server.OrderService)
