@@ -35,6 +35,12 @@ type ProductImageRequest struct {
 	Image  string    `json:"image" binding:"required"`
 }
 
+type UpdateProductQuantityRequest struct {
+	ID          uuid.UUID `json:"ID"`
+	UserID      uuid.UUID `json:"userID"`
+	NewQuantity int       `json:"newQuantity" binding:"required"`
+}
+
 type DeleteProductRequest struct {
 	UserID uuid.UUID `json:"userID"`
 	ID     uuid.UUID `json:"ID"`

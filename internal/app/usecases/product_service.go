@@ -91,6 +91,22 @@ func (p *ProductService) UpdateProductImage(ctx context.Context, req core.Produc
 	return product, nil
 }
 
+func (p *ProductService) UpdateProductQuantity(ctx context.Context, req core.UpdateProductQuantityRequest) (core.Product, error) {
+	product, err := p.Store.GetProduct(ctx, req.ID)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorNotFound, "Product not found")
+	}
+
+	product.QuantityInStock += req.NewQuantity
+
+	product, err = p.Store.UpdateProduct(ctx, product)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to update product: "+err.Error())
+	}
+
+	return product, nil
+}
+
 func (p *ProductService) GetProductByID(ctx context.Context, productID uuid.UUID) (core.Product, error) {
 	product, err := p.Store.GetProduct(ctx, productID)
 	if err != nil {

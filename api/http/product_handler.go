@@ -154,3 +154,31 @@ func (p *ProductHandler) deleteProduct(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, "Successfully deleted product.")
 }
+
+func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
+	IDParam := ctx.Param("id")
+	productID, err := uuid.Parse(IDParam)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		return
+	}
+
+	var req core.UpdateProductQuantityRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		return
+	}
+
+	user := middleware.GetAuthenticatedUser(ctx)
+	product, err := p.ProductService.UpdateProductQuantity(ctx, core.UpdateProductQuantityRequest{
+		UserID:      user.ID,
+		ID:          productID,
+		NewQuantity: req.NewQuantity,
+	})
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, product)
+}
