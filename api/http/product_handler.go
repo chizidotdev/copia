@@ -182,3 +182,23 @@ func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, product)
 }
+
+func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
+	var req core.ProductSettings
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		return
+	}
+
+	user := middleware.GetAuthenticatedUser(ctx)
+	settings, err := p.ProductService.UpdateProductSettings(ctx, core.ProductSettings{
+		UserID:       user.ID,
+		ReorderPoint: req.ReorderPoint,
+	})
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, settings)
+}

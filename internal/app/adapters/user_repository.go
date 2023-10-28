@@ -32,7 +32,9 @@ type User struct {
 	Password  string `json:"password"`
 	GoogleID  string `json:"googleID"`
 
-	Orders []Order `gorm:"foreignKey:UserID" json:"orders"`
+	Orders          []Order         `json:"orders"`
+	Products        []Product       `json:"products"`
+	ProductSettings ProductSettings `json:"productSettings"`
 }
 
 func (r *UserRepositoryImpl) CreateUser(_ context.Context, arg core.User) (core.User, error) {

@@ -7,20 +7,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type ProductRepository interface {
-	ListProducts(ctx context.Context, userID uuid.UUID) ([]core.Product, error)
-	GetProduct(ctx context.Context, id uuid.UUID) (core.Product, error)
-	CreateProduct(ctx context.Context, arg core.Product) (core.Product, error)
-	UpdateProduct(ctx context.Context, arg core.Product) (core.Product, error)
-	DeleteProduct(ctx context.Context, arg core.DeleteProductRequest) (core.Product, error)
-}
 
 type ProductService struct {
-	Store   ProductRepository
+	Store   core.ProductRepository
 	s3Store core.FileUploadRepository
 }
 
-func NewProductService(productRepo ProductRepository, s3Store core.FileUploadRepository) *ProductService {
+func NewProductService(productRepo core.ProductRepository, s3Store core.FileUploadRepository) *ProductService {
 	return &ProductService{
 		Store: productRepo,
 		s3Store: s3Store,
@@ -136,4 +129,13 @@ func (p *ProductService) DeleteProduct(ctx context.Context, req core.DeleteProdu
 	}()
 
 	return nil
+}
+
+func (p *ProductService) UpdateProductSettings(ctx context.Context, req core.ProductSettings) (core.ProductSettings, error) {
+	settings, err := p.Store.UpdateProductSettings(ctx, req)
+	if err != nil {
+		return core.ProductSettings{}, errors.Errorf(errors.ErrorBadRequest, "Failed to update product settings: "+err.Error())
+	}
+
+	return settings, nil
 }
