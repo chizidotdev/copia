@@ -34,7 +34,7 @@ func (p *ProductHandler) createProduct(ctx *gin.Context) {
 		Description:     req.Description,
 		Price:           req.Price,
 		QuantityInStock: req.QuantityInStock,
-		ImageURL:        req.ImageURL,
+		Image:           req.Image,
 	})
 	if err != nil {
 		errorResponse(ctx, err)
@@ -68,6 +68,35 @@ func (p *ProductHandler) updateProduct(ctx *gin.Context) {
 		Price:           req.Price,
 		QuantityInStock: req.QuantityInStock,
 		ImageURL:        req.ImageURL,
+	})
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, product)
+}
+
+func (p *ProductHandler) updateProductImage(ctx *gin.Context) {
+	IDParam := ctx.Param("id")
+	productID, err := uuid.Parse(IDParam)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		return
+	}
+
+	var req core.ProductImageRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		return
+	}
+
+	user := middleware.GetAuthenticatedUser(ctx)
+	req.UserID = user.ID
+	product, err := p.ProductService.UpdateProductImage(ctx, core.ProductImageRequest{
+		ID:     productID,
+		UserID: user.ID,
+		Image:  req.Image,
 	})
 	if err != nil {
 		errorResponse(ctx, err)

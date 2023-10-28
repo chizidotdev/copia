@@ -12,21 +12,33 @@ type ProductRepository interface {
 	GetProduct(ctx context.Context, id uuid.UUID) (core.Product, error)
 	CreateProduct(ctx context.Context, arg core.Product) (core.Product, error)
 	UpdateProduct(ctx context.Context, arg core.Product) (core.Product, error)
-	DeleteProduct(ctx context.Context, arg core.DeleteProductRequest) error
+	DeleteProduct(ctx context.Context, arg core.DeleteProductRequest) (core.Product, error)
 }
 
 type ProductService struct {
-	Store ProductRepository
+	Store   ProductRepository
+	s3Store core.FileUploadRepository
 }
 
-func NewProductService(productRepo ProductRepository) *ProductService {
+func NewProductService(productRepo ProductRepository, s3Store core.FileUploadRepository) *ProductService {
 	return &ProductService{
 		Store: productRepo,
+		s3Store: s3Store,
 	}
 }
 
 func (p *ProductService) CreateProduct(ctx context.Context, req core.ProductRequest) (core.Product, error) {
-	sku := "VA-SU-123"
+	sku := core.GenerateSKU(req.UserID.String(), req.Name)
+
+	imageBytes, err := core.ParseImage(req.Image)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to open file: "+err.Error())
+	}
+
+	imageUrl, err := p.s3Store.UploadFile(sku, imageBytes)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to upload file: "+err.Error())
+	}
 
 	product, err := p.Store.CreateProduct(ctx, core.Product{
 		UserID:          req.UserID,
@@ -34,7 +46,7 @@ func (p *ProductService) CreateProduct(ctx context.Context, req core.ProductRequ
 		Description:     req.Description,
 		Price:           req.Price,
 		QuantityInStock: req.QuantityInStock,
-		ImageURL:        req.ImageURL,
+		ImageURL:        imageUrl,
 		SKU:             sku,
 	})
 	if err != nil {
@@ -46,6 +58,32 @@ func (p *ProductService) CreateProduct(ctx context.Context, req core.ProductRequ
 
 func (p *ProductService) UpdateProduct(ctx context.Context, req core.Product) (core.Product, error) {
 	product, err := p.Store.UpdateProduct(ctx, req)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to update product: "+err.Error())
+	}
+
+	return product, nil
+}
+
+func (p *ProductService) UpdateProductImage(ctx context.Context, req core.ProductImageRequest) (core.Product, error) {
+	product, err := p.Store.GetProduct(ctx, req.ID)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorNotFound, "Product not found")
+	}
+
+	imageBytes, err := core.ParseImage(req.Image)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to open file: "+err.Error())
+	}
+
+	imageUrl, err := p.s3Store.UploadFile(product.SKU, imageBytes)
+	if err != nil {
+		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to upload file: "+err.Error())
+	}
+
+	product.ImageURL = imageUrl
+
+	product, err = p.Store.UpdateProduct(ctx, product)
 	if err != nil {
 		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to update product: "+err.Error())
 	}
@@ -72,10 +110,14 @@ func (p *ProductService) ListProducts(ctx context.Context, userID uuid.UUID) ([]
 }
 
 func (p *ProductService) DeleteProduct(ctx context.Context, req core.DeleteProductRequest) error {
-	err := p.Store.DeleteProduct(ctx, req)
+	product, err := p.Store.DeleteProduct(ctx, req)
 	if err != nil {
 		return errors.Errorf(errors.ErrorBadRequest, "Failed to delete product: "+err.Error())
 	}
+
+	go func() {
+		_ = p.s3Store.DeleteFile(product.SKU)
+	}()
 
 	return nil
 }

@@ -72,7 +72,10 @@ func (p *ProductRepositoryImpl) CreateProduct(_ context.Context, arg core.Produc
 
 func (p *ProductRepositoryImpl) UpdateProduct(_ context.Context, arg core.Product) (core.Product, error) {
 	var product Product
-	result := p.DB.Model(&product).Clauses(clause.Returning{}).Where("id = ? AND user_id = ?", arg.ID, arg.UserID)
+	result := p.DB.Model(&product).
+		Clauses(clause.Returning{}).
+		Where("id = ? AND user_id = ?", arg.ID, arg.UserID).
+		First(&product)
 	if result.Error != nil {
 		return core.Product{}, result.Error
 	}
@@ -100,13 +103,22 @@ func (p *ProductRepositoryImpl) UpdateProduct(_ context.Context, arg core.Produc
 	}, nil
 }
 
-func (p *ProductRepositoryImpl) DeleteProduct(_ context.Context, arg core.DeleteProductRequest) error {
+func (p *ProductRepositoryImpl) DeleteProduct(_ context.Context, arg core.DeleteProductRequest) (core.Product, error) {
 	var product Product
 	result := p.DB.First(&product, "id = ? AND user_id = ?", arg.ID, arg.UserID)
 	if result.Error != nil {
-		return result.Error
+		return core.Product{}, result.Error
 	}
 	result.Delete(&product)
 
-	return result.Error
+	return core.Product{
+		ID:              product.ID,
+		UserID:          product.UserID,
+		Name:            product.Name,
+		Description:     product.Description,
+		Price:           product.Price,
+		QuantityInStock: product.QuantityInStock,
+		ImageURL:        product.ImageURL,
+		SKU:             product.SKU,
+	}, nil
 }

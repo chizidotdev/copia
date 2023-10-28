@@ -24,8 +24,9 @@ func main() {
 	userRepo := adapters.NewUserRepository(conn)
 	userService := usecases.NewUserService(userRepo)
 
+	s3Repo := adapters.NewS3Repository()
 	productRepo := adapters.NewProductRepository(conn)
-	productService := usecases.NewProductService(productRepo)
+	productService := usecases.NewProductService(productRepo, s3Repo)
 
 	orderRepo := adapters.NewOrderRepository(conn)
 	orderService := usecases.NewOrderService(orderRepo)
