@@ -81,10 +81,13 @@ func createRoutes(server *Server) {
 	{
 		productRoutes.POST("", productHandler.createProduct)
 		productRoutes.GET("", productHandler.listProducts)
-		productRoutes.PUT("/:id", productHandler.updateProduct)
-		productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
 		productRoutes.GET("/:id", productHandler.getProduct)
 		productRoutes.DELETE("/:id", productHandler.deleteProduct)
+
+		productRoutes.PUT("/:id", productHandler.updateProduct)
+		productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
+		productRoutes.PATCH("/:id/quantity", productHandler.updateProductQuantity)
+		productRoutes.PATCH("/:id/settings", productHandler.updateProductSettings)
 	}
 
 	// Order routes

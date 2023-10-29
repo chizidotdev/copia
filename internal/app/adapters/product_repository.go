@@ -3,7 +3,6 @@ package adapters
 import (
 	"context"
 	"github.com/chizidotdev/copia/internal/app/core"
-	"github.com/chizidotdev/copia/internal/app/usecases"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -12,7 +11,7 @@ import (
 
 type Product struct {
 	Base
-	UserID          uuid.UUID `gorm:"not null" json:"userID"`
+	UserID          uuid.UUID `gorm:"not null;uniqueIndex" json:"userID"`
 	Name            string    `gorm:"not null" json:"name"`
 	Description     string    `gorm:"not null" json:"description"`
 	Price           float32   `gorm:"not null" json:"price"`
@@ -21,14 +20,19 @@ type Product struct {
 	SKU             string    `gorm:"not null" json:"SKU"`
 }
 
-var _ usecases.ProductRepository = (*ProductRepositoryImpl)(nil)
+type ProductSettings struct {
+	UserID       uuid.UUID `gorm:"not null;uniqueIndex" json:"userID"`
+	ReorderPoint int       `gorm:"not null;default:0" json:"reorderPoint"`
+}
+
+var _ core.ProductRepository = (*ProductRepositoryImpl)(nil)
 
 type ProductRepositoryImpl struct {
 	DB *gorm.DB
 }
 
 func NewProductRepository(db *gorm.DB) *ProductRepositoryImpl {
-	err := db.AutoMigrate(&Product{})
+	err := db.AutoMigrate(&Product{}, &ProductSettings{})
 	if err != nil {
 		log.Panic("Failed to migrate Product", err)
 	}
@@ -121,4 +125,23 @@ func (p *ProductRepositoryImpl) DeleteProduct(_ context.Context, arg core.Delete
 		ImageURL:        product.ImageURL,
 		SKU:             product.SKU,
 	}, nil
+}
+
+func (p *ProductRepositoryImpl) UpdateProductSettings(_ context.Context, arg core.ProductSettings) (core.ProductSettings, error) {
+	productSettings := ProductSettings{
+		UserID:       arg.UserID,
+		ReorderPoint: arg.ReorderPoint,
+	}
+	result := p.DB.
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "user_id"}},
+			UpdateAll: true,
+		}).
+		Where("user_id = ?", arg.UserID).
+		Create(&productSettings)
+
+	return core.ProductSettings{
+		UserID:       productSettings.UserID,
+		ReorderPoint: productSettings.ReorderPoint,
+	}, result.Error
 }
