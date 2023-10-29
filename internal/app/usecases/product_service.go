@@ -23,12 +23,12 @@ func NewProductService(productRepo core.ProductRepository, s3Store core.FileUplo
 func (p *ProductService) CreateProduct(ctx context.Context, req core.ProductRequest) (core.Product, error) {
 	sku := core.GenerateSKU(req.UserID.String(), req.Name)
 
-	imageBytes, err := core.ParseImage(req.Image)
+	image, err := core.ParseImage(req.Image)
 	if err != nil {
 		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to open file: "+err.Error())
 	}
 
-	imageUrl, err := p.s3Store.UploadFile(sku, imageBytes)
+	imageUrl, err := p.s3Store.UploadFile(sku, image)
 	if err != nil {
 		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to upload file: "+err.Error())
 	}
@@ -64,12 +64,12 @@ func (p *ProductService) UpdateProductImage(ctx context.Context, req core.Produc
 		return core.Product{}, errors.Errorf(errors.ErrorNotFound, "Product not found")
 	}
 
-	imageBytes, err := core.ParseImage(req.Image)
+	image, err := core.ParseImage(req.Image)
 	if err != nil {
 		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to open file: "+err.Error())
 	}
 
-	imageUrl, err := p.s3Store.UploadFile(product.SKU, imageBytes)
+	imageUrl, err := p.s3Store.UploadFile(product.SKU, image)
 	if err != nil {
 		return core.Product{}, errors.Errorf(errors.ErrorBadRequest, "Failed to upload file: "+err.Error())
 	}

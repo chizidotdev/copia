@@ -2,10 +2,11 @@ package core
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
+	"io"
 	"math/rand"
+	"mime/multipart"
 	"strings"
 	"time"
 )
@@ -36,18 +37,18 @@ type ProductSettings struct {
 }
 
 type ProductRequest struct {
-	UserID          uuid.UUID `json:"userID"`
-	Name            string    `json:"name" binding:"required"`
-	Description     string    `json:"description"`
-	Price           float32   `json:"price" binding:"required"`
-	QuantityInStock int       `json:"quantityInStock" binding:"required"`
-	Image           string    `json:"image" binding:"required"`
+	UserID          uuid.UUID
+	Name            string                `form:"name" binding:"required"`
+	Description     string                `form:"description"`
+	Price           float32               `form:"price" binding:"required"`
+	QuantityInStock int                   `form:"quantityInStock" binding:"required"`
+	Image           *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 type ProductImageRequest struct {
-	ID     uuid.UUID `json:"ID"`
-	UserID uuid.UUID `json:"userID"`
-	Image  string    `json:"image" binding:"required"`
+	ID     uuid.UUID
+	UserID uuid.UUID
+	Image  *multipart.FileHeader `form:"image" binding:"required"`
 }
 
 type UpdateProductQuantityRequest struct {
@@ -76,8 +77,8 @@ func GenerateSKU(ID, Name string) string {
 	return fmt.Sprintf("%s-%s-%s", left, middle, right)
 }
 
-func ParseImage(imgString string) ([]byte, error) {
-	file := imgString[strings.IndexByte(imgString, ',')+1:]
+func ParseImage(image *multipart.FileHeader) (io.Reader, error) {
+	//file := imgString[strings.IndexByte(imgString, ',')+1:]
 
-	return base64.StdEncoding.DecodeString(file)
+	return image.Open()
 }

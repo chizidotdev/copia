@@ -1,7 +1,8 @@
 package core
 
+import "io"
 
 type FileUploadRepository interface {
-	UploadFile(key string, file []byte) (string, error)
+	UploadFile(key string, file io.Reader) (string, error)
 	DeleteFile(key string) error
 }
