@@ -22,7 +22,7 @@ func NewProductHandler(productService *usecases.ProductService) *ProductHandler 
 
 func (p *ProductHandler) createProduct(ctx *gin.Context) {
 	var req core.ProductRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
 		return
 	}
@@ -86,7 +86,7 @@ func (p *ProductHandler) updateProductImage(ctx *gin.Context) {
 	}
 
 	var req core.ProductImageRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
 		return
 	}

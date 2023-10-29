@@ -1,20 +1,21 @@
 package adapters
 
 import (
-	"bytes"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/chizidotdev/copia/internal/app/core"
+	"io"
 	"log"
 )
 
 var (
-	s3BucketName                               = "copia-server"
-	_            core.FileUploadRepository = (*S3Repository)(nil)
+	s3BucketName = "copia-server"
 )
+
+var _ core.FileUploadRepository = (*S3Repository)(nil)
 
 type S3Repository struct {
 	s3Client *s3.Client
@@ -33,15 +34,13 @@ func NewS3Repository() *S3Repository {
 	}
 }
 
-func (s *S3Repository) UploadFile(key string, file []byte) (string, error) {
+func (s *S3Repository) UploadFile(key string, file io.Reader) (string, error) {
 	uploader := manager.NewUploader(s.s3Client)
-
-	fileBody := bytes.NewReader(file)
 
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(s3BucketName),
 		Key:    aws.String(key),
-		Body:   fileBody,
+		Body:   file,
 		ACL:    "public-read",
 	})
 	if err != nil {
