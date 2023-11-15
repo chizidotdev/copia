@@ -22,6 +22,9 @@ type Config struct {
 	AWSRegion          string `mapstructure:"AWS_REGION"`
 	AWSAccessKey       string `mapstructure:"AWS_ACCESS_KEY_ID"`
 	AWSSecretAccessKey string `mapstructure:"AWS_SECRET_ACCESS_KEY"`
+
+	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDR"`
+	EmailSenderPassword string `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
 
 var EnvVars Config
@@ -48,4 +51,7 @@ func LoadConfig() {
 	EnvVars.AWSRegion = viper.GetString("AWS_REGION")
 	EnvVars.AWSAccessKey = viper.GetString("AWS_ACCESS_KEY_ID")
 	EnvVars.AWSSecretAccessKey = viper.GetString("AWS_SECRET_ACCESS_KEY")
+
+	EnvVars.EmailSenderAddress = viper.GetString("EMAIL_SENDER_ADDR")
+	EnvVars.EmailSenderPassword = viper.GetString("EMAIL_SENDER_PASSWORD")
 }

@@ -25,11 +25,12 @@ type UserRepository interface {
 }
 
 type UserService struct {
-	Store  UserRepository
-	Config oauth2.Config
+	Store      UserRepository
+	emailStore core.EmailRepository
+	Config     oauth2.Config
 }
 
-func NewUserService(userRepo UserRepository) *UserService {
+func NewUserService(userRepo UserRepository, emailRepo core.EmailRepository) *UserService {
 	gob.Register(core.UserResponse{})
 
 	oauthConfig := oauth2.Config{
@@ -44,8 +45,9 @@ func NewUserService(userRepo UserRepository) *UserService {
 	}
 
 	return &UserService{
-		Store:  userRepo,
-		Config: oauthConfig,
+		Store:      userRepo,
+		emailStore: emailRepo,
+		Config:     oauthConfig,
 	}
 }
 
@@ -113,6 +115,20 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 		LastName:  user.LastName,
 		Email:     user.Email,
 	}, nil
+}
+
+func (u *UserService) ForgotPassword(ctx context.Context, req core.ResetPasswordRequest) error {
+	user, err := u.Store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+	}
+
+	err = u.emailStore.SendEmail([]string{user.Email}, "Reset Password", "Reset Password")
+	if err != nil {
+		return errors.Errorf(errors.ErrorBadRequest, "Failed to send email")
+	}
+
+	return nil
 }
 
 type UserData struct {

@@ -71,7 +71,8 @@ func createRoutes(server *Server) {
 	server.router.POST("/login", userHandler.login)
 	server.router.GET("/login/google", userHandler.loginWithSSO)
 	server.router.GET("/callback", userHandler.ssoCallback)
-	server.router.GET("/logout", userHandler.logout)
+	server.router.POST("/logout", userHandler.logout)
+	server.router.POST("/forgot-password", userHandler.forgotPassword)
 	server.router.GET("/user", middleware.IsAuthenticated, userHandler.getUser)
 
 	// Product routes
