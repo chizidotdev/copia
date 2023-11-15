@@ -26,6 +26,10 @@ type LoginUserRequest struct {
 	Password string `json:"password" binding:"required,min=6"`
 }
 
+type ResetPasswordRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
 type UserResponse struct {
 	ID        uuid.UUID `json:"id"`
 	FirstName string    `json:"firstName"`

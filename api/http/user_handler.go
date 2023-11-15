@@ -124,3 +124,20 @@ func (u *UserHandler) getUser(ctx *gin.Context) {
 	user := middleware.GetAuthenticatedUser(ctx)
 	ctx.JSON(http.StatusOK, user)
 }
+
+func (u *UserHandler) forgotPassword(ctx *gin.Context) {
+	var req core.ResetPasswordRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		return
+	}
+
+	err = u.UserService.ForgotPassword(ctx, req)
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Successfully sent reset password email.")
+}

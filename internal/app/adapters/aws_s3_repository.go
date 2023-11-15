@@ -15,13 +15,11 @@ var (
 	s3BucketName = "copia-server"
 )
 
-var _ core.FileUploadRepository = (*S3Repository)(nil)
-
 type S3Repository struct {
 	s3Client *s3.Client
 }
 
-func NewS3Repository() *S3Repository {
+func NewS3Repository() core.FileUploadRepository {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatalf("error loading config, %v", err)
