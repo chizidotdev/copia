@@ -13,13 +13,10 @@ dropdb:
 test:
 	go test -v ./...
 
-server:
-	go run main.go
-
-www:
-	npm --prefix client run dev
+http:
+	air
 
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/chizidotdev/copia/db/sqlc Store
 
-.PHONY: build postgres createdb dropdb test mock
+.PHONY: build postgres createdb dropdb test mock http

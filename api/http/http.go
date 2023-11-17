@@ -88,7 +88,10 @@ func createRoutes(server *Server) {
 		productRoutes.PUT("/:id", productHandler.updateProduct)
 		productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
 		productRoutes.PATCH("/:id/quantity", productHandler.updateProductQuantity)
-		productRoutes.PATCH("/:id/settings", productHandler.updateProductSettings)
+
+		// Product settings routes
+		productRoutes.GET("/settings", productHandler.updateProductSettings)
+		productRoutes.PUT("/settings", productHandler.updateProductSettings)
 	}
 
 	// Order routes

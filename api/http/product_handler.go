@@ -1,13 +1,14 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/chizidotdev/copia/api/http/middleware"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"github.com/chizidotdev/copia/pkg/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"net/http"
 )
 
 type ProductHandler struct {
@@ -195,6 +196,23 @@ func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
 		UserID:       user.ID,
 		ReorderPoint: req.ReorderPoint,
 	})
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, settings)
+}
+
+func (p *ProductHandler) getProductSettings(ctx *gin.Context) {
+	var req core.ProductSettings
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		return
+	}
+
+	user := middleware.GetAuthenticatedUser(ctx)
+	settings, err := p.ProductService.GetProductSettings(ctx, user.ID)
 	if err != nil {
 		errorResponse(ctx, err)
 		return

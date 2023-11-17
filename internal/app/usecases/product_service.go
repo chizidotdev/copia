@@ -2,11 +2,11 @@ package usecases
 
 import (
 	"context"
+
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/pkg/errors"
 	"github.com/google/uuid"
 )
-
 
 type ProductService struct {
 	Store   core.ProductRepository
@@ -15,7 +15,7 @@ type ProductService struct {
 
 func NewProductService(productRepo core.ProductRepository, s3Store core.FileUploadRepository) *ProductService {
 	return &ProductService{
-		Store: productRepo,
+		Store:   productRepo,
 		s3Store: s3Store,
 	}
 }
@@ -135,6 +135,15 @@ func (p *ProductService) UpdateProductSettings(ctx context.Context, req core.Pro
 	settings, err := p.Store.UpdateProductSettings(ctx, req)
 	if err != nil {
 		return core.ProductSettings{}, errors.Errorf(errors.ErrorBadRequest, "Failed to update product settings: "+err.Error())
+	}
+
+	return settings, nil
+}
+
+func (p *ProductService) GetProductSettings(ctx context.Context, userID uuid.UUID) (core.ProductSettings, error) {
+	settings, err := p.Store.GetProductSettings(ctx, userID)
+	if err != nil {
+		return core.ProductSettings{}, errors.Errorf(errors.ErrorNotFound, "Product settings not found: "+err.Error())
 	}
 
 	return settings, nil

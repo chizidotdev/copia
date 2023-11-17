@@ -3,12 +3,13 @@ package core
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"math/rand"
 	"mime/multipart"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type ProductRepository interface {
@@ -18,6 +19,7 @@ type ProductRepository interface {
 	UpdateProduct(ctx context.Context, arg Product) (Product, error)
 	DeleteProduct(ctx context.Context, arg DeleteProductRequest) (Product, error)
 	UpdateProductSettings(ctx context.Context, arg ProductSettings) (ProductSettings, error)
+	GetProductSettings(ctx context.Context, userID uuid.UUID) (ProductSettings, error)
 }
 
 type Product struct {

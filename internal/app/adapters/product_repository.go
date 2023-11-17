@@ -2,11 +2,12 @@ package adapters
 
 import (
 	"context"
+	"log"
+
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"log"
 )
 
 type Product struct {
@@ -140,6 +141,15 @@ func (p *ProductRepositoryImpl) UpdateProductSettings(_ context.Context, arg cor
 		Where("user_id = ?", arg.UserID).
 		Create(&productSettings)
 
+	return core.ProductSettings{
+		UserID:       productSettings.UserID,
+		ReorderPoint: productSettings.ReorderPoint,
+	}, result.Error
+}
+
+func (p *ProductRepositoryImpl) GetProductSettings(_ context.Context, userID uuid.UUID) (core.ProductSettings, error) {
+	var productSettings ProductSettings
+	result := p.DB.First(&productSettings, "user_id = ?", userID)
 	return core.ProductSettings{
 		UserID:       productSettings.UserID,
 		ReorderPoint: productSettings.ReorderPoint,
