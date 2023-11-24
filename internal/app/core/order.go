@@ -14,7 +14,7 @@ type Order struct {
 	EstimatedDeliveryDate time.Time   `json:"estimated_delivery_date"`
 	OrderDate             time.Time   `json:"order_date"`
 	TotalAmount           float32     `json:"total_amount"`
-	OrderItems            []OrderItem `json:"order_item"`
+	OrderItems            []OrderItem `json:"order_items"`
 }
 
 type OrderRequest struct {
@@ -26,13 +26,23 @@ type OrderRequest struct {
 	OrderItems            []OrderItem `json:"order_items" binding:"required"`
 }
 
+type UpdateOrderRequest struct {
+	OrderRequest
+	ID uuid.UUID
+}
+
+type UpdateOrderStatusRequest struct {
+	ID     uuid.UUID
+	Status string `json:"status" binding:"required"`
+}
+
 type DeleteOrderRequest struct {
-	ID     uuid.UUID `json:"id"`
+	ID     uuid.UUID
 	UserID uuid.UUID `json:"user_id"`
 }
 
 type OrderItem struct {
-	ID          uuid.UUID `json:"id"`
+	ID          uuid.UUID
 	OrderID     uuid.UUID `json:"order_id" binding:"required"`
 	ProductName string    `json:"product_name" binding:"required"`
 	Quantity    int64     `json:"quantity" binding:"required"`
@@ -41,6 +51,11 @@ type OrderItem struct {
 }
 
 type UpdateOrderItemsRequest struct {
-	OrderID    uuid.UUID   `json:"order_id" binding:"required"`
-	OrderItems []OrderItem `json:"order_items"`
+	OrderID    uuid.UUID
+	OrderItems []OrderItem `json:"order_items" binding:"required"`
+}
+
+type DeleteOrderItemsRequest struct {
+	OrderID    uuid.UUID
+	OrderItems []OrderItem `json:"order_items" binding:"required"`
 }

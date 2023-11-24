@@ -2,12 +2,14 @@ package adapters
 
 import (
 	"context"
+	"log"
+	"time"
+
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"log"
-	"time"
+	"gorm.io/gorm/clause"
 )
 
 type Order struct {
@@ -99,7 +101,108 @@ func (r *OrderRepositoryImpl) CreateOrder(_ context.Context, arg core.Order) (co
 	}, err
 }
 
+func (r *OrderRepositoryImpl) UpdateOrder(_ context.Context, arg core.Order) (core.Order, error) {
+	var order Order
+	result := r.DB.Model(&order).
+		Clauses(clause.Returning{}).
+		Where("id = ? AND user_id = ?", arg.ID, arg.UserID).
+		First(&order)
+	if result.Error != nil {
+		return core.Order{}, result.Error
+	}
+
+	err := result.Updates(Order{
+		Status:                arg.Status,
+		EstimatedDeliveryDate: arg.EstimatedDeliveryDate,
+		OrderDate:             arg.OrderDate,
+		TotalAmount:           arg.TotalAmount,
+		CustomerID:            arg.CustomerID,
+		UserID:                arg.UserID,
+	}).Error
+
+	return core.Order{
+		ID:                    order.ID,
+		Status:                order.Status,
+		EstimatedDeliveryDate: order.EstimatedDeliveryDate,
+		OrderDate:             order.OrderDate,
+		TotalAmount:           order.TotalAmount,
+		CustomerID:            order.CustomerID,
+		UserID:                order.UserID,
+	}, err
+}
+
+func (r *OrderRepositoryImpl) UpdateOrderStatus(
+	_ context.Context,
+	arg core.UpdateOrderStatusRequest,
+) (core.Order, error) {
+	var order Order
+	result := r.DB.Model(&order).Clauses(clause.Returning{}).Where("id = ?", arg.ID).First(&order)
+	if result.Error != nil {
+		return core.Order{}, result.Error
+	}
+
+	err := result.Update("status", arg.Status).Error
+	if err != nil {
+		return core.Order{}, err
+	}
+
+	return core.Order{
+		ID:                    order.ID,
+		Status:                order.Status,
+		EstimatedDeliveryDate: order.EstimatedDeliveryDate,
+		OrderDate:             order.OrderDate,
+		TotalAmount:           order.TotalAmount,
+		CustomerID:            order.CustomerID,
+		UserID:                order.UserID,
+	}, nil
+}
+
 func (r *OrderRepositoryImpl) DeleteOrder(_ context.Context, arg core.DeleteOrderRequest) error {
 	result := r.DB.Delete(&Order{}, "id = ? AND user_id = ?", arg.ID, arg.UserID)
 	return result.Error
+}
+
+func (r *OrderRepositoryImpl) UpdateOrderItems(_ context.Context, arg core.UpdateOrderItemsRequest) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+		for _, orderItem := range arg.OrderItems {
+			err := tx.Model(&OrderItem{}).
+				Where("id = ? AND order_id = ?", orderItem.ID, arg.OrderID).
+				Updates(OrderItem{
+					OrderID:     arg.OrderID,
+					ProductName: orderItem.ProductName,
+					Quantity:    orderItem.Quantity,
+					UnitPrice:   orderItem.UnitPrice,
+					SubTotal:    orderItem.SubTotal,
+				}).Error
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (r *OrderRepositoryImpl) DeleteOrderItems(_ context.Context, arg core.DeleteOrderItemsRequest) error {
+	err := r.DB.Transaction(func(tx *gorm.DB) error {
+		for _, orderItem := range arg.OrderItems {
+			err := tx.Delete(&OrderItem{}, "id = ? AND order_id = ?", orderItem.ID, arg.OrderID).Error
+
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return err
 }

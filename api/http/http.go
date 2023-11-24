@@ -103,6 +103,13 @@ func createRoutes(server *Server) {
 		orderRoutes.GET("", orderHandler.listOrders)
 		orderRoutes.GET("/:id", orderHandler.getOrder)
 		orderRoutes.DELETE("/:id", orderHandler.deleteOrder)
+
+		orderRoutes.PUT("/:id", orderHandler.updateOrder)
+		orderRoutes.PATCH("/:id/status", orderHandler.updateOrderStatus)
+
+		// Order items routes
+		orderRoutes.PUT("/:id/items", orderHandler.updateOrderItems)
+		orderRoutes.DELETE("/:id/items", orderHandler.deleteOrderItems)
 	}
 
 	// ReportService routes
