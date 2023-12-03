@@ -87,5 +87,6 @@ func (r *UserRepositoryImpl) GetUserByEmail(_ context.Context, email string) (co
 		LastName:  user.LastName,
 		Email:     user.Email,
 		Password:  user.Password,
+		GoogleID:  user.GoogleID,
 	}, err
 }

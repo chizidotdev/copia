@@ -89,6 +89,8 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 		return core.UserResponse{}, errors.Errorf(errors.ErrorBadRequest, "Failed to create User: "+err.Error())
 	}
 
+	// TODO: Use a message queue to create product settings
+
 	return core.UserResponse{
 		ID:        user.ID,
 		FirstName: user.FirstName,
@@ -100,13 +102,19 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (core.UserResponse, error) {
 	user, err := u.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, "Invalid credentials. User Email not found")
+		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, "Invalid credentials.")
 	}
 
-	log.Println(user)
+	if user.GoogleID != "" {
+		return core.UserResponse{}, errors.Errorf(
+			errors.ErrorUnauthorized,
+			"Looks like you signed up with Google. Please login with Google",
+		)
+	}
+
 	err = comparePassword(user.Password, req.Password)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, err.Error())
+		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, "Invalid credentials.")
 	}
 
 	return core.UserResponse{
