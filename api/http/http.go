@@ -67,14 +67,17 @@ func createRoutes(server *Server) {
 
 	// User routes
 	userHandler := NewUserHandler(server.UserService)
+	server.router.GET("/user", middleware.IsAuthenticated, userHandler.getUser)
 	server.router.POST("/register", userHandler.createUser)
 	server.router.POST("/login", userHandler.login)
 	server.router.GET("/login/google", userHandler.loginWithSSO)
 	server.router.GET("/callback", userHandler.ssoCallback)
 	server.router.POST("/logout", userHandler.logout)
+
+	server.router.POST("/send-verification-email", userHandler.sendVerificationEmail)
+	server.router.POST("/verify-email", userHandler.verifyEmail)
 	server.router.POST("/reset-password", userHandler.resetPassword)
 	server.router.POST("/change-password", userHandler.changePassword)
-	server.router.GET("/user", middleware.IsAuthenticated, userHandler.getUser)
 
 	// Product routes
 	productHandler := NewProductHandler(server.ProductService)

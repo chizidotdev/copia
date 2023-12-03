@@ -79,6 +79,37 @@ func comparePassword(hashedPassword, password string) error {
 	return nil
 }
 
+func (u *UserService) sendEmailVerificationEmail(user core.User) {
+	tokenDuration := time.Hour * 24
+	token, err := u.tokenManager.CreateToken(user.Email, tokenDuration)
+	if err != nil {
+		log.Println("Failed to create token: " + err.Error())
+		return
+	}
+
+	// TODO: Use a message queue to send email
+	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "verify-email", token)
+	emailBody := fmt.Sprintf(`
+			<p>Hi %s,</p>
+			<p>Click the link below to verify your email.</p>
+			<p><a href="%s">Verify Email</a></p>
+			<p>This link will expire in 24 hours.</p>
+			<br />
+			<p>If you did not create an account, please ignore this email.</p>
+			<p>Thanks,</p>
+			<p>Copia Team.</p>
+		`, user.FirstName, url)
+
+	err = u.emailStore.SendEmail(
+		[]string{user.Email},
+		"Verify Email",
+		emailBody,
+	)
+	if err != nil {
+		log.Println("Failed to send email: " + err.Error())
+	}
+}
+
 func (u *UserService) GetGoogleAuthConfig() oauth2.Config {
 	return u.Config
 }
@@ -98,6 +129,8 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 	if err != nil {
 		return core.UserResponse{}, errors.Errorf(errors.ErrorBadRequest, "Failed to create User: "+err.Error())
 	}
+
+	go u.sendEmailVerificationEmail(user)
 
 	// TODO: Use a message queue to create product settings
 
@@ -135,10 +168,74 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 	}, nil
 }
 
+func (u *UserService) SendVerificationEmail(ctx context.Context, email string) error {
+	user, err := u.Store.GetUserByEmail(ctx, email)
+	if err != nil {
+		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+	}
+
+	if user.EmailVerified == true {
+		return errors.Errorf(errors.ErrorBadRequest, "Email already verified.")
+	}
+
+	go u.sendEmailVerificationEmail(user)
+
+	return nil
+}
+
+func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailRequest) error {
+	payload, err := u.tokenManager.VerifyToken(req.Token)
+	if err != nil {
+		return errors.Errorf(errors.ErrorUnauthorized, "Token is invalid")
+	}
+	if err := payload.Valid(); err != nil {
+		return errors.Errorf(errors.ErrorUnauthorized, "Token expired")
+	}
+
+	user, err := u.Store.GetUserByEmail(ctx, payload.Email)
+	if err != nil {
+		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+	}
+
+	_, err = u.Store.UpdateUser(ctx, core.User{
+		Email:         user.Email,
+		EmailVerified: true,
+	})
+	if err != nil {
+		return errors.Errorf(errors.ErrorInternal, "Failed to update user")
+	}
+
+	go func() {
+		emailBody := fmt.Sprintf(`
+			<p>Hi %s,</p>
+			<p>Your Copia email has been verified successfully.</p>
+			<br />
+			<p>Thanks,</p>
+			<p>Copia Team.</p>
+		`, user.FirstName)
+
+		err = u.emailStore.SendEmail(
+			[]string{user.Email},
+			"Email Verified",
+			emailBody,
+		)
+		if err != nil {
+			log.Println("Failed to send email: " + err.Error())
+		}
+	}()
+
+	return nil
+
+}
+
 func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
 		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+	}
+
+	if user.EmailVerified == false {
+		return errors.Errorf(errors.ErrorBadRequest, "Email not verified.")
 	}
 
 	tokenDuration := time.Minute * 15
@@ -152,13 +249,12 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 		<p>Hi %s,</p>
 		<p>Click the link below to reset your password.</p>
 		<p><a href="%s">Reset Password</a></p>
-		<p>This link will expire at %s</p>
+		<p>This link will expire in 15minutes.</p>
 		<br />
 		<p>If you did not request a password reset, please ignore this email.</p>
 		<p>Thanks,</p>
 		<p>Copia Team.</p>
-	`, user.FirstName, url, tokenDuration)
-	log.Println("email", emailBody)
+	`, user.FirstName, url)
 
 	err = u.emailStore.SendEmail(
 		[]string{user.Email},
@@ -215,11 +311,12 @@ func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.Use
 	}
 
 	userProfile, err := u.Store.UpsertUser(ctx, core.User{
-		FirstName: user.GivenName,
-		LastName:  user.FamilyName,
-		Email:     user.Email,
-		Password:  "",
-		GoogleID:  user.Id,
+		FirstName:     user.GivenName,
+		LastName:      user.FamilyName,
+		Email:         user.Email,
+		EmailVerified: user.VerifiedEmail,
+		Password:      "",
+		GoogleID:      user.Id,
 	})
 	if err != nil {
 		return core.UserResponse{}, errors.Errorf(errors.ErrorInternal, "Failed to create new Store")

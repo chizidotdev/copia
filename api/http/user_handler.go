@@ -125,6 +125,42 @@ func (u *UserHandler) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
+func (u *UserHandler) sendVerificationEmail(ctx *gin.Context) {
+	var req struct {
+		Email string `json:"email" binding:"required,email"`
+	}
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		return
+	}
+
+	err = u.UserService.SendVerificationEmail(ctx, req.Email)
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Verification email sent.")
+}
+
+func (u *UserHandler) verifyEmail(ctx *gin.Context) {
+	var req core.VerifyEmailRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		return
+	}
+
+	err = u.UserService.VerifyEmail(ctx, req)
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Email verification successful.")
+}
+
 func (u *UserHandler) resetPassword(ctx *gin.Context) {
 	var req core.ResetPasswordRequest
 	err := ctx.ShouldBindJSON(&req)
