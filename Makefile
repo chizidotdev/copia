@@ -14,7 +14,7 @@ test:
 	go test -v ./...
 
 server:
-	go run main.go
+	air
 
 www:
 	npm --prefix client run dev

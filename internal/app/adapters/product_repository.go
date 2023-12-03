@@ -127,6 +127,15 @@ func (p *ProductRepositoryImpl) DeleteProduct(_ context.Context, arg core.Delete
 	}, nil
 }
 
+func (p *ProductRepositoryImpl) GetProductSettings(_ context.Context, userID uuid.UUID) (core.ProductSettings, error) {
+	var productSettings ProductSettings
+	result := p.DB.First(&productSettings, "user_id = ?", userID)
+	return core.ProductSettings{
+		UserID:       productSettings.UserID,
+		ReorderPoint: productSettings.ReorderPoint,
+	}, result.Error
+}
+
 func (p *ProductRepositoryImpl) UpdateProductSettings(_ context.Context, arg core.ProductSettings) (core.ProductSettings, error) {
 	productSettings := ProductSettings{
 		UserID:       arg.UserID,

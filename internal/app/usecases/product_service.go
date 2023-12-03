@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type ProductService struct {
 	Store   core.ProductRepository
 	s3Store core.FileUploadRepository
@@ -15,7 +14,7 @@ type ProductService struct {
 
 func NewProductService(productRepo core.ProductRepository, s3Store core.FileUploadRepository) *ProductService {
 	return &ProductService{
-		Store: productRepo,
+		Store:   productRepo,
 		s3Store: s3Store,
 	}
 }
@@ -129,6 +128,15 @@ func (p *ProductService) DeleteProduct(ctx context.Context, req core.DeleteProdu
 	}()
 
 	return nil
+}
+
+func (p *ProductService) GetProductSettings(ctx context.Context, userID uuid.UUID) (core.ProductSettings, error) {
+	settings, err := p.Store.GetProductSettings(ctx, userID)
+	if err != nil {
+		return core.ProductSettings{}, errors.Errorf(errors.ErrorNotFound, "Product settings not found")
+	}
+
+	return settings, nil
 }
 
 func (p *ProductService) UpdateProductSettings(ctx context.Context, req core.ProductSettings) (core.ProductSettings, error) {

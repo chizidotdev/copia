@@ -183,6 +183,18 @@ func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, product)
 }
 
+func (p *ProductHandler) getProductSettings(ctx *gin.Context) {
+	user := middleware.GetAuthenticatedUser(ctx)
+	settings, err := p.ProductService.GetProductSettings(ctx, user.ID)
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, settings)
+
+}
+
 func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
 	var req core.ProductSettings
 	if err := ctx.ShouldBindJSON(&req); err != nil {

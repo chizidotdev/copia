@@ -17,6 +17,7 @@ type ProductRepository interface {
 	CreateProduct(ctx context.Context, arg Product) (Product, error)
 	UpdateProduct(ctx context.Context, arg Product) (Product, error)
 	DeleteProduct(ctx context.Context, arg DeleteProductRequest) (Product, error)
+	GetProductSettings(ctx context.Context, userID uuid.UUID) (ProductSettings, error)
 	UpdateProductSettings(ctx context.Context, arg ProductSettings) (ProductSettings, error)
 }
 

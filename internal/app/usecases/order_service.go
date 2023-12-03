@@ -48,7 +48,7 @@ func (o *OrderService) CreateOrder(ctx context.Context, req core.OrderRequest) (
 func (o *OrderService) ListOrders(ctx context.Context, userID uuid.UUID) ([]core.Order, error) {
 	orders, err := o.Store.ListOrders(ctx, userID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Errorf(errors.ErrorBadRequest, "Unable to get orders")
 	}
 
 	return orders, nil
