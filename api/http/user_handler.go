@@ -60,7 +60,7 @@ func (u *UserHandler) login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Successfully logged in.")
+	ctx.JSON(http.StatusOK, "Login successful.")
 }
 
 func (u *UserHandler) loginWithSSO(ctx *gin.Context) {
@@ -117,7 +117,7 @@ func (u *UserHandler) logout(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Successfully logged out.")
+	ctx.JSON(http.StatusOK, "Log out successful.")
 }
 
 func (u *UserHandler) getUser(ctx *gin.Context) {
@@ -125,7 +125,7 @@ func (u *UserHandler) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, user)
 }
 
-func (u *UserHandler) forgotPassword(ctx *gin.Context) {
+func (u *UserHandler) resetPassword(ctx *gin.Context) {
 	var req core.ResetPasswordRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
@@ -133,11 +133,28 @@ func (u *UserHandler) forgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	err = u.UserService.ForgotPassword(ctx, req)
+	err = u.UserService.ResetPassword(ctx, req.Email)
 	if err != nil {
 		errorResponse(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Successfully sent reset password email.")
+	ctx.JSON(http.StatusOK, "Password reset email sent.")
+}
+
+func (u *UserHandler) changePassword(ctx *gin.Context) {
+	var req core.ChangePasswordRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		return
+	}
+
+	err = u.UserService.ChangePassword(ctx, req)
+	if err != nil {
+		errorResponse(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Password changed successfully.")
 }

@@ -10,24 +10,28 @@ import (
 	"github.com/chizidotdev/copia/config"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/pkg/errors"
+	"github.com/chizidotdev/copia/token_manager"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, arg core.User) (core.User, error)
 	UpsertUser(ctx context.Context, arg core.User) (core.User, error)
+	UpdateUser(ctx context.Context, arg core.User) (core.User, error)
 	GetUserByEmail(ctx context.Context, email string) (core.User, error)
 }
 
 type UserService struct {
-	Store      UserRepository
-	emailStore core.EmailRepository
-	Config     oauth2.Config
+	Store        UserRepository
+	emailStore   core.EmailRepository
+	tokenManager token_manager.TokenManager
+	Config       oauth2.Config
 }
 
 func NewUserService(userRepo UserRepository, emailRepo core.EmailRepository) *UserService {
@@ -44,10 +48,16 @@ func NewUserService(userRepo UserRepository, emailRepo core.EmailRepository) *Us
 		},
 	}
 
+	tokenManager, err := token_manager.NewJWTTokenManager(config.EnvVars.AuthSecret)
+	if err != nil {
+		log.Fatal("Error initializing JWT token manager")
+	}
+
 	return &UserService{
-		Store:      userRepo,
-		emailStore: emailRepo,
-		Config:     oauthConfig,
+		Store:        userRepo,
+		emailStore:   emailRepo,
+		Config:       oauthConfig,
+		tokenManager: tokenManager,
 	}
 }
 
@@ -125,15 +135,63 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 	}, nil
 }
 
-func (u *UserService) ForgotPassword(ctx context.Context, req core.ResetPasswordRequest) error {
-	user, err := u.Store.GetUserByEmail(ctx, req.Email)
+func (u *UserService) ResetPassword(ctx context.Context, email string) error {
+	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
 		return errors.Errorf(errors.ErrorBadRequest, "User not found")
 	}
 
-	err = u.emailStore.SendEmail([]string{user.Email}, "Reset Password", "Reset Password")
+	tokenDuration := time.Minute * 15
+	token, err := u.tokenManager.CreateToken(email, tokenDuration)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "Failed to send email")
+		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
+	}
+
+	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "change-password", token)
+	emailBody := fmt.Sprintf(`
+		<p>Hi %s,</p>
+		<p>Click the link below to reset your password.</p>
+		<p><a href="%s">Reset Password</a></p>
+		<p>This link will expire at %s</p>
+		<br />
+		<p>If you did not request a password reset, please ignore this email.</p>
+		<p>Thanks,</p>
+		<p>Copia Team.</p>
+	`, user.FirstName, url, tokenDuration)
+	log.Println("email", emailBody)
+
+	err = u.emailStore.SendEmail(
+		[]string{user.Email},
+		"Reset Password",
+		emailBody,
+	)
+	if err != nil {
+		return errors.Errorf(errors.ErrorInternal, "Failed to send email: "+err.Error())
+	}
+
+	return nil
+}
+
+func (u *UserService) ChangePassword(ctx context.Context, req core.ChangePasswordRequest) error {
+	payload, err := u.tokenManager.VerifyToken(req.Token)
+	if err != nil {
+		return errors.Errorf(errors.ErrorUnauthorized, "Token is invalid")
+	}
+	if err := payload.Valid(); err != nil {
+		return errors.Errorf(errors.ErrorUnauthorized, "Token expired")
+	}
+
+	hashedPassword, err := hashPassword(req.Password)
+	if err != nil {
+		return errors.Errorf(errors.ErrorInternal, "Failed to hash password")
+	}
+
+	_, err = u.Store.UpdateUser(ctx, core.User{
+		Email:    payload.Email,
+		Password: hashedPassword,
+	})
+	if err != nil {
+		return errors.Errorf(errors.ErrorInternal, "Failed to update password")
 	}
 
 	return nil

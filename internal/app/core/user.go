@@ -14,11 +14,10 @@ type User struct {
 }
 
 type CreateUserRequest struct {
-	FirstName       string `json:"firstName" binding:"required"`
-	LastName        string `json:"lastName" binding:"required"`
-	Email           string `json:"email" binding:"required"`
-	Password        string `json:"password" binding:"required,min=6"`
-	//ConfirmPassword string `json:"confirm_password" binding:"required,min=6,eqfield=Password"`
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required,min=6"`
 }
 
 type LoginUserRequest struct {
@@ -28,6 +27,11 @@ type LoginUserRequest struct {
 
 type ResetPasswordRequest struct {
 	Email string `json:"email" binding:"required"`
+}
+
+type ChangePasswordRequest struct {
+	Token    string `json:"token" binding:"required"`
+	Password string `json:"password" binding:"required,min=6"`
 }
 
 type UserResponse struct {

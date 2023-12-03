@@ -78,6 +78,23 @@ func (r *UserRepositoryImpl) UpsertUser(_ context.Context, arg core.User) (core.
 	}, result.Error
 }
 
+func (r *UserRepositoryImpl) UpdateUser(_ context.Context, arg core.User) (core.User, error) {
+	user := User{
+		FirstName: arg.FirstName,
+		LastName:  arg.LastName,
+		Email:     arg.Email,
+		Password:  arg.Password,
+	}
+	err := r.DB.Model(&User{}).Where("email = ?", arg.Email).Updates(&user).Error
+	return core.User{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Password:  user.Password,
+	}, err
+}
+
 func (r *UserRepositoryImpl) GetUserByEmail(_ context.Context, email string) (core.User, error) {
 	var user User
 	err := r.DB.Where("email = ?", email).First(&user).Error
