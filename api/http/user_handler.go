@@ -105,7 +105,6 @@ func (u *UserHandler) ssoCallback(ctx *gin.Context) {
 		return
 	}
 
-	ctx.SetCookie("copia_profile", "testing cookie profile", 3600, "/", "copia.aidmedium.com", false, true)
 	ctx.Redirect(http.StatusPermanentRedirect, successRedirectURL)
 }
 

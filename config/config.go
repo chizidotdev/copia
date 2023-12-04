@@ -13,6 +13,7 @@ type Config struct {
 	DBSource string `mapstructure:"DB_SOURCE"`
 	PORT     string `mapstructure:"PORT"`
 
+	CookieDomain       string `mapstructure:"COOKIE_DOMAIN"`
 	AuthSecret         string `mapstructure:"AUTH_SECRET"`
 	AuthDomain         string `mapstructure:"AUTH_DOMAIN"`
 	AuthCallbackURL    string `mapstructure:"AUTH_CALLBACK_URL"`
@@ -42,6 +43,7 @@ func LoadConfig() {
 	EnvVars.DBSource = viper.GetString("DB_SOURCE")
 	EnvVars.PORT = viper.GetString("PORT")
 
+	EnvVars.CookieDomain = viper.GetString("COOKIE_DOMAIN")
 	EnvVars.AuthSecret = viper.GetString("AUTH_SECRET")
 	EnvVars.AuthDomain = viper.GetString("AUTH_DOMAIN")
 	EnvVars.AuthCallbackURL = viper.GetString("AUTH_CALLBACK_URL")

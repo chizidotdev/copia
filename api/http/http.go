@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 type Server struct {
@@ -25,6 +26,14 @@ func NewHTTPServer(
 ) *Server {
 	router := gin.Default()
 	store := cookie.NewStore([]byte(config.EnvVars.AuthSecret))
+	store.Options(sessions.Options{
+		MaxAge:   86400 * 30, // 30 days
+		Secure:   false,
+		HttpOnly: true,
+		Domain:   config.EnvVars.CookieDomain,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+	})
 	router.Use(sessions.Sessions("copia_auth", store))
 
 	server := &Server{
