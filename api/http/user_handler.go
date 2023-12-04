@@ -83,7 +83,7 @@ func (u *UserHandler) loginWithSSO(ctx *gin.Context) {
 }
 
 func (u *UserHandler) ssoCallback(ctx *gin.Context) {
-	errRedirectURL := config.EnvVars.AuthDomain + "/u/login/errors"
+	errRedirectURL := config.EnvVars.AuthDomain + "/u/login/error"
 	successRedirectURL := config.EnvVars.AuthDomain + "/u/login/success"
 
 	session := sessions.Default(ctx)
@@ -105,6 +105,7 @@ func (u *UserHandler) ssoCallback(ctx *gin.Context) {
 		return
 	}
 
+	ctx.SetCookie("copia_profile", "testing cookie profile", 3600, "/", "copia.aidmedium.com", false, true)
 	ctx.Redirect(http.StatusPermanentRedirect, successRedirectURL)
 }
 
