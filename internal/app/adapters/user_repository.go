@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"context"
-	"errors"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"gorm.io/gorm"
@@ -46,9 +45,9 @@ func (r *UserRepositoryImpl) CreateUser(_ context.Context, arg core.User) (core.
 		Password:  arg.Password,
 	}
 	err := r.DB.Create(&user).Error
-	if errors.Is(err, gorm.ErrDuplicatedKey) {
-		return core.User{}, errors.New("email already exists")
-	}
+	//if errors.Is(err, gorm.ErrDuplicatedKey) {
+	//	return core.User{}, errors.New("email already exists")
+	//}
 	return core.User{
 		ID:        user.ID,
 		FirstName: user.FirstName,
