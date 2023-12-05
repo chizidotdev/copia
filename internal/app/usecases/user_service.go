@@ -88,7 +88,7 @@ func (u *UserService) sendEmailVerificationEmail(user core.User) {
 	}
 
 	// TODO: Use a message queue to send email
-	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "verify-email", token)
+	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "u/verify-email", token)
 	emailBody := fmt.Sprintf(`
 			<p>Hi %s,</p>
 			<p>Click the link below to verify your email.</p>
@@ -237,6 +237,9 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 	if user.EmailVerified == false {
 		return errors.Errorf(errors.ErrorBadRequest, "Email not verified.")
 	}
+	if user.GoogleID != "" {
+		return errors.Errorf(errors.ErrorBadRequest, "Looks like you signed up with Google. Please login with Google")
+	}
 
 	tokenDuration := time.Minute * 15
 	token, err := u.tokenManager.CreateToken(email, tokenDuration)
@@ -244,7 +247,7 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
 	}
 
-	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "change-password", token)
+	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "u/change-password", token)
 	emailBody := fmt.Sprintf(`
 		<p>Hi %s,</p>
 		<p>Click the link below to reset your password.</p>
@@ -308,6 +311,16 @@ func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.Use
 	user, err := u.getGoogleUserData(code)
 	if err != nil {
 		return core.UserResponse{}, errors.Errorf(errors.ErrorForbidden, "Failed to get Store data")
+	}
+
+	userExists, err := u.Store.GetUserByEmail(ctx, user.Email)
+	if err == nil {
+		if userExists.GoogleID == "" {
+			return core.UserResponse{}, errors.Errorf(
+				errors.ErrorForbidden,
+				"Looks like you signed up with email and password. Please login with email and password",
+			)
+		}
 	}
 
 	userProfile, err := u.Store.UpsertUser(ctx, core.User{

@@ -4,6 +4,7 @@ import (
 	errors2 "errors"
 	"github.com/chizidotdev/copia/pkg/errors"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"regexp"
 )
@@ -12,6 +13,7 @@ func errorResponse(ctx *gin.Context, err error) {
 	code := http.StatusInternalServerError
 	obj := err.Error()
 
+	log.Println(obj)
 	var customErr *errors.ErrResponse
 	if !errors2.As(err, &customErr) {
 		re := regexp.MustCompile(`not found.?`)

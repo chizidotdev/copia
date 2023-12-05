@@ -100,11 +100,12 @@ func (r *UserRepositoryImpl) GetUserByEmail(_ context.Context, email string) (co
 	var user User
 	err := r.DB.Where("email = ?", email).First(&user).Error
 	return core.User{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  user.Password,
-		GoogleID:  user.GoogleID,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Password:      user.Password,
+		GoogleID:      user.GoogleID,
 	}, err
 }
