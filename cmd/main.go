@@ -21,13 +21,15 @@ func main() {
 		log.Fatal("Cannot connect to db:", err)
 	}
 
+	redisStore := adapters.NewRedisClient()
+
 	emailRepo := adapters.NewGmailSender(
 		"Copia",
 		config.EnvVars.EmailSenderAddress,
 		config.EnvVars.EmailSenderPassword,
 	)
 	userRepo := adapters.NewUserRepository(conn)
-	userService := usecases.NewUserService(userRepo, emailRepo)
+	userService := usecases.NewUserService(userRepo, emailRepo, redisStore)
 
 	s3Repo := adapters.NewS3Repository()
 	productRepo := adapters.NewProductRepository(conn)

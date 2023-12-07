@@ -10,7 +10,6 @@ import (
 	"github.com/chizidotdev/copia/config"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/chizidotdev/copia/pkg/errors"
-	"github.com/chizidotdev/copia/token_manager"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -20,21 +19,18 @@ import (
 	"time"
 )
 
-type UserRepository interface {
-	CreateUser(ctx context.Context, arg core.User) (core.User, error)
-	UpsertUser(ctx context.Context, arg core.User) (core.User, error)
-	UpdateUser(ctx context.Context, arg core.User) (core.User, error)
-	GetUserByEmail(ctx context.Context, email string) (core.User, error)
-}
-
 type UserService struct {
-	Store        UserRepository
-	emailStore   core.EmailRepository
-	tokenManager token_manager.TokenManager
-	Config       oauth2.Config
+	Store      core.UserRepository
+	emailStore core.EmailRepository
+	redisStore core.RedisRepository
+	Config     oauth2.Config
 }
 
-func NewUserService(userRepo UserRepository, emailRepo core.EmailRepository) *UserService {
+func NewUserService(
+	userRepo core.UserRepository,
+	emailRepo core.EmailRepository,
+	redisRepo core.RedisRepository,
+) *UserService {
 	gob.Register(core.UserResponse{})
 
 	oauthConfig := oauth2.Config{
@@ -48,16 +44,11 @@ func NewUserService(userRepo UserRepository, emailRepo core.EmailRepository) *Us
 		},
 	}
 
-	tokenManager, err := token_manager.NewJWTTokenManager(config.EnvVars.AuthSecret)
-	if err != nil {
-		log.Fatal("Error initializing JWT token manager")
-	}
-
 	return &UserService{
-		Store:        userRepo,
-		emailStore:   emailRepo,
-		Config:       oauthConfig,
-		tokenManager: tokenManager,
+		Store:      userRepo,
+		emailStore: emailRepo,
+		redisStore: redisRepo,
+		Config:     oauthConfig,
 	}
 }
 
@@ -79,13 +70,13 @@ func comparePassword(hashedPassword, password string) error {
 	return nil
 }
 
-func (u *UserService) sendEmailVerificationEmail(user core.User) {
+func (u *UserService) sendEmailVerificationEmail(ctx context.Context, user core.User) error {
 	tokenDuration := time.Hour * 24
-	token, err := u.tokenManager.CreateToken(user.Email, tokenDuration)
+	token, err := u.GenerateAuthState()
 	if err != nil {
-		log.Println("Failed to create token: " + err.Error())
-		return
+		return err
 	}
+	err = u.redisStore.Set(ctx, token, user.Email, tokenDuration)
 
 	// TODO: Use a message queue to send email
 	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "u/verify-email", token)
@@ -100,14 +91,13 @@ func (u *UserService) sendEmailVerificationEmail(user core.User) {
 			<p>Copia Team.</p>
 		`, user.FirstName, url)
 
-	err = u.emailStore.SendEmail(
-		[]string{user.Email},
-		"Verify Email",
-		emailBody,
-	)
+	log.Printf("Email verification link: %s", url)
+	err = u.emailStore.SendEmail([]string{user.Email}, "Verify Email", emailBody)
 	if err != nil {
-		log.Println("Failed to send email: " + err.Error())
+		return err
 	}
+
+	return nil
 }
 
 func (u *UserService) GetGoogleAuthConfig() oauth2.Config {
@@ -130,15 +120,21 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 		return core.UserResponse{}, errors.Errorf(errors.ErrorBadRequest, "Failed to create User: "+err.Error())
 	}
 
-	go u.sendEmailVerificationEmail(user)
+	go func() {
+		emailErr := u.sendEmailVerificationEmail(ctx, user)
+		if emailErr != nil {
+			log.Println("Failed to send email: " + emailErr.Error())
+		}
+	}()
 
 	// TODO: Use a message queue to create product settings
 
 	return core.UserResponse{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
 	}, nil
 }
 
@@ -161,10 +157,11 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 	}
 
 	return core.UserResponse{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
 	}, nil
 }
 
@@ -178,21 +175,23 @@ func (u *UserService) SendVerificationEmail(ctx context.Context, email string) e
 		return errors.Errorf(errors.ErrorBadRequest, "Email already verified.")
 	}
 
-	go u.sendEmailVerificationEmail(user)
+	go func() {
+		emailErr := u.sendEmailVerificationEmail(ctx, user)
+		if emailErr != nil {
+			log.Println("Failed to send email: " + emailErr.Error())
+		}
+	}()
 
 	return nil
 }
 
 func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailRequest) error {
-	payload, err := u.tokenManager.VerifyToken(req.Token)
+	email, err := u.redisStore.Get(ctx, req.Code)
 	if err != nil {
-		return errors.Errorf(errors.ErrorUnauthorized, "Token is invalid")
-	}
-	if err := payload.Valid(); err != nil {
-		return errors.Errorf(errors.ErrorUnauthorized, "Token expired")
+		return errors.Errorf(errors.ErrorBadRequest, "Code is invalid")
 	}
 
-	user, err := u.Store.GetUserByEmail(ctx, payload.Email)
+	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
 		return errors.Errorf(errors.ErrorBadRequest, "User not found")
 	}
@@ -206,6 +205,8 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 	}
 
 	go func() {
+		_ = u.redisStore.Delete(ctx, req.Code)
+	
 		emailBody := fmt.Sprintf(`
 			<p>Hi %s,</p>
 			<p>Your Copia email has been verified successfully.</p>
@@ -225,7 +226,6 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 	}()
 
 	return nil
-
 }
 
 func (u *UserService) ResetPassword(ctx context.Context, email string) error {
@@ -242,7 +242,12 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 	}
 
 	tokenDuration := time.Minute * 15
-	token, err := u.tokenManager.CreateToken(email, tokenDuration)
+	token, err := u.GenerateAuthState()
+	if err != nil {
+		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
+	}
+
+	err = u.redisStore.Set(ctx, token, user.Email, tokenDuration)
 	if err != nil {
 		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
 	}
@@ -259,6 +264,7 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 		<p>Copia Team.</p>
 	`, user.FirstName, url)
 
+	log.Printf("Email verification link: %s", url)
 	err = u.emailStore.SendEmail(
 		[]string{user.Email},
 		"Reset Password",
@@ -272,12 +278,9 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 }
 
 func (u *UserService) ChangePassword(ctx context.Context, req core.ChangePasswordRequest) error {
-	payload, err := u.tokenManager.VerifyToken(req.Token)
+	email, err := u.redisStore.Get(ctx, req.Code)
 	if err != nil {
-		return errors.Errorf(errors.ErrorUnauthorized, "Token is invalid")
-	}
-	if err := payload.Valid(); err != nil {
-		return errors.Errorf(errors.ErrorUnauthorized, "Token expired")
+		return errors.Errorf(errors.ErrorBadRequest, "Code is invalid")
 	}
 
 	hashedPassword, err := hashPassword(req.Password)
@@ -286,7 +289,7 @@ func (u *UserService) ChangePassword(ctx context.Context, req core.ChangePasswor
 	}
 
 	_, err = u.Store.UpdateUser(ctx, core.User{
-		Email:    payload.Email,
+		Email:    email,
 		Password: hashedPassword,
 	})
 	if err != nil {
@@ -336,10 +339,11 @@ func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.Use
 	}
 
 	return core.UserResponse{
-		ID:        userProfile.ID,
-		FirstName: userProfile.FirstName,
-		LastName:  userProfile.LastName,
-		Email:     userProfile.Email,
+		ID:            userProfile.ID,
+		FirstName:     userProfile.FirstName,
+		LastName:      userProfile.LastName,
+		Email:         userProfile.Email,
+		EmailVerified: userProfile.EmailVerified,
 	}, nil
 }
 

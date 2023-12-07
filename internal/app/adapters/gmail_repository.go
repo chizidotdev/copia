@@ -2,6 +2,7 @@ package adapters
 
 import (
 	"fmt"
+	"github.com/chizidotdev/copia/config"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/jordan-wright/email"
 	"net/smtp"
@@ -27,6 +28,10 @@ func NewGmailSender(name string, email string, password string) core.EmailReposi
 }
 
 func (g *GmailSender) SendEmail(to []string, subject string, body string) error {
+	if env := config.EnvVars.ENV; env != "release" {
+		return nil
+	}
+
 	e := email.NewEmail()
 	e.From = fmt.Sprintf("%s <%s>", g.name, g.email)
 	e.To = to

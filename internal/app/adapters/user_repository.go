@@ -3,13 +3,12 @@ package adapters
 import (
 	"context"
 	"github.com/chizidotdev/copia/internal/app/core"
-	"github.com/chizidotdev/copia/internal/app/usecases"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"log"
 )
 
-var _ usecases.UserRepository = (*UserRepositoryImpl)(nil)
+var _ core.UserRepository = (*UserRepositoryImpl)(nil)
 
 type UserRepositoryImpl struct {
 	DB *gorm.DB
@@ -39,21 +38,23 @@ type User struct {
 
 func (r *UserRepositoryImpl) CreateUser(_ context.Context, arg core.User) (core.User, error) {
 	user := User{
-		FirstName: arg.FirstName,
-		LastName:  arg.LastName,
-		Email:     arg.Email,
-		Password:  arg.Password,
+		FirstName:     arg.FirstName,
+		LastName:      arg.LastName,
+		Email:         arg.Email,
+		EmailVerified: arg.EmailVerified,
+		Password:      arg.Password,
 	}
 	err := r.DB.Create(&user).Error
 	//if errors.Is(err, gorm.ErrDuplicatedKey) {
 	//	return core.User{}, errors.New("email already exists")
 	//}
 	return core.User{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  user.Password,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Password:      user.Password,
 	}, err
 }
 
@@ -71,28 +72,31 @@ func (r *UserRepositoryImpl) UpsertUser(_ context.Context, arg core.User) (core.
 		UpdateAll: true,
 	}).Create(&user)
 	return core.User{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  user.Password,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Password:      user.Password,
 	}, result.Error
 }
 
 func (r *UserRepositoryImpl) UpdateUser(_ context.Context, arg core.User) (core.User, error) {
 	user := User{
-		FirstName: arg.FirstName,
-		LastName:  arg.LastName,
-		Email:     arg.Email,
-		Password:  arg.Password,
+		FirstName:     arg.FirstName,
+		LastName:      arg.LastName,
+		Email:         arg.Email,
+		EmailVerified: arg.EmailVerified,
+		Password:      arg.Password,
 	}
 	err := r.DB.Model(&User{}).Where("email = ?", arg.Email).Updates(&user).Error
 	return core.User{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  user.Password,
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		Password:      user.Password,
 	}, err
 }
 

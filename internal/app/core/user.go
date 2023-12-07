@@ -1,8 +1,16 @@
 package core
 
 import (
+	"context"
 	"github.com/google/uuid"
 )
+
+type UserRepository interface {
+	CreateUser(ctx context.Context, arg User) (User, error)
+	UpsertUser(ctx context.Context, arg User) (User, error)
+	UpdateUser(ctx context.Context, arg User) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+}
 
 type User struct {
 	ID            uuid.UUID `json:"id"`
@@ -27,7 +35,7 @@ type LoginUserRequest struct {
 }
 
 type VerifyEmailRequest struct {
-	Token string `json:"token" binding:"required"`
+	Code string `json:"code" binding:"required"`
 }
 
 type ResetPasswordRequest struct {
@@ -35,13 +43,14 @@ type ResetPasswordRequest struct {
 }
 
 type ChangePasswordRequest struct {
-	Token    string `json:"token" binding:"required"`
+	Code     string `json:"code" binding:"required"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
 type UserResponse struct {
-	ID        uuid.UUID `json:"id"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
+	ID            uuid.UUID `json:"id"`
+	FirstName     string    `json:"firstName"`
+	LastName      string    `json:"lastName"`
+	Email         string    `json:"email"`
+	EmailVerified bool      `json:"emailVerified"`
 }
