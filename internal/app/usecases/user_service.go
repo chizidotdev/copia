@@ -107,7 +107,13 @@ func (u *UserService) GetGoogleAuthConfig() oauth2.Config {
 func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest) (core.UserResponse, error) {
 	hashedPassword, err := hashPassword(req.Password)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorInternal, "Failed to hash password")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to hash password",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	user, err := u.Store.CreateUser(ctx, core.User{
@@ -117,7 +123,13 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 		Password:  hashedPassword,
 	})
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorBadRequest, "Failed to create User: "+err.Error())
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Failed to create user",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	go func() {
@@ -141,19 +153,34 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (core.UserResponse, error) {
 	user, err := u.Store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, "Invalid credentials.")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorUnauthorized,
+			MessageID: "",
+			Message:   "Invalid credentials.",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	if user.GoogleID != "" {
-		return core.UserResponse{}, errors.Errorf(
-			errors.ErrorUnauthorized,
-			"Looks like you signed up with Google. Please login with Google",
-		)
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorUnauthorized,
+			MessageID: "",
+			Message:   "Looks like you signed up with Google. Please login with Google",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	err = comparePassword(user.Password, req.Password)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorUnauthorized, "Invalid credentials.")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorUnauthorized,
+			MessageID: "",
+			Message:   "Invalid credentials.",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	return core.UserResponse{
@@ -168,11 +195,23 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 func (u *UserService) SendVerificationEmail(ctx context.Context, email string) error {
 	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "User not found",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	if user.EmailVerified == true {
-		return errors.Errorf(errors.ErrorBadRequest, "Email already verified.")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Email already verified",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	go func() {
@@ -188,12 +227,24 @@ func (u *UserService) SendVerificationEmail(ctx context.Context, email string) e
 func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailRequest) error {
 	email, err := u.redisStore.Get(ctx, req.Code)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "Code is invalid")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Code is invalid",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "User not found",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	_, err = u.Store.UpdateUser(ctx, core.User{
@@ -201,12 +252,18 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 		EmailVerified: true,
 	})
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to update user")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to update user",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	go func() {
 		_ = u.redisStore.Delete(ctx, req.Code)
-	
+
 		emailBody := fmt.Sprintf(`
 			<p>Hi %s,</p>
 			<p>Your Copia email has been verified successfully.</p>
@@ -231,25 +288,55 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 	user, err := u.Store.GetUserByEmail(ctx, email)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "User not found")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Email does not exist.",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	if user.EmailVerified == false {
-		return errors.Errorf(errors.ErrorBadRequest, "Email not verified.")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Email not verified.",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 	if user.GoogleID != "" {
-		return errors.Errorf(errors.ErrorBadRequest, "Looks like you signed up with Google. Please login with Google")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Looks like you signed up with Google. Please login with Google",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	tokenDuration := time.Minute * 15
 	token, err := u.GenerateAuthState()
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to create token",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	err = u.redisStore.Set(ctx, token, user.Email, tokenDuration)
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to create token")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to set token",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	url := fmt.Sprintf("%s/%s?code=%s", config.EnvVars.AuthDomain, "u/change-password", token)
@@ -271,7 +358,13 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 		emailBody,
 	)
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to send email: "+err.Error())
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to send email",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	return nil
@@ -280,12 +373,24 @@ func (u *UserService) ResetPassword(ctx context.Context, email string) error {
 func (u *UserService) ChangePassword(ctx context.Context, req core.ChangePasswordRequest) error {
 	email, err := u.redisStore.Get(ctx, req.Code)
 	if err != nil {
-		return errors.Errorf(errors.ErrorBadRequest, "Code is invalid")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Code is invalid",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	hashedPassword, err := hashPassword(req.Password)
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to hash password")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to hash password",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	_, err = u.Store.UpdateUser(ctx, core.User{
@@ -293,7 +398,13 @@ func (u *UserService) ChangePassword(ctx context.Context, req core.ChangePasswor
 		Password: hashedPassword,
 	})
 	if err != nil {
-		return errors.Errorf(errors.ErrorInternal, "Failed to update password")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to update password",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	return nil
@@ -313,16 +424,26 @@ type UserData struct {
 func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.UserResponse, error) {
 	user, err := u.getGoogleUserData(code)
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorForbidden, "Failed to get Store data")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorForbidden,
+			MessageID: "",
+			Message:   "Failed to get Google user data",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	userExists, err := u.Store.GetUserByEmail(ctx, user.Email)
 	if err == nil {
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorForbidden,
+			MessageID: "",
+			Message:   "Looks like you signed up with email and password. Please login with email and password",
+			Reason:    err.Error(),
+		}
+
 		if userExists.GoogleID == "" {
-			return core.UserResponse{}, errors.Errorf(
-				errors.ErrorForbidden,
-				"Looks like you signed up with email and password. Please login with email and password",
-			)
+			return core.UserResponse{}, errors.Errorf(errResp)
 		}
 	}
 
@@ -335,7 +456,13 @@ func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.Use
 		GoogleID:      user.Id,
 	})
 	if err != nil {
-		return core.UserResponse{}, errors.Errorf(errors.ErrorInternal, "Failed to create new Store")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to update user",
+			Reason:    err.Error(),
+		}
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	return core.UserResponse{

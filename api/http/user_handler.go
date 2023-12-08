@@ -26,7 +26,8 @@ func (u *UserHandler) createUser(ctx *gin.Context) {
 	var req core.CreateUserRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -43,7 +44,8 @@ func (u *UserHandler) login(ctx *gin.Context) {
 	var req core.LoginUserRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -56,7 +58,13 @@ func (u *UserHandler) login(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Set("profile", user)
 	if err := session.Save(); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorInternal, "Failed to update session"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to update session",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
@@ -113,7 +121,13 @@ func (u *UserHandler) logout(ctx *gin.Context) {
 	session.Clear()
 	session.Options(sessions.Options{MaxAge: -1})
 	if err := session.Save(); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorInternal, "Failed to update session"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorInternal,
+			MessageID: "",
+			Message:   "Failed to update session",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
@@ -131,7 +145,8 @@ func (u *UserHandler) sendVerificationEmail(ctx *gin.Context) {
 	}
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -148,7 +163,8 @@ func (u *UserHandler) verifyEmail(ctx *gin.Context) {
 	var req core.VerifyEmailRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -165,7 +181,8 @@ func (u *UserHandler) resetPassword(ctx *gin.Context) {
 	var req core.ResetPasswordRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -182,7 +199,8 @@ func (u *UserHandler) changePassword(ctx *gin.Context) {
 	var req core.ChangePasswordRequest
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload"))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 

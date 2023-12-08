@@ -39,7 +39,13 @@ func (o *OrderService) CreateOrder(ctx context.Context, req core.OrderRequest) (
 		OrderItems:            req.OrderItems,
 	})
 	if err != nil {
-		return core.Order{}, errors.Errorf(errors.ErrorBadRequest, "Failed to create order")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Failed to create order",
+			Reason:    err.Error(),
+		}
+		return core.Order{}, errors.Errorf(errResp)
 	}
 
 	return order, nil
@@ -48,7 +54,13 @@ func (o *OrderService) CreateOrder(ctx context.Context, req core.OrderRequest) (
 func (o *OrderService) ListOrders(ctx context.Context, userID uuid.UUID) ([]core.Order, error) {
 	orders, err := o.Store.ListOrders(ctx, userID)
 	if err != nil {
-		return nil, errors.Errorf(errors.ErrorBadRequest, "Unable to get orders")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Failed to get orders",
+			Reason:    err.Error(),
+		}
+		return nil, errors.Errorf(errResp)
 	}
 
 	return orders, nil
@@ -57,7 +69,13 @@ func (o *OrderService) ListOrders(ctx context.Context, userID uuid.UUID) ([]core
 func (o *OrderService) GetOrderByID(ctx context.Context, orderID uuid.UUID) (core.Order, error) {
 	order, err := o.Store.GetOrder(ctx, orderID)
 	if err != nil {
-		return core.Order{}, errors.Errorf(errors.ErrorNotFound, "Order not found")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorNotFound,
+			MessageID: "",
+			Message:   "Order not found",
+			Reason:    err.Error(),
+		}
+		return core.Order{}, errors.Errorf(errResp)
 	}
 
 	return order, nil
@@ -66,7 +84,13 @@ func (o *OrderService) GetOrderByID(ctx context.Context, orderID uuid.UUID) (cor
 func (o *OrderService) DeleteOrder(ctx context.Context, req core.DeleteOrderRequest) error {
 	err := o.Store.DeleteOrder(ctx, req)
 	if err != nil {
-		return errors.Errorf(errors.ErrorNotFound, "Order not found")
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Failed to delete order",
+			Reason:    err.Error(),
+		}
+		return errors.Errorf(errResp)
 	}
 
 	return nil

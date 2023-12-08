@@ -23,7 +23,8 @@ func NewProductHandler(productService *usecases.ProductService) *ProductHandler 
 func (p *ProductHandler) createProduct(ctx *gin.Context) {
 	var req core.ProductRequest
 	if err := ctx.ShouldBind(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -48,13 +49,20 @@ func (p *ProductHandler) updateProduct(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	productID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid product ID",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
 	var req core.Product
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -81,13 +89,20 @@ func (p *ProductHandler) updateProductImage(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	productID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid product ID",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
 	var req core.ProductImageRequest
 	if err := ctx.ShouldBind(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -121,7 +136,13 @@ func (p *ProductHandler) getProduct(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	productID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid product ID",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
@@ -138,7 +159,13 @@ func (p *ProductHandler) deleteProduct(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	productID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid product ID",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
@@ -159,13 +186,20 @@ func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	productID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid product ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid product ID",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
 	var req core.UpdateProductQuantityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -198,7 +232,8 @@ func (p *ProductHandler) getProductSettings(ctx *gin.Context) {
 func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
 	var req core.ProductSettings
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 

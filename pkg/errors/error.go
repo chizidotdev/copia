@@ -11,14 +11,18 @@ const (
 )
 
 type ErrResponse struct {
-	Code    Code   `json:"code"`
-	Message string `json:"message"`
+	Code      Code   `json:"code"`
+	MessageID string `json:"messageID"`
+	Message   string `json:"message"`
+	Reason    string `json:"reason"`
 }
 
-func Errorf(code Code, message string) *ErrResponse {
+func Errorf(errResp ErrResponse) *ErrResponse {
 	return &ErrResponse{
-		Code:    code,
-		Message: message,
+		Code:      errResp.Code,
+		MessageID: errResp.MessageID,
+		Message:   errResp.Message,
+		Reason:    errResp.Reason,
 	}
 }
 

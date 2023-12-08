@@ -4,8 +4,14 @@ build:
 redis:
 	sudo docker run --name copia-redis -p 63899:6379 -d redis
 
+redis-cli:
+	sudo docker exec -it copia-redis redis-cli
+
 postgres:
 	sudo docker run --name copia -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+
+postgres-cli:
+	sudo docker exec -it copia psql --username=root --dbname=copia
 
 createdb:
 	sudo docker exec -it copia createdb --username=root --owner=root copia
@@ -25,4 +31,4 @@ www:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go github.com/chizidotdev/copia/db/sqlc Store
 
-.PHONY: build redis postgres createdb dropdb test mock
+.PHONY: build redis redis-cli postgres postgres-cli createdb dropdb test mock

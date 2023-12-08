@@ -6,6 +6,7 @@ import (
 	"github.com/chizidotdev/copia/config"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"github.com/redis/go-redis/v9"
+	"log"
 	"time"
 )
 
@@ -13,7 +14,6 @@ type RedisClient struct {
 	Client *redis.Client
 }
 
-var ctx = context.Background()
 var _ core.RedisRepository = (*RedisClient)(nil)
 
 func NewRedisClient() *RedisClient {
@@ -22,6 +22,7 @@ func NewRedisClient() *RedisClient {
 		DB:   0,
 	})
 
+	log.Println("redis client", client)
 	return &RedisClient{
 		Client: client,
 	}

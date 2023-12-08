@@ -23,7 +23,8 @@ func NewOrderHandler(orderService *usecases.OrderService) *OrderHandler {
 func (o *OrderHandler) createOrder(ctx *gin.Context) {
 	var req core.OrderRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
@@ -59,7 +60,13 @@ func (o *OrderHandler) getOrder(ctx *gin.Context) {
 	IDParam := ctx.Param("id")
 	orderID, err := uuid.Parse(IDParam)
 	if err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid order ID"))
+		errResp := errors.ErrResponse{
+			Code:      errors.ErrorBadRequest,
+			MessageID: "",
+			Message:   "Invalid order ID.",
+			Reason:    err.Error(),
+		}
+		errorResponse(ctx, errors.Errorf(errResp))
 		return
 	}
 
@@ -75,7 +82,8 @@ func (o *OrderHandler) getOrder(ctx *gin.Context) {
 func (o *OrderHandler) deleteOrder(ctx *gin.Context) {
 	var req core.DeleteOrderRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		errorResponse(ctx, errors.Errorf(errors.ErrorBadRequest, "Invalid request payload."))
+		errResp := invalidRequestError(err)
+		errorResponse(ctx, errResp)
 		return
 	}
 
