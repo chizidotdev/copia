@@ -16,6 +16,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -123,10 +124,14 @@ func (u *UserService) CreateUser(ctx context.Context, req core.CreateUserRequest
 		Password:  hashedPassword,
 	})
 	if err != nil {
+		message := "Failed to create user"
+		if strings.Contains(err.Error(), "duplicate key") {
+			message = "Email already exists"
+		}
 		errResp := errors.ErrResponse{
 			Code:      errors.ErrorBadRequest,
 			MessageID: "",
-			Message:   "Failed to create user",
+			Message:   message,
 			Reason:    err.Error(),
 		}
 		return core.UserResponse{}, errors.Errorf(errResp)
