@@ -8,6 +8,11 @@ import (
 	"net/http"
 )
 
+type Response struct {
+	Data  interface{}    `json:"data"`
+	Error *ErrorResponse `json:"error"`
+}
+
 type ErrorResponse struct {
 	MessageID string `json:"message_id"`
 	Message   string `json:"message"`
@@ -20,14 +25,17 @@ func errorResponse(ctx *gin.Context, err error) {
 
 	var customErr *errors.ErrResponse
 	if !errors2.As(err, &customErr) {
-		obj := &ErrorResponse{
+		resp := &ErrorResponse{
 			Code:      code,
 			MessageID: "",
 			Message:   "Internal Server Error",
 			Reason:    err.Error(),
 		}
 
-		ctx.AbortWithStatusJSON(code, obj)
+		ctx.AbortWithStatusJSON(code, &Response{
+			Data:  nil,
+			Error: resp,
+		})
 		return
 	}
 
@@ -51,11 +59,15 @@ func errorResponse(ctx *gin.Context, err error) {
 		message = customErr.Message
 	}
 
-	ctx.AbortWithStatusJSON(code, &ErrorResponse{
+	resp := &ErrorResponse{
 		Code:      code,
 		MessageID: customErr.MessageID,
 		Message:   message,
 		Reason:    customErr.Reason,
+	}
+	ctx.AbortWithStatusJSON(code, &Response{
+		Data:  nil,
+		Error: resp,
 	})
 }
 
@@ -65,7 +77,10 @@ type SuccessResponse struct {
 }
 
 func successResponse(ctx *gin.Context, code int, succResp SuccessResponse) {
-	ctx.JSON(code, succResp)
+	ctx.JSON(code, &Response{
+		Data:  succResp,
+		Error: nil,
+	})
 }
 
 func invalidRequestError(err error) *errors.ErrResponse {
