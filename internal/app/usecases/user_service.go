@@ -526,7 +526,7 @@ func (u *UserService) GenerateAuthState() (string, error) {
 		return "", err
 	}
 
-	state := base64.StdEncoding.EncodeToString(b)
+	state := base64.RawURLEncoding.EncodeToString(b)
 
 	return state, nil
 }
