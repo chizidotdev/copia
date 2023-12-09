@@ -9,9 +9,9 @@ import (
 )
 
 type Response struct {
+	Message string         `json:"message"`
 	Data    interface{}    `json:"data"`
 	Error   *ErrorResponse `json:"error"`
-	Message string         `json:"message"`
 }
 
 type ErrorResponse struct {

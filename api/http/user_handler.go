@@ -12,6 +12,11 @@ import (
 	"net/http"
 )
 
+const (
+	profileKey = middleware.ProfileKey
+	stateKey   = middleware.StateKey
+)
+
 type UserHandler struct {
 	UserService *usecases.UserService
 }
@@ -59,7 +64,7 @@ func (u *UserHandler) login(ctx *gin.Context) {
 	}
 
 	session := sessions.Default(ctx)
-	session.Set("profile", user)
+	session.Set(profileKey, user)
 	if err := session.Save(); err != nil {
 		errResp := errors.ErrResponse{
 			Code:      errors.ErrorInternal,
@@ -85,7 +90,7 @@ func (u *UserHandler) loginWithSSO(ctx *gin.Context) {
 		return
 	}
 	session := sessions.Default(ctx)
-	session.Set("state", state)
+	session.Set(stateKey, state)
 	if err := session.Save(); err != nil {
 		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
 		return
@@ -101,7 +106,7 @@ func (u *UserHandler) ssoCallback(ctx *gin.Context) {
 	successRedirectURL := config.EnvVars.AuthDomain + "/u/login/success"
 
 	session := sessions.Default(ctx)
-	if ctx.Query("state") != session.Get("state") {
+	if ctx.Query(stateKey) != session.Get(stateKey) {
 		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s?errors=invalid_state", errRedirectURL))
 		return
 	}
@@ -113,7 +118,7 @@ func (u *UserHandler) ssoCallback(ctx *gin.Context) {
 		return
 	}
 
-	session.Set("profile", userProfile)
+	session.Set(profileKey, userProfile)
 	if err := session.Save(); err != nil {
 		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
 		return
@@ -183,14 +188,37 @@ func (u *UserHandler) verifyEmail(ctx *gin.Context) {
 		return
 	}
 
-	_, err = u.UserService.VerifyEmail(ctx, req)
+	verifiedUser, err := u.UserService.VerifyEmail(ctx, req)
 	if err != nil {
 		errorResponse(ctx, err)
 		return
 	}
 
+	authenticatedUser := middleware.GetAuthenticatedUser(ctx)
+	// if the user is authenticated, update the session
+	if authenticatedUser.Email == verifiedUser.Email {
+		session := sessions.Default(ctx)
+		session.Set(profileKey, core.UserResponse{
+			ID:            authenticatedUser.ID,
+			FirstName:     authenticatedUser.FirstName,
+			LastName:      authenticatedUser.LastName,
+			Email:         authenticatedUser.Email,
+			EmailVerified: verifiedUser.EmailVerified,
+		})
+		if err := session.Save(); err != nil {
+			errResp := errors.ErrResponse{
+				Code:      errors.ErrorInternal,
+				MessageID: "",
+				Message:   "Failed to update session",
+				Reason:    err.Error(),
+			}
+			errorResponse(ctx, errors.Errorf(errResp))
+			return
+		}
+	}
+
 	successResponse(ctx, http.StatusOK, SuccessResponse{
-		Data:    nil,
+		Data:    authenticatedUser,
 		Message: "Email verification successful.",
 	})
 }

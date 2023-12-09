@@ -7,9 +7,14 @@ import (
 	"net/http"
 )
 
+const (
+	ProfileKey = "profile"
+	StateKey   = "state"
+)
+
 func GetAuthenticatedUser(ctx *gin.Context) core.UserResponse {
 	session := sessions.Default(ctx)
-	profile := session.Get("profile")
+	profile := session.Get(ProfileKey)
 	user, ok := profile.(core.UserResponse)
 	if !ok {
 		return core.UserResponse{}

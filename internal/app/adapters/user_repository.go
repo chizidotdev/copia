@@ -86,7 +86,11 @@ func (r *UserRepositoryImpl) UpdateUser(_ context.Context, arg core.User) (core.
 		EmailVerified: arg.EmailVerified,
 		Password:      arg.Password,
 	}
-	err := r.DB.Model(&User{}).Where("email = ?", arg.Email).Updates(&user).Error
+	err := r.DB.Model(&User{}).
+		Clauses(clause.Returning{}).
+		Where("email = ?", arg.Email).
+		Updates(user).Error
+
 	return core.User{
 		ID:            user.ID,
 		FirstName:     user.FirstName,
