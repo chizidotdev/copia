@@ -77,8 +77,13 @@ type SuccessResponse struct {
 }
 
 func successResponse(ctx *gin.Context, code int, succResp SuccessResponse) {
+	data := succResp.Data
+	if data == nil {
+		data = succResp.Message
+	}
+
 	ctx.JSON(code, &Response{
-		Data:  succResp,
+		Data:  data,
 		Error: nil,
 	})
 }
