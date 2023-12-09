@@ -42,7 +42,10 @@ func (o *OrderHandler) createOrder(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, order)
+	successResponse(ctx, http.StatusCreated, SuccessResponse{
+		Data:    order,
+		Message: "Order created successfully.",
+	})
 }
 
 func (o *OrderHandler) listOrders(ctx *gin.Context) {
@@ -53,7 +56,10 @@ func (o *OrderHandler) listOrders(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, orders)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    orders,
+		Message: "Successfully retrieved orders.",
+	})
 }
 
 func (o *OrderHandler) getOrder(ctx *gin.Context) {
@@ -76,7 +82,10 @@ func (o *OrderHandler) getOrder(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, order)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    order,
+		Message: "Successfully retrieved order.",
+	})
 }
 
 func (o *OrderHandler) deleteOrder(ctx *gin.Context) {
@@ -95,5 +104,8 @@ func (o *OrderHandler) deleteOrder(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Successfully deleted order.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Successfully deleted order.",
+	})
 }

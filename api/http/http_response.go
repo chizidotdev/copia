@@ -15,11 +15,6 @@ type ErrorResponse struct {
 	Reason    string `json:"reason"`
 }
 
-type SuccessResponse struct {
-	Data    interface{} `json:"data"`
-	Message string      `json:"message"`
-}
-
 func errorResponse(ctx *gin.Context, err error) {
 	code := http.StatusInternalServerError
 
@@ -62,6 +57,15 @@ func errorResponse(ctx *gin.Context, err error) {
 		Message:   message,
 		Reason:    customErr.Reason,
 	})
+}
+
+type SuccessResponse struct {
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
+}
+
+func successResponse(ctx *gin.Context, code int, succResp SuccessResponse) {
+	ctx.JSON(code, succResp)
 }
 
 func invalidRequestError(err error) *errors.ErrResponse {

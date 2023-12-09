@@ -37,7 +37,10 @@ func (u *UserHandler) createUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, user)
+	successResponse(ctx, http.StatusCreated, SuccessResponse{
+		Data:    user,
+		Message: "User created successfully.",
+	})
 }
 
 func (u *UserHandler) login(ctx *gin.Context) {
@@ -68,7 +71,10 @@ func (u *UserHandler) login(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Login successful.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    user,
+		Message: "Login successful.",
+	})
 }
 
 func (u *UserHandler) loginWithSSO(ctx *gin.Context) {
@@ -131,12 +137,18 @@ func (u *UserHandler) logout(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Log out successful.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Log out successful.",
+	})
 }
 
 func (u *UserHandler) getUser(ctx *gin.Context) {
 	user := middleware.GetAuthenticatedUser(ctx)
-	ctx.JSON(http.StatusOK, user)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    user,
+		Message: "User retrieved successfully.",
+	})
 }
 
 func (u *UserHandler) sendVerificationEmail(ctx *gin.Context) {
@@ -156,7 +168,10 @@ func (u *UserHandler) sendVerificationEmail(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Verification email sent.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Verification email sent.",
+	})
 }
 
 func (u *UserHandler) verifyEmail(ctx *gin.Context) {
@@ -168,13 +183,16 @@ func (u *UserHandler) verifyEmail(ctx *gin.Context) {
 		return
 	}
 
-	err = u.UserService.VerifyEmail(ctx, req)
+	_, err = u.UserService.VerifyEmail(ctx, req)
 	if err != nil {
 		errorResponse(ctx, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Email verification successful.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Email verification successful.",
+	})
 }
 
 func (u *UserHandler) resetPassword(ctx *gin.Context) {
@@ -192,7 +210,10 @@ func (u *UserHandler) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Password reset email sent.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Password reset email sent.",
+	})
 }
 
 func (u *UserHandler) changePassword(ctx *gin.Context) {
@@ -210,5 +231,8 @@ func (u *UserHandler) changePassword(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Password changed successfully.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Password changed successfully.",
+	})
 }

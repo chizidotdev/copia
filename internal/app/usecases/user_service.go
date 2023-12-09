@@ -209,7 +209,7 @@ func (u *UserService) SendVerificationEmail(ctx context.Context, email string) e
 			Code:      errors.ErrorBadRequest,
 			MessageID: "",
 			Message:   "Email already verified",
-			Reason:    err.Error(),
+			Reason:    "Email already verified",
 		}
 		return errors.Errorf(errResp)
 	}
@@ -224,7 +224,7 @@ func (u *UserService) SendVerificationEmail(ctx context.Context, email string) e
 	return nil
 }
 
-func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailRequest) error {
+func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailRequest) (core.UserResponse, error) {
 	email, err := u.redisStore.Get(ctx, req.Code)
 	if err != nil {
 		errResp := errors.ErrResponse{
@@ -233,7 +233,7 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 			Message:   "Code is invalid",
 			Reason:    err.Error(),
 		}
-		return errors.Errorf(errResp)
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	user, err := u.Store.GetUserByEmail(ctx, email)
@@ -244,10 +244,10 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 			Message:   "User not found",
 			Reason:    err.Error(),
 		}
-		return errors.Errorf(errResp)
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
-	_, err = u.Store.UpdateUser(ctx, core.User{
+	user, err = u.Store.UpdateUser(ctx, core.User{
 		Email:         user.Email,
 		EmailVerified: true,
 	})
@@ -258,7 +258,7 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 			Message:   "Failed to update user",
 			Reason:    err.Error(),
 		}
-		return errors.Errorf(errResp)
+		return core.UserResponse{}, errors.Errorf(errResp)
 	}
 
 	go func() {
@@ -282,7 +282,13 @@ func (u *UserService) VerifyEmail(ctx context.Context, req core.VerifyEmailReque
 		}
 	}()
 
-	return nil
+	return core.UserResponse{
+		ID:            user.ID,
+		FirstName:     user.FirstName,
+		LastName:      user.LastName,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+	}, nil
 }
 
 func (u *UserService) ResetPassword(ctx context.Context, email string) error {

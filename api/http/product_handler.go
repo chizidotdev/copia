@@ -42,7 +42,10 @@ func (p *ProductHandler) createProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, product)
+	successResponse(ctx, http.StatusCreated, SuccessResponse{
+		Data:    product,
+		Message: "Product created successfully.",
+	})
 }
 
 func (p *ProductHandler) updateProduct(ctx *gin.Context) {
@@ -82,7 +85,10 @@ func (p *ProductHandler) updateProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    product,
+		Message: "Product updated successfully.",
+	})
 }
 
 func (p *ProductHandler) updateProductImage(ctx *gin.Context) {
@@ -118,7 +124,10 @@ func (p *ProductHandler) updateProductImage(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    product,
+		Message: "Product image updated successfully.",
+	})
 }
 
 func (p *ProductHandler) listProducts(ctx *gin.Context) {
@@ -129,7 +138,10 @@ func (p *ProductHandler) listProducts(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, products)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    products,
+		Message: "Product list retrieved successfully.",
+	})
 }
 
 func (p *ProductHandler) getProduct(ctx *gin.Context) {
@@ -152,7 +164,10 @@ func (p *ProductHandler) getProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    product,
+		Message: "Product retrieved successfully.",
+	})
 }
 
 func (p *ProductHandler) deleteProduct(ctx *gin.Context) {
@@ -179,7 +194,10 @@ func (p *ProductHandler) deleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "Successfully deleted product.")
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    nil,
+		Message: "Successfully deleted product.",
+	})
 }
 
 func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
@@ -214,7 +232,10 @@ func (p *ProductHandler) updateProductQuantity(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    product,
+		Message: "Product quantity updated successfully.",
+	})
 }
 
 func (p *ProductHandler) getProductSettings(ctx *gin.Context) {
@@ -225,8 +246,10 @@ func (p *ProductHandler) getProductSettings(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, settings)
-
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    settings,
+		Message: "Product settings retrieved successfully.",
+	})
 }
 
 func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
@@ -247,5 +270,8 @@ func (p *ProductHandler) updateProductSettings(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, settings)
+	successResponse(ctx, http.StatusOK, SuccessResponse{
+		Data:    settings,
+		Message: "Product settings updated successfully.",
+	})
 }
