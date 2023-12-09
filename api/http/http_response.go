@@ -9,8 +9,9 @@ import (
 )
 
 type Response struct {
-	Data  interface{}    `json:"data"`
-	Error *ErrorResponse `json:"error"`
+	Data    interface{}    `json:"data"`
+	Error   *ErrorResponse `json:"error"`
+	Message string         `json:"message"`
 }
 
 type ErrorResponse struct {
@@ -33,8 +34,9 @@ func errorResponse(ctx *gin.Context, err error) {
 		}
 
 		ctx.AbortWithStatusJSON(code, &Response{
-			Data:  nil,
-			Error: resp,
+			Data:    nil,
+			Error:   resp,
+			Message: resp.Message,
 		})
 		return
 	}
@@ -66,8 +68,9 @@ func errorResponse(ctx *gin.Context, err error) {
 		Reason:    customErr.Reason,
 	}
 	ctx.AbortWithStatusJSON(code, &Response{
-		Data:  nil,
-		Error: resp,
+		Data:    nil,
+		Error:   resp,
+		Message: resp.Message,
 	})
 }
 
@@ -77,14 +80,10 @@ type SuccessResponse struct {
 }
 
 func successResponse(ctx *gin.Context, code int, succResp SuccessResponse) {
-	data := succResp.Data
-	if data == nil {
-		data = succResp.Message
-	}
-
 	ctx.JSON(code, &Response{
-		Data:  data,
-		Error: nil,
+		Data:    succResp.Data,
+		Error:   nil,
+		Message: succResp.Message,
 	})
 }
 
