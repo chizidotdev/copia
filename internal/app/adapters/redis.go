@@ -17,12 +17,12 @@ type RedisClient struct {
 var _ core.RedisRepository = (*RedisClient)(nil)
 
 func NewRedisClient() *RedisClient {
-	client := redis.NewClient(&redis.Options{
-		Addr: config.EnvVars.RedisUrl,
-		DB:   0,
-	})
+	opt, err := redis.ParseURL(config.EnvVars.RedisUrl)
+	if err != nil {
+		log.Fatal("Cannot parse redis url:", err)
+	}
 
-	log.Println("redis client", client)
+	client := redis.NewClient(opt)
 	return &RedisClient{
 		Client: client,
 	}
