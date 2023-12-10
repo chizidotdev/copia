@@ -57,7 +57,11 @@ func (s *Server) Start(address string) error {
 // corsConfig sets up the CORS configuration
 func corsConfig(server *Server) {
 	server.router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://copia.aidmedium.com"},
+		AllowOrigins:     []string{
+			"http://localhost:3000",
+			"https://copia.aidmedium.com",
+			"https://copia.up.railway.app",
+		},
 		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
