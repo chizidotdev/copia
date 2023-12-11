@@ -2,13 +2,13 @@ build:
 	go build -o bin/copia ./main.go
 
 redis:
-	sudo docker run --name copia-redis -p 63899:6379 -d redis
+	sudo docker run --name copia-redis -p 6389:6379 -d redis
 
 redis-cli:
 	sudo docker exec -it copia-redis redis-cli
 
 postgres:
-	sudo docker run --name copia -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+	sudo docker run --name copia -p 5433:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
 
 postgres-cli:
 	sudo docker exec -it copia psql --username=root --dbname=copia

@@ -172,7 +172,7 @@ func (u *UserService) GetUser(ctx context.Context, req core.LoginUserRequest) (c
 			Code:      errors.ErrorUnauthorized,
 			MessageID: "",
 			Message:   "Looks like you signed up with Google. Please login with Google",
-			Reason:    err.Error(),
+			Reason:    "Account contains Google ID",
 		}
 		return core.UserResponse{}, errors.Errorf(errResp)
 	}
