@@ -130,7 +130,8 @@ func (u *UserHandler) ssoCallback(ctx *gin.Context) {
 func (u *UserHandler) logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Clear()
-	session.Options(sessions.Options{Path: "/", MaxAge: -1})
+	session.Set(profileKey, nil)
+	session.Options(sessions.Options{MaxAge: -1})
 	if err := session.Save(); err != nil {
 		errResp := errors.ErrResponse{
 			Code:      errors.ErrorInternal,
