@@ -211,7 +211,7 @@ func (u *UserService) SendVerificationEmail(ctx context.Context, email string) e
 
 	if user.EmailVerified == true {
 		errResp := errors.ErrResponse{
-			Code:      errors.ErrorBadRequest,
+			Code:      errors.ErrorForbidden,
 			MessageID: "",
 			Message:   "Email already verified",
 			Reason:    "Email already verified",
@@ -445,7 +445,7 @@ func (u *UserService) GoogleCallback(ctx context.Context, code string) (core.Use
 	}
 
 	userExists, err := u.Store.GetUserByEmail(ctx, user.Email)
-	if err == nil {
+	if err != nil {
 		errResp := errors.ErrResponse{
 			Code:      errors.ErrorForbidden,
 			MessageID: "",
