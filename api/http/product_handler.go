@@ -138,8 +138,11 @@ func (p *ProductHandler) listProducts(ctx *gin.Context) {
 		return
 	}
 
+	data := struct {
+		Products []core.Product `json:"products"`
+	}{Products: products}
 	successResponse(ctx, http.StatusOK, SuccessResponse{
-		Data:    products,
+		Data:    data,
 		Message: "Product list retrieved successfully.",
 	})
 }

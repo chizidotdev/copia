@@ -11,18 +11,18 @@ import (
 
 type Product struct {
 	Base
-	UserID          uuid.UUID `gorm:"not null;uniqueIndex" json:"userID"`
-	Name            string    `gorm:"not null" json:"name"`
-	Description     string    `gorm:"not null" json:"description"`
-	Price           float32   `gorm:"not null" json:"price"`
-	QuantityInStock int       `gorm:"not null" json:"quantityInStock"`
-	ImageURL        string    `gorm:"not null" json:"imageURL"`
-	SKU             string    `gorm:"not null" json:"SKU"`
+	UserID          uuid.UUID `gorm:"not null;index"`
+	Name            string    `gorm:"not null"`
+	Description     string    `gorm:"not null"`
+	Price           float32   `gorm:"not null"`
+	QuantityInStock int       `gorm:"not null"`
+	ImageURL        string    `gorm:"not null"`
+	SKU             string    `gorm:"not null"`
 }
 
 type ProductSettings struct {
-	UserID       uuid.UUID `gorm:"not null;uniqueIndex" json:"userID"`
-	ReorderPoint int       `gorm:"not null;default:0" json:"reorderPoint"`
+	UserID       uuid.UUID `gorm:"not null;uniqueIndex"`
+	ReorderPoint int       `gorm:"not null;default:0"`
 }
 
 var _ core.ProductRepository = (*ProductRepositoryImpl)(nil)

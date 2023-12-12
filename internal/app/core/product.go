@@ -22,8 +22,8 @@ type ProductRepository interface {
 }
 
 type Product struct {
-	ID              uuid.UUID `json:"ID"`
-	UserID          uuid.UUID `json:"userID"`
+	ID              uuid.UUID `json:"id"`
+	UserID          uuid.UUID `json:"userId"`
 	Name            string    `json:"name"`
 	Description     string    `json:"description"`
 	Price           float32   `json:"price"`
@@ -33,7 +33,7 @@ type Product struct {
 }
 
 type ProductSettings struct {
-	UserID       uuid.UUID `json:"userID"`
+	UserID       uuid.UUID `json:"userId"`
 	ReorderPoint int       `json:"reorderPoint" binding:"required,min=0"`
 }
 
