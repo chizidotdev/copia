@@ -3,12 +3,12 @@ package adapters
 import (
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/chizidotdev/copia/config"
 	"github.com/chizidotdev/copia/internal/app/core"
 	"io"
-	"log"
 )
 
 var (
@@ -20,9 +20,13 @@ type S3Repository struct {
 }
 
 func NewS3Repository() core.FileUploadRepository {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		log.Fatalf("error loading config, %v", err)
+	cfg := aws.Config{
+		Region: config.EnvVars.AWSRegion,
+		Credentials: credentials.NewStaticCredentialsProvider(
+			config.EnvVars.AWSAccessKey,
+			config.EnvVars.AWSSecretAccessKey,
+			"",
+		),
 	}
 
 	client := s3.NewFromConfig(cfg)
