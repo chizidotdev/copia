@@ -6,9 +6,10 @@ import (
 	"github.com/chizidotdev/copia/internal/app/usecases"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/redis"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"net/url"
 )
 
 type Server struct {
@@ -25,7 +26,17 @@ func NewHTTPServer(
 	orderService *usecases.OrderService,
 ) *Server {
 	router := gin.Default()
-	store := cookie.NewStore([]byte(config.EnvVars.AuthSecret))
+
+	parsedURL, err := url.Parse(config.EnvVars.RedisUrl)
+	if err != nil {
+		panic(err)
+	}
+	redisAddress := parsedURL.Host
+	redisPassword, _ := parsedURL.User.Password()
+	store, err := redis.NewStore(10, "tcp", redisAddress, redisPassword, []byte(config.EnvVars.AuthSecret))
+	if err != nil {
+		panic(err)
+	}
 	store.Options(sessions.Options{
 		MaxAge:   86400 * 30, // 30 days
 		Secure:   false,
@@ -57,7 +68,7 @@ func (s *Server) Start(address string) error {
 // corsConfig sets up the CORS configuration
 func corsConfig(server *Server) {
 	server.router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{
+		AllowOrigins: []string{
 			"http://localhost:3000",
 			"https://copia.aidmedium.com",
 			"https://copia.up.railway.app",

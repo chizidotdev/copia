@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.23.3
-	github.com/aws/aws-sdk-go-v2/config v1.25.9
+	github.com/aws/aws-sdk-go-v2/credentials v1.16.7
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.15.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.0
 	github.com/gin-contrib/cors v1.5.0
@@ -15,6 +15,7 @@ require (
 	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/lib/pq v1.10.9
 	github.com/o1egl/paseto v1.0.0
+	github.com/redis/go-redis/v9 v9.3.0
 	github.com/spf13/viper v1.17.0
 	golang.org/x/crypto v0.16.0
 	golang.org/x/oauth2 v0.15.0
@@ -29,20 +30,15 @@ require (
 	github.com/aead/chacha20poly1305 v0.0.0-20201124145622-1a5aba2a8b29 // indirect
 	github.com/aead/poly1305 v0.0.0-20180717145839-3fee0db0b635 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.2 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.16.7 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.7 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.6 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.5.6 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/ini v1.7.1 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/v4a v1.2.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/checksum v1.2.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.10.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/internal/s3shared v1.16.6 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.18.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.0 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.26.0 // indirect
 	github.com/aws/smithy-go v1.18.0 // indirect
+	github.com/boj/redistore v0.0.0-20180917114910-cd5dcc76aeff // indirect
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
@@ -56,6 +52,7 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/sessions v1.2.2 // indirect
@@ -77,7 +74,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/redis/go-redis/v9 v9.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
