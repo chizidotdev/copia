@@ -43,7 +43,7 @@ type ProductRequest struct {
 	Description     string                `form:"description"`
 	Price           float32               `form:"price" binding:"required"`
 	QuantityInStock int                   `form:"quantityInStock" binding:"required"`
-	Image           *multipart.FileHeader `form:"image" binding:"required"`
+	Image           *multipart.FileHeader `form:"image"`
 }
 
 type ProductImageRequest struct {
