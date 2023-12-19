@@ -62,8 +62,8 @@ func (p *ProductHandler) updateProduct(ctx *gin.Context) {
 		return
 	}
 
-	var req core.Product
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	var req core.ProductRequest
+	if err := ctx.ShouldBind(&req); err != nil {
 		errResp := invalidRequestError(err)
 		errorResponse(ctx, errResp)
 		return
@@ -78,7 +78,6 @@ func (p *ProductHandler) updateProduct(ctx *gin.Context) {
 		Description:     req.Description,
 		Price:           req.Price,
 		QuantityInStock: req.QuantityInStock,
-		ImageURL:        req.ImageURL,
 	})
 	if err != nil {
 		errorResponse(ctx, err)

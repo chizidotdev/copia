@@ -76,23 +76,20 @@ func (p *ProductRepositoryImpl) CreateProduct(_ context.Context, arg core.Produc
 
 func (p *ProductRepositoryImpl) UpdateProduct(_ context.Context, arg core.Product) (core.Product, error) {
 	var product Product
-	result := p.DB.Model(&product).
+
+	err := p.DB.Model(&product).
 		Clauses(clause.Returning{}).
 		Where("id = ? AND user_id = ?", arg.ID, arg.UserID).
-		First(&product)
-	if result.Error != nil {
-		return core.Product{}, result.Error
-	}
-	err := result.Updates(Product{
-		Name:            arg.Name,
-		Description:     arg.Description,
-		Price:           arg.Price,
-		QuantityInStock: arg.QuantityInStock,
-		ImageURL:        arg.ImageURL,
-		SKU:             arg.SKU,
-	}).Error
+		Updates(Product{
+			Name:            arg.Name,
+			Description:     arg.Description,
+			Price:           arg.Price,
+			QuantityInStock: arg.QuantityInStock,
+			ImageURL:        arg.ImageURL,
+			SKU:             arg.SKU,
+		}).Error
 	if err != nil {
-		return core.Product{}, result.Error
+		return core.Product{}, err
 	}
 
 	return core.Product{

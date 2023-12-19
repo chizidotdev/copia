@@ -15,6 +15,7 @@ func main() {
 	config.LoadConfig()
 
 	conn, err := gorm.Open(postgres.Open(config.EnvVars.DBSource), &gorm.Config{
+		//Logger: logger.Default.LogMode(logger.Info),
 		//TranslateError: true,
 	})
 	if err != nil {
