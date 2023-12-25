@@ -73,7 +73,7 @@ func corsConfig(server *Server) {
 			"https://copia.aidmedium.com",
 			"https://copia.up.railway.app",
 		},
-		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
+		AllowMethods:     []string{"PUT", "POST", "GET", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
