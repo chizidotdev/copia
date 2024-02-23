@@ -5,10 +5,12 @@
 package repository
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type UserRole string
@@ -55,80 +57,80 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 }
 
 type Commission struct {
-	ID               pgtype.UUID    `json:"id"`
-	OrderID          pgtype.UUID    `json:"order_id"`
-	UserID           pgtype.UUID    `json:"user_id"`
-	CommissionAmount pgtype.Numeric `json:"commission_amount"`
-	PaidStatus       string         `json:"paid_status"`
+	ID               uuid.UUID `json:"id"`
+	OrderID          uuid.UUID `json:"order_id"`
+	UserID           uuid.UUID `json:"user_id"`
+	CommissionAmount string    `json:"commission_amount"`
+	PaidStatus       string    `json:"paid_status"`
 }
 
 type Customer struct {
-	ID        pgtype.UUID `json:"id"`
-	StoreID   pgtype.UUID `json:"store_id"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Email     string      `json:"email"`
-	Phone     string      `json:"phone"`
-	Address   string      `json:"address"`
+	ID        uuid.UUID `json:"id"`
+	StoreID   uuid.UUID `json:"store_id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Address   string    `json:"address"`
 }
 
 type Link struct {
-	ID         pgtype.UUID `json:"id"`
-	UserID     pgtype.UUID `json:"user_id"`
-	UniqueLink string      `json:"unique_link"`
-	LinkType   string      `json:"link_type"`
+	ID         uuid.UUID `json:"id"`
+	UserID     uuid.UUID `json:"user_id"`
+	UniqueLink string    `json:"unique_link"`
+	LinkType   string    `json:"link_type"`
 }
 
 type Order struct {
-	ID              pgtype.UUID      `json:"id"`
-	UserID          pgtype.UUID      `json:"user_id"`
-	OrderDate       pgtype.Timestamp `json:"order_date"`
-	TotalAmount     pgtype.Numeric   `json:"total_amount"`
-	Status          string           `json:"status"`
-	PaymentStatus   string           `json:"payment_status"`
-	ShippingAddress string           `json:"shipping_address"`
-	CreatedAt       pgtype.Timestamp `json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	ID              uuid.UUID `json:"id"`
+	UserID          uuid.UUID `json:"user_id"`
+	OrderDate       time.Time `json:"order_date"`
+	TotalAmount     string    `json:"total_amount"`
+	Status          string    `json:"status"`
+	PaymentStatus   string    `json:"payment_status"`
+	ShippingAddress string    `json:"shipping_address"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 type OrderItem struct {
-	ID        pgtype.UUID    `json:"id"`
-	OrderID   pgtype.UUID    `json:"order_id"`
-	ProductID pgtype.UUID    `json:"product_id"`
-	Quantity  int32          `json:"quantity"`
-	UnitPrice pgtype.Numeric `json:"unit_price"`
-	Subtotal  pgtype.Numeric `json:"subtotal"`
+	ID        uuid.UUID `json:"id"`
+	OrderID   uuid.UUID `json:"order_id"`
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int32     `json:"quantity"`
+	UnitPrice string    `json:"unit_price"`
+	Subtotal  string    `json:"subtotal"`
 }
 
 type Product struct {
-	ID            pgtype.UUID      `json:"id"`
-	StoreID       pgtype.UUID      `json:"store_id"`
-	Sku           string           `json:"sku"`
-	Name          string           `json:"name"`
-	Description   string           `json:"description"`
-	Price         pgtype.Numeric   `json:"price"`
-	StockQuantity int32            `json:"stock_quantity"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	ID            uuid.UUID `json:"id"`
+	StoreID       uuid.UUID `json:"store_id"`
+	Sku           string    `json:"sku"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	Price         string    `json:"price"`
+	StockQuantity int32     `json:"stock_quantity"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type Store struct {
-	ID          pgtype.UUID      `json:"id"`
-	UserID      pgtype.UUID      `json:"user_id"`
-	Name        string           `json:"name"`
-	Description string           `json:"description"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type User struct {
-	ID        pgtype.UUID      `json:"id"`
-	Email     string           `json:"email"`
-	FirstName string           `json:"first_name"`
-	LastName  string           `json:"last_name"`
-	Image     string           `json:"image"`
-	GoogleID  pgtype.Text      `json:"google_id"`
-	Role      UserRole         `json:"role"`
-	CreatedAt pgtype.Timestamp `json:"created_at"`
-	UpdatedAt pgtype.Timestamp `json:"updated_at"`
+	ID        uuid.UUID      `json:"id"`
+	Email     string         `json:"email"`
+	FirstName string         `json:"first_name"`
+	LastName  string         `json:"last_name"`
+	Image     string         `json:"image"`
+	GoogleID  sql.NullString `json:"google_id"`
+	Role      UserRole       `json:"role"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }

@@ -7,8 +7,9 @@ package repository
 
 import (
 	"context"
+	"database/sql"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -21,17 +22,17 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 `
 
 type CreateUserParams struct {
-	Email     string      `json:"email"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Image     string      `json:"image"`
-	GoogleID  pgtype.Text `json:"google_id"`
-	Role      UserRole    `json:"role"`
+	Email     string         `json:"email"`
+	FirstName string         `json:"first_name"`
+	LastName  string         `json:"last_name"`
+	Image     string         `json:"image"`
+	GoogleID  sql.NullString `json:"google_id"`
+	Role      UserRole       `json:"role"`
 }
 
 // Create a new user
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser,
+	row := q.db.QueryRowContext(ctx, createUser,
 		arg.Email,
 		arg.FirstName,
 		arg.LastName,
@@ -60,8 +61,8 @@ WHERE id = $1
 `
 
 // Delete a user by ID
-func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteUser, id)
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
@@ -71,8 +72,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a user by ID
-func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
-	row := q.db.QueryRow(ctx, getUser, id)
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -95,7 +96,7 @@ ORDER BY first_name, last_name
 
 // List all users
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsers)
+	rows, err := q.db.QueryContext(ctx, listUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -118,6 +119,9 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -137,18 +141,18 @@ WHERE id = $1
 `
 
 type UpdateUserParams struct {
-	ID        pgtype.UUID `json:"id"`
-	Email     string      `json:"email"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Image     string      `json:"image"`
-	GoogleID  pgtype.Text `json:"google_id"`
-	Role      UserRole    `json:"role"`
+	ID        uuid.UUID      `json:"id"`
+	Email     string         `json:"email"`
+	FirstName string         `json:"first_name"`
+	LastName  string         `json:"last_name"`
+	Image     string         `json:"image"`
+	GoogleID  sql.NullString `json:"google_id"`
+	Role      UserRole       `json:"role"`
 }
 
 // Update a user by ID
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.Exec(ctx, updateUser,
+	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.ID,
 		arg.Email,
 		arg.FirstName,
@@ -178,17 +182,17 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 `
 
 type UpsertUserParams struct {
-	Email     string      `json:"email"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Image     string      `json:"image"`
-	GoogleID  pgtype.Text `json:"google_id"`
-	Role      UserRole    `json:"role"`
+	Email     string         `json:"email"`
+	FirstName string         `json:"first_name"`
+	LastName  string         `json:"last_name"`
+	Image     string         `json:"image"`
+	GoogleID  sql.NullString `json:"google_id"`
+	Role      UserRole       `json:"role"`
 }
 
 // Upsert a user by email
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, upsertUser,
+	row := q.db.QueryRowContext(ctx, upsertUser,
 		arg.Email,
 		arg.FirstName,
 		arg.LastName,

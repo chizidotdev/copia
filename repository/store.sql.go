@@ -7,8 +7,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createStore = `-- name: CreateStore :one
@@ -21,16 +22,16 @@ RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type CreateStoreParams struct {
-	UserID      pgtype.UUID      `json:"user_id"`
-	Name        string           `json:"name"`
-	Description string           `json:"description"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	UserID      uuid.UUID `json:"user_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Create a new store
 func (q *Queries) CreateStore(ctx context.Context, arg CreateStoreParams) (Store, error) {
-	row := q.db.QueryRow(ctx, createStore,
+	row := q.db.QueryRowContext(ctx, createStore,
 		arg.UserID,
 		arg.Name,
 		arg.Description,
@@ -55,8 +56,8 @@ WHERE id = $1
 `
 
 // Delete a store by ID
-func (q *Queries) DeleteStore(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteStore, id)
+func (q *Queries) DeleteStore(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteStore, id)
 	return err
 }
 
@@ -66,8 +67,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a store by ID
-func (q *Queries) GetStore(ctx context.Context, id pgtype.UUID) (Store, error) {
-	row := q.db.QueryRow(ctx, getStore, id)
+func (q *Queries) GetStore(ctx context.Context, id uuid.UUID) (Store, error) {
+	row := q.db.QueryRowContext(ctx, getStore, id)
 	var i Store
 	err := row.Scan(
 		&i.ID,
@@ -87,7 +88,7 @@ ORDER BY name
 
 // List all stores
 func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
-	rows, err := q.db.Query(ctx, listStores)
+	rows, err := q.db.QueryContext(ctx, listStores)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +108,9 @@ func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -125,17 +129,17 @@ WHERE id = $1
 `
 
 type UpdateStoreParams struct {
-	ID          pgtype.UUID      `json:"id"`
-	UserID      pgtype.UUID      `json:"user_id"`
-	Name        string           `json:"name"`
-	Description string           `json:"description"`
-	CreatedAt   pgtype.Timestamp `json:"created_at"`
-	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Update a store by ID
 func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) error {
-	_, err := q.db.Exec(ctx, updateStore,
+	_, err := q.db.ExecContext(ctx, updateStore,
 		arg.ID,
 		arg.UserID,
 		arg.Name,

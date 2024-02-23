@@ -1,6 +1,7 @@
 package user
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -8,7 +9,6 @@ import (
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const (
@@ -37,7 +37,7 @@ func (u *UserHandler) GoogleCallback(ctx *gin.Context) {
 		FirstName: user.GivenName,
 		LastName:  user.FamilyName,
 		Email:     user.Email,
-		GoogleID:  pgtype.Text{String: user.Id, Valid: true},
+		GoogleID:  sql.NullString{String: user.Id, Valid: true},
 		Image:     user.Picture,
 	})
 	if err != nil {

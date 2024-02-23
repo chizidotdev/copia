@@ -1,14 +1,13 @@
 package adapters
 
 import (
-	"context"
+	"database/sql"
+	_ "github.com/lib/pq"
 	"log"
-
-	"github.com/jackc/pgx/v5"
 )
 
-func NewPostgresClient(connString string) *pgx.Conn {
-	conn, err := pgx.Connect(context.Background(), connString)
+func NewPostgresClient(connString string) *sql.DB {
+	conn, err := sql.Open("postgres", connString)
 	if err != nil {
 		log.Fatal("Cannot connect to postgres database: ", err)
 	}

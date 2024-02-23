@@ -7,8 +7,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createOrder = `-- name: CreateOrder :one
@@ -21,19 +22,19 @@ RETURNING id, user_id, order_date, total_amount, status, payment_status, shippin
 `
 
 type CreateOrderParams struct {
-	UserID          pgtype.UUID      `json:"user_id"`
-	OrderDate       pgtype.Timestamp `json:"order_date"`
-	TotalAmount     pgtype.Numeric   `json:"total_amount"`
-	Status          string           `json:"status"`
-	PaymentStatus   string           `json:"payment_status"`
-	ShippingAddress string           `json:"shipping_address"`
-	CreatedAt       pgtype.Timestamp `json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	UserID          uuid.UUID `json:"user_id"`
+	OrderDate       time.Time `json:"order_date"`
+	TotalAmount     string    `json:"total_amount"`
+	Status          string    `json:"status"`
+	PaymentStatus   string    `json:"payment_status"`
+	ShippingAddress string    `json:"shipping_address"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // Create a new order
 func (q *Queries) CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error) {
-	row := q.db.QueryRow(ctx, createOrder,
+	row := q.db.QueryRowContext(ctx, createOrder,
 		arg.UserID,
 		arg.OrderDate,
 		arg.TotalAmount,
@@ -64,8 +65,8 @@ WHERE id = $1
 `
 
 // Delete an order by ID
-func (q *Queries) DeleteOrder(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteOrder, id)
+func (q *Queries) DeleteOrder(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteOrder, id)
 	return err
 }
 
@@ -75,8 +76,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get an order by ID
-func (q *Queries) GetOrder(ctx context.Context, id pgtype.UUID) (Order, error) {
-	row := q.db.QueryRow(ctx, getOrder, id)
+func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrder, id)
 	var i Order
 	err := row.Scan(
 		&i.ID,
@@ -99,7 +100,7 @@ ORDER BY order_date
 
 // List all orders
 func (q *Queries) ListOrders(ctx context.Context) ([]Order, error) {
-	rows, err := q.db.Query(ctx, listOrders)
+	rows, err := q.db.QueryContext(ctx, listOrders)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +123,9 @@ func (q *Queries) ListOrders(ctx context.Context) ([]Order, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -143,20 +147,20 @@ WHERE id = $1
 `
 
 type UpdateOrderParams struct {
-	ID              pgtype.UUID      `json:"id"`
-	UserID          pgtype.UUID      `json:"user_id"`
-	OrderDate       pgtype.Timestamp `json:"order_date"`
-	TotalAmount     pgtype.Numeric   `json:"total_amount"`
-	Status          string           `json:"status"`
-	PaymentStatus   string           `json:"payment_status"`
-	ShippingAddress string           `json:"shipping_address"`
-	CreatedAt       pgtype.Timestamp `json:"created_at"`
-	UpdatedAt       pgtype.Timestamp `json:"updated_at"`
+	ID              uuid.UUID `json:"id"`
+	UserID          uuid.UUID `json:"user_id"`
+	OrderDate       time.Time `json:"order_date"`
+	TotalAmount     string    `json:"total_amount"`
+	Status          string    `json:"status"`
+	PaymentStatus   string    `json:"payment_status"`
+	ShippingAddress string    `json:"shipping_address"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 
 // Update an order by ID
 func (q *Queries) UpdateOrder(ctx context.Context, arg UpdateOrderParams) error {
-	_, err := q.db.Exec(ctx, updateOrder,
+	_, err := q.db.ExecContext(ctx, updateOrder,
 		arg.ID,
 		arg.UserID,
 		arg.OrderDate,

@@ -7,7 +7,7 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -28,37 +28,37 @@ type Querier interface {
 	// Create a new user
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Delete a commission by ID
-	DeleteCommission(ctx context.Context, id pgtype.UUID) error
+	DeleteCommission(ctx context.Context, id uuid.UUID) error
 	// Delete a customer by ID
-	DeleteCustomer(ctx context.Context, id pgtype.UUID) error
+	DeleteCustomer(ctx context.Context, id uuid.UUID) error
 	// Delete a link by ID
-	DeleteLink(ctx context.Context, id pgtype.UUID) error
+	DeleteLink(ctx context.Context, id uuid.UUID) error
 	// Delete an order by ID
-	DeleteOrder(ctx context.Context, id pgtype.UUID) error
+	DeleteOrder(ctx context.Context, id uuid.UUID) error
 	// Delete an order item by ID
-	DeleteOrderItem(ctx context.Context, id pgtype.UUID) error
+	DeleteOrderItem(ctx context.Context, id uuid.UUID) error
 	// Delete a product by ID
-	DeleteProduct(ctx context.Context, id pgtype.UUID) error
+	DeleteProduct(ctx context.Context, id uuid.UUID) error
 	// Delete a store by ID
-	DeleteStore(ctx context.Context, id pgtype.UUID) error
+	DeleteStore(ctx context.Context, id uuid.UUID) error
 	// Delete a user by ID
-	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	DeleteUser(ctx context.Context, id uuid.UUID) error
 	// Get a commission by ID
-	GetCommission(ctx context.Context, id pgtype.UUID) (Commission, error)
+	GetCommission(ctx context.Context, id uuid.UUID) (Commission, error)
 	// Get a customer by ID
-	GetCustomer(ctx context.Context, id pgtype.UUID) (Customer, error)
+	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	// Get a link by ID
-	GetLink(ctx context.Context, id pgtype.UUID) (Link, error)
+	GetLink(ctx context.Context, id uuid.UUID) (Link, error)
 	// Get an order by ID
-	GetOrder(ctx context.Context, id pgtype.UUID) (Order, error)
+	GetOrder(ctx context.Context, id uuid.UUID) (Order, error)
 	// Get an order item by ID
-	GetOrderItem(ctx context.Context, id pgtype.UUID) (OrderItem, error)
+	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
 	// Get a product by ID
-	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
+	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	// Get a store by ID
-	GetStore(ctx context.Context, id pgtype.UUID) (Store, error)
+	GetStore(ctx context.Context, id uuid.UUID) (Store, error)
 	// Get a user by ID
-	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
+	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	// List all commissions
 	ListCommissions(ctx context.Context) ([]Commission, error)
 	// List all customers

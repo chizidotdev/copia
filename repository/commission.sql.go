@@ -8,7 +8,7 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createCommission = `-- name: CreateCommission :one
@@ -21,15 +21,15 @@ RETURNING id, order_id, user_id, commission_amount, paid_status
 `
 
 type CreateCommissionParams struct {
-	OrderID          pgtype.UUID    `json:"order_id"`
-	UserID           pgtype.UUID    `json:"user_id"`
-	CommissionAmount pgtype.Numeric `json:"commission_amount"`
-	PaidStatus       string         `json:"paid_status"`
+	OrderID          uuid.UUID `json:"order_id"`
+	UserID           uuid.UUID `json:"user_id"`
+	CommissionAmount string    `json:"commission_amount"`
+	PaidStatus       string    `json:"paid_status"`
 }
 
 // Create a new commission
 func (q *Queries) CreateCommission(ctx context.Context, arg CreateCommissionParams) (Commission, error) {
-	row := q.db.QueryRow(ctx, createCommission,
+	row := q.db.QueryRowContext(ctx, createCommission,
 		arg.OrderID,
 		arg.UserID,
 		arg.CommissionAmount,
@@ -52,8 +52,8 @@ WHERE id = $1
 `
 
 // Delete a commission by ID
-func (q *Queries) DeleteCommission(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteCommission, id)
+func (q *Queries) DeleteCommission(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteCommission, id)
 	return err
 }
 
@@ -63,8 +63,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a commission by ID
-func (q *Queries) GetCommission(ctx context.Context, id pgtype.UUID) (Commission, error) {
-	row := q.db.QueryRow(ctx, getCommission, id)
+func (q *Queries) GetCommission(ctx context.Context, id uuid.UUID) (Commission, error) {
+	row := q.db.QueryRowContext(ctx, getCommission, id)
 	var i Commission
 	err := row.Scan(
 		&i.ID,
@@ -83,7 +83,7 @@ ORDER BY order_id, user_id
 
 // List all commissions
 func (q *Queries) ListCommissions(ctx context.Context) ([]Commission, error) {
-	rows, err := q.db.Query(ctx, listCommissions)
+	rows, err := q.db.QueryContext(ctx, listCommissions)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +102,9 @@ func (q *Queries) ListCommissions(ctx context.Context) ([]Commission, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -119,16 +122,16 @@ WHERE id = $1
 `
 
 type UpdateCommissionParams struct {
-	ID               pgtype.UUID    `json:"id"`
-	OrderID          pgtype.UUID    `json:"order_id"`
-	UserID           pgtype.UUID    `json:"user_id"`
-	CommissionAmount pgtype.Numeric `json:"commission_amount"`
-	PaidStatus       string         `json:"paid_status"`
+	ID               uuid.UUID `json:"id"`
+	OrderID          uuid.UUID `json:"order_id"`
+	UserID           uuid.UUID `json:"user_id"`
+	CommissionAmount string    `json:"commission_amount"`
+	PaidStatus       string    `json:"paid_status"`
 }
 
 // Update a commission by ID
 func (q *Queries) UpdateCommission(ctx context.Context, arg UpdateCommissionParams) error {
-	_, err := q.db.Exec(ctx, updateCommission,
+	_, err := q.db.ExecContext(ctx, updateCommission,
 		arg.ID,
 		arg.OrderID,
 		arg.UserID,

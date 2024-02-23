@@ -8,7 +8,7 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createLink = `-- name: CreateLink :one
@@ -21,14 +21,14 @@ RETURNING id, user_id, unique_link, link_type
 `
 
 type CreateLinkParams struct {
-	UserID     pgtype.UUID `json:"user_id"`
-	UniqueLink string      `json:"unique_link"`
-	LinkType   string      `json:"link_type"`
+	UserID     uuid.UUID `json:"user_id"`
+	UniqueLink string    `json:"unique_link"`
+	LinkType   string    `json:"link_type"`
 }
 
 // Create a new link
 func (q *Queries) CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error) {
-	row := q.db.QueryRow(ctx, createLink, arg.UserID, arg.UniqueLink, arg.LinkType)
+	row := q.db.QueryRowContext(ctx, createLink, arg.UserID, arg.UniqueLink, arg.LinkType)
 	var i Link
 	err := row.Scan(
 		&i.ID,
@@ -45,8 +45,8 @@ WHERE id = $1
 `
 
 // Delete a link by ID
-func (q *Queries) DeleteLink(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteLink, id)
+func (q *Queries) DeleteLink(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteLink, id)
 	return err
 }
 
@@ -56,8 +56,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a link by ID
-func (q *Queries) GetLink(ctx context.Context, id pgtype.UUID) (Link, error) {
-	row := q.db.QueryRow(ctx, getLink, id)
+func (q *Queries) GetLink(ctx context.Context, id uuid.UUID) (Link, error) {
+	row := q.db.QueryRowContext(ctx, getLink, id)
 	var i Link
 	err := row.Scan(
 		&i.ID,
@@ -75,7 +75,7 @@ ORDER BY user_id
 
 // List all links
 func (q *Queries) ListLinks(ctx context.Context) ([]Link, error) {
-	rows, err := q.db.Query(ctx, listLinks)
+	rows, err := q.db.QueryContext(ctx, listLinks)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +93,9 @@ func (q *Queries) ListLinks(ctx context.Context) ([]Link, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -109,15 +112,15 @@ WHERE id = $1
 `
 
 type UpdateLinkParams struct {
-	ID         pgtype.UUID `json:"id"`
-	UserID     pgtype.UUID `json:"user_id"`
-	UniqueLink string      `json:"unique_link"`
-	LinkType   string      `json:"link_type"`
+	ID         uuid.UUID `json:"id"`
+	UserID     uuid.UUID `json:"user_id"`
+	UniqueLink string    `json:"unique_link"`
+	LinkType   string    `json:"link_type"`
 }
 
 // Update a link by ID
 func (q *Queries) UpdateLink(ctx context.Context, arg UpdateLinkParams) error {
-	_, err := q.db.Exec(ctx, updateLink,
+	_, err := q.db.ExecContext(ctx, updateLink,
 		arg.ID,
 		arg.UserID,
 		arg.UniqueLink,

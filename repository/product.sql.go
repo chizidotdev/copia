@@ -7,8 +7,9 @@ package repository
 
 import (
 	"context"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createProduct = `-- name: CreateProduct :one
@@ -21,19 +22,19 @@ RETURNING id, store_id, sku, name, description, price, stock_quantity, created_a
 `
 
 type CreateProductParams struct {
-	StoreID       pgtype.UUID      `json:"store_id"`
-	Sku           string           `json:"sku"`
-	Name          string           `json:"name"`
-	Description   string           `json:"description"`
-	Price         pgtype.Numeric   `json:"price"`
-	StockQuantity int32            `json:"stock_quantity"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	StoreID       uuid.UUID `json:"store_id"`
+	Sku           string    `json:"sku"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	Price         string    `json:"price"`
+	StockQuantity int32     `json:"stock_quantity"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // Create a new product
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
-	row := q.db.QueryRow(ctx, createProduct,
+	row := q.db.QueryRowContext(ctx, createProduct,
 		arg.StoreID,
 		arg.Sku,
 		arg.Name,
@@ -64,8 +65,8 @@ WHERE id = $1
 `
 
 // Delete a product by ID
-func (q *Queries) DeleteProduct(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteProduct, id)
+func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteProduct, id)
 	return err
 }
 
@@ -75,8 +76,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a product by ID
-func (q *Queries) GetProduct(ctx context.Context, id pgtype.UUID) (Product, error) {
-	row := q.db.QueryRow(ctx, getProduct, id)
+func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error) {
+	row := q.db.QueryRowContext(ctx, getProduct, id)
 	var i Product
 	err := row.Scan(
 		&i.ID,
@@ -99,7 +100,7 @@ ORDER BY name
 
 // List all products
 func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.Query(ctx, listProducts)
+	rows, err := q.db.QueryContext(ctx, listProducts)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +123,9 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -143,20 +147,20 @@ WHERE id = $1
 `
 
 type UpdateProductParams struct {
-	ID            pgtype.UUID      `json:"id"`
-	StoreID       pgtype.UUID      `json:"store_id"`
-	Sku           string           `json:"sku"`
-	Name          string           `json:"name"`
-	Description   string           `json:"description"`
-	Price         pgtype.Numeric   `json:"price"`
-	StockQuantity int32            `json:"stock_quantity"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	ID            uuid.UUID `json:"id"`
+	StoreID       uuid.UUID `json:"store_id"`
+	Sku           string    `json:"sku"`
+	Name          string    `json:"name"`
+	Description   string    `json:"description"`
+	Price         string    `json:"price"`
+	StockQuantity int32     `json:"stock_quantity"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // Update a product by ID
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
-	_, err := q.db.Exec(ctx, updateProduct,
+	_, err := q.db.ExecContext(ctx, updateProduct,
 		arg.ID,
 		arg.StoreID,
 		arg.Sku,

@@ -8,7 +8,7 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createOrderItem = `-- name: CreateOrderItem :one
@@ -21,16 +21,16 @@ RETURNING id, order_id, product_id, quantity, unit_price, subtotal
 `
 
 type CreateOrderItemParams struct {
-	OrderID   pgtype.UUID    `json:"order_id"`
-	ProductID pgtype.UUID    `json:"product_id"`
-	Quantity  int32          `json:"quantity"`
-	UnitPrice pgtype.Numeric `json:"unit_price"`
-	Subtotal  pgtype.Numeric `json:"subtotal"`
+	OrderID   uuid.UUID `json:"order_id"`
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int32     `json:"quantity"`
+	UnitPrice string    `json:"unit_price"`
+	Subtotal  string    `json:"subtotal"`
 }
 
 // Create a new order item
 func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error) {
-	row := q.db.QueryRow(ctx, createOrderItem,
+	row := q.db.QueryRowContext(ctx, createOrderItem,
 		arg.OrderID,
 		arg.ProductID,
 		arg.Quantity,
@@ -55,8 +55,8 @@ WHERE id = $1
 `
 
 // Delete an order item by ID
-func (q *Queries) DeleteOrderItem(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteOrderItem, id)
+func (q *Queries) DeleteOrderItem(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteOrderItem, id)
 	return err
 }
 
@@ -66,8 +66,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get an order item by ID
-func (q *Queries) GetOrderItem(ctx context.Context, id pgtype.UUID) (OrderItem, error) {
-	row := q.db.QueryRow(ctx, getOrderItem, id)
+func (q *Queries) GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error) {
+	row := q.db.QueryRowContext(ctx, getOrderItem, id)
 	var i OrderItem
 	err := row.Scan(
 		&i.ID,
@@ -87,7 +87,7 @@ ORDER BY order_id, product_id
 
 // List all order items
 func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
-	rows, err := q.db.Query(ctx, listOrderItems)
+	rows, err := q.db.QueryContext(ctx, listOrderItems)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +107,9 @@ func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -125,17 +128,17 @@ WHERE id = $1
 `
 
 type UpdateOrderItemParams struct {
-	ID        pgtype.UUID    `json:"id"`
-	OrderID   pgtype.UUID    `json:"order_id"`
-	ProductID pgtype.UUID    `json:"product_id"`
-	Quantity  int32          `json:"quantity"`
-	UnitPrice pgtype.Numeric `json:"unit_price"`
-	Subtotal  pgtype.Numeric `json:"subtotal"`
+	ID        uuid.UUID `json:"id"`
+	OrderID   uuid.UUID `json:"order_id"`
+	ProductID uuid.UUID `json:"product_id"`
+	Quantity  int32     `json:"quantity"`
+	UnitPrice string    `json:"unit_price"`
+	Subtotal  string    `json:"subtotal"`
 }
 
 // Update an order item by ID
 func (q *Queries) UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error {
-	_, err := q.db.Exec(ctx, updateOrderItem,
+	_, err := q.db.ExecContext(ctx, updateOrderItem,
 		arg.ID,
 		arg.OrderID,
 		arg.ProductID,

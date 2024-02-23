@@ -8,7 +8,7 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createCustomer = `-- name: CreateCustomer :one
@@ -21,17 +21,17 @@ RETURNING id, store_id, first_name, last_name, email, phone, address
 `
 
 type CreateCustomerParams struct {
-	StoreID   pgtype.UUID `json:"store_id"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Email     string      `json:"email"`
-	Phone     string      `json:"phone"`
-	Address   string      `json:"address"`
+	StoreID   uuid.UUID `json:"store_id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Address   string    `json:"address"`
 }
 
 // Create a new customer
 func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error) {
-	row := q.db.QueryRow(ctx, createCustomer,
+	row := q.db.QueryRowContext(ctx, createCustomer,
 		arg.StoreID,
 		arg.FirstName,
 		arg.LastName,
@@ -58,8 +58,8 @@ WHERE id = $1
 `
 
 // Delete a customer by ID
-func (q *Queries) DeleteCustomer(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteCustomer, id)
+func (q *Queries) DeleteCustomer(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteCustomer, id)
 	return err
 }
 
@@ -69,8 +69,8 @@ WHERE id = $1 LIMIT 1
 `
 
 // Get a customer by ID
-func (q *Queries) GetCustomer(ctx context.Context, id pgtype.UUID) (Customer, error) {
-	row := q.db.QueryRow(ctx, getCustomer, id)
+func (q *Queries) GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error) {
+	row := q.db.QueryRowContext(ctx, getCustomer, id)
 	var i Customer
 	err := row.Scan(
 		&i.ID,
@@ -91,7 +91,7 @@ ORDER BY store_id, first_name, last_name
 
 // List all customers
 func (q *Queries) ListCustomers(ctx context.Context) ([]Customer, error) {
-	rows, err := q.db.Query(ctx, listCustomers)
+	rows, err := q.db.QueryContext(ctx, listCustomers)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +112,9 @@ func (q *Queries) ListCustomers(ctx context.Context) ([]Customer, error) {
 		}
 		items = append(items, i)
 	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -131,18 +134,18 @@ WHERE id = $1
 `
 
 type UpdateCustomerParams struct {
-	ID        pgtype.UUID `json:"id"`
-	StoreID   pgtype.UUID `json:"store_id"`
-	FirstName string      `json:"first_name"`
-	LastName  string      `json:"last_name"`
-	Email     string      `json:"email"`
-	Phone     string      `json:"phone"`
-	Address   string      `json:"address"`
+	ID        uuid.UUID `json:"id"`
+	StoreID   uuid.UUID `json:"store_id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Address   string    `json:"address"`
 }
 
 // Update a customer by ID
 func (q *Queries) UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error {
-	_, err := q.db.Exec(ctx, updateCustomer,
+	_, err := q.db.ExecContext(ctx, updateCustomer,
 		arg.ID,
 		arg.StoreID,
 		arg.FirstName,
