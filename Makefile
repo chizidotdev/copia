@@ -12,3 +12,15 @@ dropdb:
 
 sqlc:
 	sqlc generate
+
+redis:
+	docker run --name am-shop-redis -p 6389:6379 -d redis
+
+redis-cli:
+	docker exec -it am-shop-redis redis-cli
+
+server:
+	go run cmd/app/main.go
+
+
+.PHONY: postgres postgres-cli createdb dropdb sqlc redis redis-cli server
