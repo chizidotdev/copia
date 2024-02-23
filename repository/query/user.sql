@@ -35,3 +35,20 @@ WHERE id = $1;
 DELETE FROM users
 WHERE id = $1;
 
+-- Upsert a user by email
+-- name: UpsertUser :one
+INSERT INTO users (
+  email, first_name, last_name, image, password, google_id, role
+) VALUES (
+  $1, $2, $3, $4, $5, $6, $7
+)
+ON CONFLICT (email) DO UPDATE
+SET
+  email = $1,
+  first_name = $2,
+  last_name = $3,
+  image = $4,
+  password = $5,
+  google_id = $6,
+  role = $7
+RETURNING *;

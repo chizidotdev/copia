@@ -11,16 +11,88 @@ import (
 )
 
 type Querier interface {
+	// Create a new commission
+	CreateCommission(ctx context.Context, arg CreateCommissionParams) (Commission, error)
+	// Create a new customer
+	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
+	// Create a new link
+	CreateLink(ctx context.Context, arg CreateLinkParams) (Link, error)
+	// Create a new order
+	CreateOrder(ctx context.Context, arg CreateOrderParams) (Order, error)
+	// Create a new order item
+	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
+	// Create a new product
+	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	// Create a new store
+	CreateStore(ctx context.Context, arg CreateStoreParams) (Store, error)
 	// Create a new user
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Delete a commission by ID
+	DeleteCommission(ctx context.Context, id pgtype.UUID) error
+	// Delete a customer by ID
+	DeleteCustomer(ctx context.Context, id pgtype.UUID) error
+	// Delete a link by ID
+	DeleteLink(ctx context.Context, id pgtype.UUID) error
+	// Delete an order by ID
+	DeleteOrder(ctx context.Context, id pgtype.UUID) error
+	// Delete an order item by ID
+	DeleteOrderItem(ctx context.Context, id pgtype.UUID) error
+	// Delete a product by ID
+	DeleteProduct(ctx context.Context, id pgtype.UUID) error
+	// Delete a store by ID
+	DeleteStore(ctx context.Context, id pgtype.UUID) error
 	// Delete a user by ID
 	DeleteUser(ctx context.Context, id pgtype.UUID) error
+	// Get a commission by ID
+	GetCommission(ctx context.Context, id pgtype.UUID) (Commission, error)
+	// Get a customer by ID
+	GetCustomer(ctx context.Context, id pgtype.UUID) (Customer, error)
+	// Get a link by ID
+	GetLink(ctx context.Context, id pgtype.UUID) (Link, error)
+	// Get an order by ID
+	GetOrder(ctx context.Context, id pgtype.UUID) (Order, error)
+	// Get an order item by ID
+	GetOrderItem(ctx context.Context, id pgtype.UUID) (OrderItem, error)
+	// Get a product by ID
+	GetProduct(ctx context.Context, id pgtype.UUID) (Product, error)
+	// Get a store by ID
+	GetStore(ctx context.Context, id pgtype.UUID) (Store, error)
 	// Get a user by ID
 	GetUser(ctx context.Context, id pgtype.UUID) (User, error)
+	// List all commissions
+	ListCommissions(ctx context.Context) ([]Commission, error)
+	// List all customers
+	ListCustomers(ctx context.Context) ([]Customer, error)
+	// List all links
+	ListLinks(ctx context.Context) ([]Link, error)
+	// List all order items
+	ListOrderItems(ctx context.Context) ([]OrderItem, error)
+	// List all orders
+	ListOrders(ctx context.Context) ([]Order, error)
+	// List all products
+	ListProducts(ctx context.Context) ([]Product, error)
+	// List all stores
+	ListStores(ctx context.Context) ([]Store, error)
 	// List all users
 	ListUsers(ctx context.Context) ([]User, error)
+	// Update a commission by ID
+	UpdateCommission(ctx context.Context, arg UpdateCommissionParams) error
+	// Update a customer by ID
+	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error
+	// Update a link by ID
+	UpdateLink(ctx context.Context, arg UpdateLinkParams) error
+	// Update an order by ID
+	UpdateOrder(ctx context.Context, arg UpdateOrderParams) error
+	// Update an order item by ID
+	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error
+	// Update a product by ID
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
+	// Update a store by ID
+	UpdateStore(ctx context.Context, arg UpdateStoreParams) error
 	// Update a user by ID
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	// Upsert a user by email
+	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

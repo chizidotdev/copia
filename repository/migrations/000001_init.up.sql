@@ -6,7 +6,7 @@ CREATE TYPE "user_role" AS ENUM (
 
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY,
-  "email" varchar NOT NULL,
+  "email" varchar UNIQUE NOT NULL,
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,
   "image" varchar NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE "users" (
 CREATE TABLE "stores" (
   "id" uuid PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "store_name" varchar NOT NULL,
+  "name" varchar UNIQUE NOT NULL,
   "description" text NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
   "updated_at" timestamp NOT NULL DEFAULT (now())
@@ -70,7 +70,7 @@ CREATE TABLE "commissions" (
 CREATE TABLE "links" (
   "id" uuid PRIMARY KEY,
   "user_id" uuid NOT NULL,
-  "unique_link" varchar NOT NULL,
+  "unique_link" varchar UNIQUE NOT NULL,
   "link_type" varchar NOT NULL
 );
 

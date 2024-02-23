@@ -115,7 +115,7 @@ type Product struct {
 type Store struct {
 	ID          pgtype.UUID      `json:"id"`
 	UserID      pgtype.UUID      `json:"user_id"`
-	StoreName   string           `json:"store_name"`
+	Name        string           `json:"name"`
 	Description string           `json:"description"`
 	CreatedAt   pgtype.Timestamp `json:"created_at"`
 	UpdatedAt   pgtype.Timestamp `json:"updated_at"`
