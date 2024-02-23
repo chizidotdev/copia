@@ -13,11 +13,11 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  email, first_name, last_name, image, password, google_id, role
+  email, first_name, last_name, image, google_id, role
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, email, first_name, last_name, image, password, google_id, role, created_at, updated_at
+RETURNING id, email, first_name, last_name, image, google_id, role, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -25,7 +25,6 @@ type CreateUserParams struct {
 	FirstName string      `json:"first_name"`
 	LastName  string      `json:"last_name"`
 	Image     string      `json:"image"`
-	Password  string      `json:"password"`
 	GoogleID  pgtype.Text `json:"google_id"`
 	Role      UserRole    `json:"role"`
 }
@@ -37,7 +36,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.Image,
-		arg.Password,
 		arg.GoogleID,
 		arg.Role,
 	)
@@ -48,7 +46,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Image,
-		&i.Password,
 		&i.GoogleID,
 		&i.Role,
 		&i.CreatedAt,
@@ -69,7 +66,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, first_name, last_name, image, password, google_id, role, created_at, updated_at FROM users
+SELECT id, email, first_name, last_name, image, google_id, role, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -83,7 +80,6 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 		&i.FirstName,
 		&i.LastName,
 		&i.Image,
-		&i.Password,
 		&i.GoogleID,
 		&i.Role,
 		&i.CreatedAt,
@@ -93,7 +89,7 @@ func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, email, first_name, last_name, image, password, google_id, role, created_at, updated_at FROM users
+SELECT id, email, first_name, last_name, image, google_id, role, created_at, updated_at FROM users
 ORDER BY first_name, last_name
 `
 
@@ -113,7 +109,6 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.FirstName,
 			&i.LastName,
 			&i.Image,
-			&i.Password,
 			&i.GoogleID,
 			&i.Role,
 			&i.CreatedAt,
@@ -136,9 +131,8 @@ SET
   first_name = $3,
   last_name = $4,
   image = $5,
-  password = $6,
-  google_id = $7,
-  role = $8
+  google_id = $6,
+  role = $7
 WHERE id = $1
 `
 
@@ -148,7 +142,6 @@ type UpdateUserParams struct {
 	FirstName string      `json:"first_name"`
 	LastName  string      `json:"last_name"`
 	Image     string      `json:"image"`
-	Password  string      `json:"password"`
 	GoogleID  pgtype.Text `json:"google_id"`
 	Role      UserRole    `json:"role"`
 }
@@ -161,7 +154,6 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 		arg.FirstName,
 		arg.LastName,
 		arg.Image,
-		arg.Password,
 		arg.GoogleID,
 		arg.Role,
 	)
@@ -170,9 +162,9 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 
 const upsertUser = `-- name: UpsertUser :one
 INSERT INTO users (
-  email, first_name, last_name, image, password, google_id, role
+  email, first_name, last_name, image, google_id, role
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 )
 ON CONFLICT (email) DO UPDATE
 SET
@@ -180,10 +172,9 @@ SET
   first_name = $2,
   last_name = $3,
   image = $4,
-  password = $5,
-  google_id = $6,
-  role = $7
-RETURNING id, email, first_name, last_name, image, password, google_id, role, created_at, updated_at
+  google_id = $5,
+  role = $6
+RETURNING id, email, first_name, last_name, image, google_id, role, created_at, updated_at
 `
 
 type UpsertUserParams struct {
@@ -191,7 +182,6 @@ type UpsertUserParams struct {
 	FirstName string      `json:"first_name"`
 	LastName  string      `json:"last_name"`
 	Image     string      `json:"image"`
-	Password  string      `json:"password"`
 	GoogleID  pgtype.Text `json:"google_id"`
 	Role      UserRole    `json:"role"`
 }
@@ -203,7 +193,6 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		arg.FirstName,
 		arg.LastName,
 		arg.Image,
-		arg.Password,
 		arg.GoogleID,
 		arg.Role,
 	)
@@ -214,7 +203,6 @@ func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (User, e
 		&i.FirstName,
 		&i.LastName,
 		&i.Image,
-		&i.Password,
 		&i.GoogleID,
 		&i.Role,
 		&i.CreatedAt,

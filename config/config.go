@@ -18,7 +18,6 @@ type Config struct {
 
 	CookieDomain       string `mapstructure:"COOKIE_DOMAIN"`
 	AuthSecret         string `mapstructure:"AUTH_SECRET"`
-	AuthDomain         string `mapstructure:"AUTH_DOMAIN"`
 	AuthCallbackURL    string `mapstructure:"AUTH_CALLBACK_URL"`
 	GoogleClientID     string `mapstructure:"GOOGLE_CLIENT_ID"`
 	GoogleClientSecret string `mapstructure:"GOOGLE_CLIENT_SECRET"`
@@ -51,7 +50,6 @@ func LoadConfig() {
 
 	EnvVars.CookieDomain = viper.GetString("COOKIE_DOMAIN")
 	EnvVars.AuthSecret = viper.GetString("AUTH_SECRET")
-	EnvVars.AuthDomain = viper.GetString("AUTH_DOMAIN")
 	EnvVars.AuthCallbackURL = viper.GetString("AUTH_CALLBACK_URL")
 	EnvVars.GoogleClientID = viper.GetString("GOOGLE_CLIENT_ID")
 	EnvVars.GoogleClientSecret = viper.GetString("GOOGLE_CLIENT_SECRET")

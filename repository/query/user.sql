@@ -11,9 +11,9 @@ ORDER BY first_name, last_name;
 -- Create a new user
 -- name: CreateUser :one
 INSERT INTO users (
-  email, first_name, last_name, image, password, google_id, role
+  email, first_name, last_name, image, google_id, role
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
@@ -25,9 +25,8 @@ SET
   first_name = $3,
   last_name = $4,
   image = $5,
-  password = $6,
-  google_id = $7,
-  role = $8
+  google_id = $6,
+  role = $7
 WHERE id = $1;
 
 -- Delete a user by ID
@@ -38,9 +37,9 @@ WHERE id = $1;
 -- Upsert a user by email
 -- name: UpsertUser :one
 INSERT INTO users (
-  email, first_name, last_name, image, password, google_id, role
+  email, first_name, last_name, image, google_id, role
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7
+  $1, $2, $3, $4, $5, $6
 )
 ON CONFLICT (email) DO UPDATE
 SET
@@ -48,7 +47,6 @@ SET
   first_name = $2,
   last_name = $3,
   image = $4,
-  password = $5,
-  google_id = $6,
-  role = $7
+  google_id = $5,
+  role = $6
 RETURNING *;

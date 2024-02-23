@@ -10,7 +10,6 @@ CREATE TABLE "users" (
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,
   "image" varchar NOT NULL,
-  "password" varchar NOT NULL,
   "google_id" varchar,
   "role" user_role NOT NULL DEFAULT 'customer',
   "created_at" timestamp NOT NULL DEFAULT (now()),

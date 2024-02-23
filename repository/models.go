@@ -127,7 +127,6 @@ type User struct {
 	FirstName string           `json:"first_name"`
 	LastName  string           `json:"last_name"`
 	Image     string           `json:"image"`
-	Password  string           `json:"password"`
 	GoogleID  pgtype.Text      `json:"google_id"`
 	Role      UserRole         `json:"role"`
 	CreatedAt pgtype.Timestamp `json:"created_at"`

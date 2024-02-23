@@ -1,6 +1,10 @@
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/chizidotdev/shop/api/middleware"
+	"github.com/chizidotdev/shop/api/user"
+	"github.com/gin-gonic/gin"
+)
 
 // createRoutes creates all the routes for the server
 func createRoutes(server *Server) {
@@ -12,18 +16,11 @@ func createRoutes(server *Server) {
 	})
 
 	// User routes
-	// userHandler := NewUserHandler(server.UserService)
-	// server.router.GET("/user", middleware.IsAuthenticated, userHandler.getUser)
-	// server.router.POST("/register", userHandler.createUser)
-	// server.router.POST("/login", userHandler.login)
-	// server.router.GET("/login/google", userHandler.loginWithSSO)
-	// server.router.GET("/callback", userHandler.ssoCallback)
-	// server.router.POST("/logout", userHandler.logout)
-
-	// server.router.POST("/send-verification-email", userHandler.sendVerificationEmail)
-	// server.router.POST("/verify-email", userHandler.verifyEmail)
-	// server.router.POST("/reset-password", userHandler.resetPassword)
-	// server.router.POST("/change-password", userHandler.changePassword)
+	userHandler := user.NewUserHandler(server.pgStore)
+	server.router.GET("/user", middleware.IsAuthenticated, userHandler.GetUser)
+	server.router.GET("/login/google", userHandler.GoogleLogin)
+	server.router.GET("/callback", userHandler.GoogleCallback)
+	server.router.POST("/logout", userHandler.Logout)
 
 	// // Product routes
 	// productHandler := NewProductHandler(server.ProductService)
