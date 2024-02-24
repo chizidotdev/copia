@@ -42,7 +42,6 @@ func (u *UserHandler) getGoogleUserData(ctx context.Context, code string) (UserD
 		return UserData{}, err
 	}
 
-	// gob.Register(UserData{})
 	var user UserData
 	err = json.Unmarshal(data, &user)
 	if err != nil {

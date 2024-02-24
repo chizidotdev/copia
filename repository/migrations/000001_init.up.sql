@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TYPE "user_role" AS ENUM (
   'master',
   'vendor',
@@ -5,7 +7,7 @@ CREATE TYPE "user_role" AS ENUM (
 );
 
 CREATE TABLE "users" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "email" varchar UNIQUE NOT NULL,
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,
@@ -17,16 +19,17 @@ CREATE TABLE "users" (
 );
 
 CREATE TABLE "stores" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "user_id" uuid NOT NULL,
   "name" varchar UNIQUE NOT NULL,
   "description" text NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
-  "updated_at" timestamp NOT NULL DEFAULT (now())
+  "updated_at" timestamp NOT NULL DEFAULT (now()),
+  UNIQUE ("user_id", "name")
 );
 
 CREATE TABLE "products" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "store_id" uuid NOT NULL,
   "sku" varchar NOT NULL,
   "name" varchar NOT NULL,
@@ -38,7 +41,7 @@ CREATE TABLE "products" (
 );
 
 CREATE TABLE "orders" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "user_id" uuid NOT NULL,
   "order_date" timestamp NOT NULL,
   "total_amount" decimal NOT NULL,
@@ -50,7 +53,7 @@ CREATE TABLE "orders" (
 );
 
 CREATE TABLE "order_items" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "order_id" uuid NOT NULL,
   "product_id" uuid NOT NULL,
   "quantity" int NOT NULL,
@@ -59,7 +62,7 @@ CREATE TABLE "order_items" (
 );
 
 CREATE TABLE "commissions" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "order_id" uuid NOT NULL,
   "user_id" uuid NOT NULL,
   "commission_amount" decimal NOT NULL,
@@ -67,14 +70,14 @@ CREATE TABLE "commissions" (
 );
 
 CREATE TABLE "links" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "user_id" uuid NOT NULL,
   "unique_link" varchar UNIQUE NOT NULL,
   "link_type" varchar NOT NULL
 );
 
 CREATE TABLE "customers" (
-  "id" uuid PRIMARY KEY,
+  "id" uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   "store_id" uuid NOT NULL,
   "first_name" varchar NOT NULL,
   "last_name" varchar NOT NULL,

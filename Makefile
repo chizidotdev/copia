@@ -20,7 +20,7 @@ redis-cli:
 	docker exec -it am-shop-redis redis-cli
 
 server:
-	go run cmd/app/main.go
+	air
 
 
 .PHONY: postgres postgres-cli createdb dropdb sqlc redis redis-cli server

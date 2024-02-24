@@ -3,6 +3,11 @@
 SELECT * FROM users
 WHERE id = $1 LIMIT 1;
 
+-- Get a user by email
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = $1 LIMIT 1;
+
 -- List all users
 -- name: ListUsers :many
 SELECT * FROM users

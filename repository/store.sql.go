@@ -7,16 +7,15 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createStore = `-- name: CreateStore :one
 INSERT INTO stores (
-  user_id, name, description, created_at, updated_at
+  user_id, name, description
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3
 )
 RETURNING id, user_id, name, description, created_at, updated_at
 `
@@ -25,19 +24,11 @@ type CreateStoreParams struct {
 	UserID      uuid.UUID `json:"user_id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Create a new store
 func (q *Queries) CreateStore(ctx context.Context, arg CreateStoreParams) (Store, error) {
-	row := q.db.QueryRowContext(ctx, createStore,
-		arg.UserID,
-		arg.Name,
-		arg.Description,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
+	row := q.db.QueryRowContext(ctx, createStore, arg.UserID, arg.Name, arg.Description)
 	var i Store
 	err := row.Scan(
 		&i.ID,
@@ -83,12 +74,13 @@ func (q *Queries) GetStore(ctx context.Context, id uuid.UUID) (Store, error) {
 
 const listStores = `-- name: ListStores :many
 SELECT id, user_id, name, description, created_at, updated_at FROM stores
+WHERE user_id = $1
 ORDER BY name
 `
 
 // List all stores
-func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
-	rows, err := q.db.QueryContext(ctx, listStores)
+func (q *Queries) ListStores(ctx context.Context, userID uuid.UUID) ([]Store, error) {
+	rows, err := q.db.QueryContext(ctx, listStores, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,35 +109,49 @@ func (q *Queries) ListStores(ctx context.Context) ([]Store, error) {
 	return items, nil
 }
 
-const updateStore = `-- name: UpdateStore :exec
+const updateStore = `-- name: UpdateStore :many
 UPDATE stores
 SET
-  user_id = $2,
-  name = $3,
-  description = $4,
-  created_at = $5,
-  updated_at = $6
+  name = $2,
+  description = $3,
+  updated_at = NOW()
 WHERE id = $1
+RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type UpdateStoreParams struct {
 	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Update a store by ID
-func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) error {
-	_, err := q.db.ExecContext(ctx, updateStore,
-		arg.ID,
-		arg.UserID,
-		arg.Name,
-		arg.Description,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
-	return err
+func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Store, error) {
+	rows, err := q.db.QueryContext(ctx, updateStore, arg.ID, arg.Name, arg.Description)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Store{}
+	for rows.Next() {
+		var i Store
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

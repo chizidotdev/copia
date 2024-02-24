@@ -59,6 +59,8 @@ type Querier interface {
 	GetStore(ctx context.Context, id uuid.UUID) (Store, error)
 	// Get a user by ID
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
+	// Get a user by email
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	// List all commissions
 	ListCommissions(ctx context.Context) ([]Commission, error)
 	// List all customers
@@ -72,7 +74,7 @@ type Querier interface {
 	// List all products
 	ListProducts(ctx context.Context) ([]Product, error)
 	// List all stores
-	ListStores(ctx context.Context) ([]Store, error)
+	ListStores(ctx context.Context, userID uuid.UUID) ([]Store, error)
 	// List all users
 	ListUsers(ctx context.Context) ([]User, error)
 	// Update a commission by ID
@@ -88,7 +90,7 @@ type Querier interface {
 	// Update a product by ID
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
 	// Update a store by ID
-	UpdateStore(ctx context.Context, arg UpdateStoreParams) error
+	UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Store, error)
 	// Update a user by ID
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
 	// Upsert a user by email

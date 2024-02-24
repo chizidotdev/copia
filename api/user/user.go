@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/gob"
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
@@ -17,12 +18,20 @@ var (
 	profileKey = middleware.ProfileKey
 )
 
+var userRoles = map[string]repository.UserRole{
+	"master":   repository.UserRoleMaster,
+	"vendor":   repository.UserRoleVendor,
+	"customer": repository.UserRoleCustomer,
+}
+
 type UserHandler struct {
 	pgStore *repository.Queries
 	Config  oauth2.Config
 }
 
 func NewUserHandler(pgStore *repository.Queries) *UserHandler {
+	gob.Register(repository.User{})
+
 	oauthConfig := oauth2.Config{
 		ClientID:     config.EnvVars.GoogleClientID,
 		ClientSecret: config.EnvVars.GoogleClientSecret,
