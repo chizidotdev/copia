@@ -13,16 +13,16 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-var (
-	stateKey   = middleware.StateKey
+const (
 	profileKey = middleware.ProfileKey
-)
 
-var userRoles = map[string]repository.UserRole{
-	"master":   repository.UserRoleMaster,
-	"vendor":   repository.UserRoleVendor,
-	"customer": repository.UserRoleCustomer,
-}
+	stateKey       = "state"
+	redirectURIKey = "redirect_uri"
+
+	severError            = "internal_server_error"
+	invalidStateError     = "invalid_state"
+	failedToExchangeError = "failed_to_exchange"
+)
 
 type UserHandler struct {
 	pgStore *repository.Queries
@@ -35,7 +35,7 @@ func NewUserHandler(pgStore *repository.Queries) *UserHandler {
 	oauthConfig := oauth2.Config{
 		ClientID:     config.EnvVars.GoogleClientID,
 		ClientSecret: config.EnvVars.GoogleClientSecret,
-		RedirectURL:  config.EnvVars.AuthCallbackURL,
+		RedirectURL:  config.EnvVars.GoogleRedirectURI,
 		Endpoint:     google.Endpoint,
 		Scopes: []string{
 			"https://www.googleapis.com/auth/userinfo.email",
@@ -51,7 +51,8 @@ func NewUserHandler(pgStore *repository.Queries) *UserHandler {
 
 func (u *UserHandler) GetUser(ctx *gin.Context) {
 	user := middleware.GetAuthenticatedUser(ctx)
-	httpUtil.Success(ctx, http.StatusOK, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusOK,
 		Data:    user,
 		Message: "User retrieved successfully.",
 	})

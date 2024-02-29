@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/chizidotdev/shop/api/httpUtil"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -10,7 +11,6 @@ import (
 
 const (
 	ProfileKey = "profile"
-	StateKey   = "state"
 )
 
 func GetAuthenticatedUser(ctx *gin.Context) repository.User {
@@ -27,7 +27,12 @@ func GetAuthenticatedUser(ctx *gin.Context) repository.User {
 func IsAuthenticated(ctx *gin.Context) {
 	user := GetAuthenticatedUser(ctx)
 	if user == (repository.User{}) {
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, "Unauthorized")
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusForbidden,
+			MessageID: "",
+			Message:   "Forbidden",
+			Reason:    "User is not authenticated",
+		})
 		return
 	}
 

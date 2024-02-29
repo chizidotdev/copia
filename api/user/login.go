@@ -16,13 +16,12 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 	var user loginUserRequest
 	err := ctx.BindJSON(&user)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid email",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
@@ -36,29 +35,29 @@ func (u *UserHandler) Login(ctx *gin.Context) {
 
 	userProfile, err := u.pgStore.GetUserByEmail(ctx, user.Email)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid credentials",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
 	session := sessions.Default(ctx)
 	session.Set(profileKey, userProfile)
 	if err := session.Save(); err != nil {
-		httpUtil.Error(ctx, httpUtil.Errorf(httpUtil.HttpError{
-			Code:      httpUtil.ErrorInternal,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
 			MessageID: "",
 			Message:   "Failed to save session",
 			Reason:    err.Error(),
-		}))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusOK, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusOK,
 		Data:    userProfile,
 		Message: "User logged in successfully",
 	})

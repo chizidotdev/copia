@@ -18,9 +18,10 @@ type Config struct {
 
 	CookieDomain       string `mapstructure:"COOKIE_DOMAIN"`
 	AuthSecret         string `mapstructure:"AUTH_SECRET"`
-	AuthCallbackURL    string `mapstructure:"AUTH_CALLBACK_URL"`
+	AuthCallbackURI    string `mapstructure:"AUTH_CALLBACK_URI"`
 	GoogleClientID     string `mapstructure:"GOOGLE_CLIENT_ID"`
 	GoogleClientSecret string `mapstructure:"GOOGLE_CLIENT_SECRET"`
+	GoogleRedirectURI  string `mapstructure:"GOOGLE_REDIRECT_URI"`
 
 	AWSRegion          string `mapstructure:"AWS_REGION"`
 	AWSAccessKey       string `mapstructure:"AWS_ACCESS_KEY_ID"`
@@ -50,9 +51,10 @@ func LoadConfig() {
 
 	EnvVars.CookieDomain = viper.GetString("COOKIE_DOMAIN")
 	EnvVars.AuthSecret = viper.GetString("AUTH_SECRET")
-	EnvVars.AuthCallbackURL = viper.GetString("AUTH_CALLBACK_URL")
+	EnvVars.AuthCallbackURI = viper.GetString("AUTH_CALLBACK_URI")
 	EnvVars.GoogleClientID = viper.GetString("GOOGLE_CLIENT_ID")
 	EnvVars.GoogleClientSecret = viper.GetString("GOOGLE_CLIENT_SECRET")
+	EnvVars.GoogleRedirectURI = viper.GetString("GOOGLE_REDIRECT_URI")
 
 	EnvVars.AWSRegion = viper.GetString("AWS_REGION")
 	EnvVars.AWSAccessKey = viper.GetString("AWS_ACCESS_KEY_ID")

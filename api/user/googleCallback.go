@@ -3,33 +3,30 @@ package user
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 
-	"github.com/chizidotdev/shop/config"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	InvalidStateError     = "invalid_state"
-	FailedToExchangeError = "failed_to_exchange"
-)
-
 func (u *UserHandler) GoogleCallback(ctx *gin.Context) {
-	errRedirectURL := config.EnvVars.AuthCallbackURL + "?errors="
-	successRedirectURL := config.EnvVars.AuthCallbackURL
-
 	session := sessions.Default(ctx)
+	redirectURI := session.Get(redirectURIKey).(string)
+	errRedirectURL := redirectURI + "?error="
+	successRedirectURL := redirectURI + "?success=true"
+
 	if ctx.Query(stateKey) != session.Get(stateKey) {
-		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s%s", errRedirectURL, InvalidStateError))
+		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", errRedirectURL, invalidStateError))
 		return
 	}
 
 	code := ctx.Query("code")
 	user, err := u.getGoogleUserData(ctx, code)
 	if err != nil {
-		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s%s", errRedirectURL, FailedToExchangeError))
+		log.Println("Error getting user data from google: ", err)
+		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", errRedirectURL, failedToExchangeError))
 		return
 	}
 
@@ -39,22 +36,20 @@ func (u *UserHandler) GoogleCallback(ctx *gin.Context) {
 		Email:     user.Email,
 		GoogleID:  sql.NullString{String: user.Id, Valid: true},
 		Image:     user.Picture,
+		Role:      repository.UserRoleCustomer,
 	})
 	if err != nil {
-		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s%s", errRedirectURL, FailedToExchangeError))
-		return
-	}
-
-	if err != nil {
-		ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s%s", errRedirectURL, FailedToExchangeError))
+		log.Println("Error upserting user: ", err)
+		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", errRedirectURL, failedToExchangeError))
 		return
 	}
 
 	session.Set(profileKey, userProfile)
 	if err := session.Save(); err != nil {
-		ctx.Redirect(http.StatusPermanentRedirect, errRedirectURL)
+		log.Println("Error saving session: ", err)
+		ctx.Redirect(http.StatusTemporaryRedirect, errRedirectURL)
 		return
 	}
 
-	ctx.Redirect(http.StatusPermanentRedirect, successRedirectURL)
+	ctx.Redirect(http.StatusTemporaryRedirect, successRedirectURL)
 }

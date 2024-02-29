@@ -14,17 +14,17 @@ func (u *UserHandler) Logout(ctx *gin.Context) {
 	session.Clear()
 	session.Options(sessions.Options{MaxAge: -1})
 	if err := session.Save(); err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorInternal,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
 			MessageID: "",
 			Message:   "Failed to update session",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusOK, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusOK,
 		Data:    nil,
 		Message: "Log out successful.",
 	})

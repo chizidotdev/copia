@@ -13,17 +13,17 @@ func (u *StoreHandler) ListStores(ctx *gin.Context) {
 
 	store, err := u.pgStore.ListStores(ctx, user.ID)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorInternal,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
 			MessageID: "",
 			Message:   "Error retrieving stores",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusCreated, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusOK,
 		Data:    store,
 		Message: "Stores retrieved successfully",
 	})

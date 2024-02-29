@@ -17,13 +17,12 @@ func (u *UserHandler) CreateUser(ctx *gin.Context) {
 	var user createUserRequest
 	err := ctx.BindJSON(&user)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid email",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
@@ -35,20 +34,20 @@ func (u *UserHandler) CreateUser(ctx *gin.Context) {
 		Email:     user.Email,
 		GoogleID:  sql.NullString{String: "", Valid: true},
 		Image:     "",
-		Role:      userRoles["customer"],
+		Role:      repository.UserRoleCustomer,
 	})
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorInternal,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
 			MessageID: "",
 			Message:   "Failed to create user",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusCreated, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusCreated,
 		Data:    userProfile,
 		Message: "User created successfully",
 	})

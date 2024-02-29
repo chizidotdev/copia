@@ -19,50 +19,46 @@ type updateStoreRequest struct {
 func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
 	storeId, err := uuid.Parse(ctx.Param("id"))
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid store id",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
 	var store updateStoreRequest
 	err = ctx.BindJSON(&store)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid store request",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
 	existingStore, err := s.pgStore.GetStore(ctx, storeId)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorNotFound,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusNotFound,
 			MessageID: "",
 			Message:   "Store not found",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
 	user := middleware.GetAuthenticatedUser(ctx)
 	if existingStore.UserID != user.ID {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorForbidden,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusForbidden,
 			MessageID: "",
 			Message:   "You are not authorized to update this store",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
@@ -73,28 +69,28 @@ func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
 	})
 
 	if err != nil {
-		code := httpUtil.ErrorInternal
+		code := http.StatusInternalServerError
 		message := "Failed to update store"
 
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
 			case "unique_violation", "foreign_key_violation":
-				code = httpUtil.ErrorForbidden
+				code = http.StatusForbidden
 				message = "Store name already exists"
 			}
 		}
 
-		errResp := httpUtil.HttpError{
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      code,
 			MessageID: "",
 			Message:   message,
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusCreated, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusOK,
 		Data:    storeProfile,
 		Message: "Store updated successfully",
 	})

@@ -19,13 +19,12 @@ func (s *StoreHandler) CreateStore(ctx *gin.Context) {
 	var store createStoreRequest
 	err := ctx.BindJSON(&store)
 	if err != nil {
-		errResp := httpUtil.HttpError{
-			Code:      httpUtil.ErrorBadRequest,
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusBadRequest,
 			MessageID: "",
 			Message:   "Invalid store request",
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
@@ -37,28 +36,28 @@ func (s *StoreHandler) CreateStore(ctx *gin.Context) {
 	})
 
 	if err != nil {
-		code := httpUtil.ErrorInternal
+		code := http.StatusInternalServerError
 		message := "Failed to create store"
 
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
 			case "unique_violation", "foreign_key_violation":
-				code = httpUtil.ErrorForbidden
+				code = http.StatusForbidden
 				message = "Store name already exists"
 			}
 		}
 
-		errResp := httpUtil.HttpError{
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      code,
 			MessageID: "",
 			Message:   message,
 			Reason:    err.Error(),
-		}
-		httpUtil.Error(ctx, httpUtil.Errorf(errResp))
+		})
 		return
 	}
 
-	httpUtil.Success(ctx, http.StatusCreated, httpUtil.SuccessResponse{
+	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
+		Code:    http.StatusCreated,
 		Data:    storeProfile,
 		Message: "Store created successfully",
 	})
