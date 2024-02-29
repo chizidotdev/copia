@@ -21,7 +21,7 @@ RETURNING id, user_id, name, description, created_at, updated_at
 `
 
 type CreateStoreParams struct {
-	UserID      uuid.UUID `json:"user_id"`
+	UserID      uuid.UUID `json:"userId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 }

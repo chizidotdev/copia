@@ -21,10 +21,10 @@ RETURNING id, order_id, user_id, commission_amount, paid_status
 `
 
 type CreateCommissionParams struct {
-	OrderID          uuid.UUID `json:"order_id"`
-	UserID           uuid.UUID `json:"user_id"`
-	CommissionAmount string    `json:"commission_amount"`
-	PaidStatus       string    `json:"paid_status"`
+	OrderID          uuid.UUID `json:"orderId"`
+	UserID           uuid.UUID `json:"userId"`
+	CommissionAmount string    `json:"commissionAmount"`
+	PaidStatus       string    `json:"paidStatus"`
 }
 
 // Create a new commission
@@ -123,10 +123,10 @@ WHERE id = $1
 
 type UpdateCommissionParams struct {
 	ID               uuid.UUID `json:"id"`
-	OrderID          uuid.UUID `json:"order_id"`
-	UserID           uuid.UUID `json:"user_id"`
-	CommissionAmount string    `json:"commission_amount"`
-	PaidStatus       string    `json:"paid_status"`
+	OrderID          uuid.UUID `json:"orderId"`
+	UserID           uuid.UUID `json:"userId"`
+	CommissionAmount string    `json:"commissionAmount"`
+	PaidStatus       string    `json:"paidStatus"`
 }
 
 // Update a commission by ID

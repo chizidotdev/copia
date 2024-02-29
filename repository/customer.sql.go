@@ -21,9 +21,9 @@ RETURNING id, store_id, first_name, last_name, email, phone, address
 `
 
 type CreateCustomerParams struct {
-	StoreID   uuid.UUID `json:"store_id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	StoreID   uuid.UUID `json:"storeId"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Address   string    `json:"address"`
@@ -135,9 +135,9 @@ WHERE id = $1
 
 type UpdateCustomerParams struct {
 	ID        uuid.UUID `json:"id"`
-	StoreID   uuid.UUID `json:"store_id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	StoreID   uuid.UUID `json:"storeId"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Address   string    `json:"address"`

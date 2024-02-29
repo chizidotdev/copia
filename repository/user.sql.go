@@ -23,10 +23,10 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 
 type CreateUserParams struct {
 	Email     string         `json:"email"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
+	FirstName string         `json:"firstName"`
+	LastName  string         `json:"lastName"`
 	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"google_id"`
+	GoogleID  sql.NullString `json:"googleId"`
 	Role      UserRole       `json:"role"`
 }
 
@@ -166,10 +166,10 @@ WHERE id = $1
 type UpdateUserParams struct {
 	ID        uuid.UUID      `json:"id"`
 	Email     string         `json:"email"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
+	FirstName string         `json:"firstName"`
+	LastName  string         `json:"lastName"`
 	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"google_id"`
+	GoogleID  sql.NullString `json:"googleId"`
 	Role      UserRole       `json:"role"`
 }
 
@@ -206,10 +206,10 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 
 type UpsertUserParams struct {
 	Email     string         `json:"email"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
+	FirstName string         `json:"firstName"`
+	LastName  string         `json:"lastName"`
 	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"google_id"`
+	GoogleID  sql.NullString `json:"googleId"`
 	Role      UserRole       `json:"role"`
 }
 

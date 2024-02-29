@@ -22,14 +22,14 @@ RETURNING id, user_id, order_date, total_amount, status, payment_status, shippin
 `
 
 type CreateOrderParams struct {
-	UserID          uuid.UUID `json:"user_id"`
-	OrderDate       time.Time `json:"order_date"`
-	TotalAmount     string    `json:"total_amount"`
+	UserID          uuid.UUID `json:"userId"`
+	OrderDate       time.Time `json:"orderDate"`
+	TotalAmount     string    `json:"totalAmount"`
 	Status          string    `json:"status"`
-	PaymentStatus   string    `json:"payment_status"`
-	ShippingAddress string    `json:"shipping_address"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	PaymentStatus   string    `json:"paymentStatus"`
+	ShippingAddress string    `json:"shippingAddress"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
 // Create a new order
@@ -148,14 +148,14 @@ WHERE id = $1
 
 type UpdateOrderParams struct {
 	ID              uuid.UUID `json:"id"`
-	UserID          uuid.UUID `json:"user_id"`
-	OrderDate       time.Time `json:"order_date"`
-	TotalAmount     string    `json:"total_amount"`
+	UserID          uuid.UUID `json:"userId"`
+	OrderDate       time.Time `json:"orderDate"`
+	TotalAmount     string    `json:"totalAmount"`
 	Status          string    `json:"status"`
-	PaymentStatus   string    `json:"payment_status"`
-	ShippingAddress string    `json:"shipping_address"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	PaymentStatus   string    `json:"paymentStatus"`
+	ShippingAddress string    `json:"shippingAddress"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
 // Update an order by ID

@@ -34,7 +34,7 @@ func (e *UserRole) Scan(src interface{}) error {
 }
 
 type NullUserRole struct {
-	UserRole UserRole `json:"user_role"`
+	UserRole UserRole `json:"userRole"`
 	Valid    bool     `json:"valid"` // Valid is true if UserRole is not NULL
 }
 
@@ -58,17 +58,17 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 
 type Commission struct {
 	ID               uuid.UUID `json:"id"`
-	OrderID          uuid.UUID `json:"order_id"`
-	UserID           uuid.UUID `json:"user_id"`
-	CommissionAmount string    `json:"commission_amount"`
-	PaidStatus       string    `json:"paid_status"`
+	OrderID          uuid.UUID `json:"orderId"`
+	UserID           uuid.UUID `json:"userId"`
+	CommissionAmount string    `json:"commissionAmount"`
+	PaidStatus       string    `json:"paidStatus"`
 }
 
 type Customer struct {
 	ID        uuid.UUID `json:"id"`
-	StoreID   uuid.UUID `json:"store_id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
+	StoreID   uuid.UUID `json:"storeId"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
 	Email     string    `json:"email"`
 	Phone     string    `json:"phone"`
 	Address   string    `json:"address"`
@@ -76,61 +76,61 @@ type Customer struct {
 
 type Link struct {
 	ID         uuid.UUID `json:"id"`
-	UserID     uuid.UUID `json:"user_id"`
-	UniqueLink string    `json:"unique_link"`
-	LinkType   string    `json:"link_type"`
+	UserID     uuid.UUID `json:"userId"`
+	UniqueLink string    `json:"uniqueLink"`
+	LinkType   string    `json:"linkType"`
 }
 
 type Order struct {
 	ID              uuid.UUID `json:"id"`
-	UserID          uuid.UUID `json:"user_id"`
-	OrderDate       time.Time `json:"order_date"`
-	TotalAmount     string    `json:"total_amount"`
+	UserID          uuid.UUID `json:"userId"`
+	OrderDate       time.Time `json:"orderDate"`
+	TotalAmount     string    `json:"totalAmount"`
 	Status          string    `json:"status"`
-	PaymentStatus   string    `json:"payment_status"`
-	ShippingAddress string    `json:"shipping_address"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	PaymentStatus   string    `json:"paymentStatus"`
+	ShippingAddress string    `json:"shippingAddress"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
 type OrderItem struct {
 	ID        uuid.UUID `json:"id"`
-	OrderID   uuid.UUID `json:"order_id"`
-	ProductID uuid.UUID `json:"product_id"`
+	OrderID   uuid.UUID `json:"orderId"`
+	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unit_price"`
+	UnitPrice string    `json:"unitPrice"`
 	Subtotal  string    `json:"subtotal"`
 }
 
 type Product struct {
 	ID            uuid.UUID `json:"id"`
-	StoreID       uuid.UUID `json:"store_id"`
+	StoreID       uuid.UUID `json:"storeId"`
 	Sku           string    `json:"sku"`
 	Name          string    `json:"name"`
 	Description   string    `json:"description"`
 	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stock_quantity"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	StockQuantity int32     `json:"stockQuantity"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type Store struct {
 	ID          uuid.UUID `json:"id"`
-	UserID      uuid.UUID `json:"user_id"`
+	UserID      uuid.UUID `json:"userId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type User struct {
 	ID        uuid.UUID      `json:"id"`
 	Email     string         `json:"email"`
-	FirstName string         `json:"first_name"`
-	LastName  string         `json:"last_name"`
+	FirstName string         `json:"firstName"`
+	LastName  string         `json:"lastName"`
 	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"google_id"`
+	GoogleID  sql.NullString `json:"googleId"`
 	Role      UserRole       `json:"role"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
+	CreatedAt time.Time      `json:"createdAt"`
+	UpdatedAt time.Time      `json:"updatedAt"`
 }

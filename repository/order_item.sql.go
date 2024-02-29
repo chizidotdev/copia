@@ -21,10 +21,10 @@ RETURNING id, order_id, product_id, quantity, unit_price, subtotal
 `
 
 type CreateOrderItemParams struct {
-	OrderID   uuid.UUID `json:"order_id"`
-	ProductID uuid.UUID `json:"product_id"`
+	OrderID   uuid.UUID `json:"orderId"`
+	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unit_price"`
+	UnitPrice string    `json:"unitPrice"`
 	Subtotal  string    `json:"subtotal"`
 }
 
@@ -129,10 +129,10 @@ WHERE id = $1
 
 type UpdateOrderItemParams struct {
 	ID        uuid.UUID `json:"id"`
-	OrderID   uuid.UUID `json:"order_id"`
-	ProductID uuid.UUID `json:"product_id"`
+	OrderID   uuid.UUID `json:"orderId"`
+	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unit_price"`
+	UnitPrice string    `json:"unitPrice"`
 	Subtotal  string    `json:"subtotal"`
 }
 

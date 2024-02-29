@@ -21,9 +21,9 @@ RETURNING id, user_id, unique_link, link_type
 `
 
 type CreateLinkParams struct {
-	UserID     uuid.UUID `json:"user_id"`
-	UniqueLink string    `json:"unique_link"`
-	LinkType   string    `json:"link_type"`
+	UserID     uuid.UUID `json:"userId"`
+	UniqueLink string    `json:"uniqueLink"`
+	LinkType   string    `json:"linkType"`
 }
 
 // Create a new link
@@ -113,9 +113,9 @@ WHERE id = $1
 
 type UpdateLinkParams struct {
 	ID         uuid.UUID `json:"id"`
-	UserID     uuid.UUID `json:"user_id"`
-	UniqueLink string    `json:"unique_link"`
-	LinkType   string    `json:"link_type"`
+	UserID     uuid.UUID `json:"userId"`
+	UniqueLink string    `json:"uniqueLink"`
+	LinkType   string    `json:"linkType"`
 }
 
 // Update a link by ID

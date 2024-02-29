@@ -22,14 +22,14 @@ RETURNING id, store_id, sku, name, description, price, stock_quantity, created_a
 `
 
 type CreateProductParams struct {
-	StoreID       uuid.UUID `json:"store_id"`
+	StoreID       uuid.UUID `json:"storeId"`
 	Sku           string    `json:"sku"`
 	Name          string    `json:"name"`
 	Description   string    `json:"description"`
 	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stock_quantity"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	StockQuantity int32     `json:"stockQuantity"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 // Create a new product
@@ -148,14 +148,14 @@ WHERE id = $1
 
 type UpdateProductParams struct {
 	ID            uuid.UUID `json:"id"`
-	StoreID       uuid.UUID `json:"store_id"`
+	StoreID       uuid.UUID `json:"storeId"`
 	Sku           string    `json:"sku"`
 	Name          string    `json:"name"`
 	Description   string    `json:"description"`
 	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stock_quantity"`
-	CreatedAt     time.Time `json:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at"`
+	StockQuantity int32     `json:"stockQuantity"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 // Update a product by ID
