@@ -1,7 +1,6 @@
 package user
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -34,12 +33,12 @@ func (u *UserHandler) GoogleCallback(ctx *gin.Context) {
 		FirstName: user.GivenName,
 		LastName:  user.FamilyName,
 		Email:     user.Email,
-		GoogleID:  sql.NullString{String: user.Id, Valid: true},
+		GoogleID:  user.Id,
 		Image:     user.Picture,
 		Role:      repository.UserRoleCustomer,
 	})
 	if err != nil {
-		log.Println("Error upserting user: ", err)
+		// TODO: add error code to redirect url
 		ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s%s", errRedirectURL, failedToExchangeError))
 		return
 	}

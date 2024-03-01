@@ -16,25 +16,36 @@ func createRoutes(server *Server) {
 		})
 	})
 
-	// User routes
 	userHandler := user.NewUserHandler(server.pgStore)
-	server.router.GET("/user", middleware.IsAuthenticated, userHandler.GetUser)
-	server.router.POST("/user", userHandler.CreateUser)
+	storeHandler := store.NewStoreHandler(server.pgStore)
+
+	// Auth routes
+	server.router.POST("/register", userHandler.CreateUser)
 	server.router.POST("/login", userHandler.Login)
 	server.router.GET("/login/google", userHandler.GoogleLogin)
 	server.router.GET("/callback", userHandler.GoogleCallback)
 	server.router.POST("/logout", userHandler.Logout)
 
-	// store routes
-	storeHandler := store.NewStoreHandler(server.pgStore)
-	storeRoutes := server.router.Group("/stores")
-	storeRoutes.Use(middleware.IsAuthenticated)
+	// user routes
+	userRoutes := server.router.Group("/users")
 	{
-		storeRoutes.POST("", storeHandler.CreateStore)
+		userRoutes.Use(middleware.IsAuthenticated)
+		userRoutes.GET("/me", middleware.IsAuthenticated, userHandler.GetUser)
+
+		// user store routes
+		userStoreRoutes := userRoutes.Group("/store")
+		{
+			userStoreRoutes.GET("", storeHandler.GetUserStore)
+			userStoreRoutes.PUT("", storeHandler.UpdateUserStore)
+			userStoreRoutes.POST("", storeHandler.CreateStore)
+		}
+	}
+
+	storeRoutes := server.router.Group("/stores")
+	{
 		storeRoutes.GET("", storeHandler.ListStores)
 		storeRoutes.GET("/:id", storeHandler.GetStore)
 		// storeRoutes.DELETE("/:id", storeHandler.DeleteStore)
-		storeRoutes.PUT("/:id", storeHandler.UpdateStore)
 	}
 
 	// // Product routes

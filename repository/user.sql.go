@@ -7,7 +7,6 @@ package repository
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -22,12 +21,12 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 `
 
 type CreateUserParams struct {
-	Email     string         `json:"email"`
-	FirstName string         `json:"firstName"`
-	LastName  string         `json:"lastName"`
-	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"googleId"`
-	Role      UserRole       `json:"role"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	Image     string   `json:"image"`
+	GoogleID  string   `json:"googleId"`
+	Role      UserRole `json:"role"`
 }
 
 // Create a new user
@@ -164,13 +163,13 @@ WHERE id = $1
 `
 
 type UpdateUserParams struct {
-	ID        uuid.UUID      `json:"id"`
-	Email     string         `json:"email"`
-	FirstName string         `json:"firstName"`
-	LastName  string         `json:"lastName"`
-	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"googleId"`
-	Role      UserRole       `json:"role"`
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Image     string    `json:"image"`
+	GoogleID  string    `json:"googleId"`
+	Role      UserRole  `json:"role"`
 }
 
 // Update a user by ID
@@ -205,12 +204,12 @@ RETURNING id, email, first_name, last_name, image, google_id, role, created_at, 
 `
 
 type UpsertUserParams struct {
-	Email     string         `json:"email"`
-	FirstName string         `json:"firstName"`
-	LastName  string         `json:"lastName"`
-	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"googleId"`
-	Role      UserRole       `json:"role"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	Image     string   `json:"image"`
+	GoogleID  string   `json:"googleId"`
+	Role      UserRole `json:"role"`
 }
 
 // Upsert a user by email

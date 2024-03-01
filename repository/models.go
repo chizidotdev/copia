@@ -5,7 +5,6 @@
 package repository
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -124,13 +123,13 @@ type Store struct {
 }
 
 type User struct {
-	ID        uuid.UUID      `json:"id"`
-	Email     string         `json:"email"`
-	FirstName string         `json:"firstName"`
-	LastName  string         `json:"lastName"`
-	Image     string         `json:"image"`
-	GoogleID  sql.NullString `json:"googleId"`
-	Role      UserRole       `json:"role"`
-	CreatedAt time.Time      `json:"createdAt"`
-	UpdatedAt time.Time      `json:"updatedAt"`
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Image     string    `json:"image"`
+	GoogleID  string    `json:"googleId"`
+	Role      UserRole  `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }

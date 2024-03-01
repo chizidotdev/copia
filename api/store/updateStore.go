@@ -7,7 +7,6 @@ import (
 	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/lib/pq"
 )
 
@@ -16,20 +15,11 @@ type updateStoreRequest struct {
 	Description string `json:"description"`
 }
 
-func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
-	storeId, err := uuid.Parse(ctx.Param("id"))
-	if err != nil {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusBadRequest,
-			MessageID: "",
-			Message:   "Invalid store id",
-			Reason:    err.Error(),
-		})
-		return
-	}
+func (s *StoreHandler) UpdateUserStore(ctx *gin.Context) {
+	user := middleware.GetAuthenticatedUser(ctx)
 
 	var store updateStoreRequest
-	err = ctx.BindJSON(&store)
+	err := ctx.BindJSON(&store)
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusBadRequest,
@@ -40,7 +30,7 @@ func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
 		return
 	}
 
-	existingStore, err := s.pgStore.GetStore(ctx, storeId)
+	existingStore, err := s.pgStore.GetStoreByUserId(ctx, user.ID)
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusNotFound,
@@ -51,7 +41,6 @@ func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
 		return
 	}
 
-	user := middleware.GetAuthenticatedUser(ctx)
 	if existingStore.UserID != user.ID {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusForbidden,
@@ -63,7 +52,7 @@ func (s *StoreHandler) UpdateStore(ctx *gin.Context) {
 	}
 
 	storeProfile, err := s.pgStore.UpdateStore(ctx, repository.UpdateStoreParams{
-		ID:          storeId,
+		ID:          existingStore.ID,
 		Name:        store.Name,
 		Description: store.Description,
 	})

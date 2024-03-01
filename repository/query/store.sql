@@ -3,6 +3,11 @@
 SELECT * FROM stores
 WHERE id = $1 LIMIT 1;
 
+-- Get a store by user_id
+-- name: GetStoreByUserId :one
+SELECT * FROM stores
+WHERE user_id = $1 LIMIT 1;
+
 -- List all stores
 -- name: ListStores :many
 SELECT * FROM stores

@@ -7,6 +7,7 @@ sql:
       go:
         package: "repository"
         out: "repository"
+        emit_pointers_for_null_types: true
         emit_json_tags: true
         json_tags_case_style: "camel"
         emit_interface: true

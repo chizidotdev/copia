@@ -72,6 +72,26 @@ func (q *Queries) GetStore(ctx context.Context, id uuid.UUID) (Store, error) {
 	return i, err
 }
 
+const getStoreByUserId = `-- name: GetStoreByUserId :one
+SELECT id, user_id, name, description, created_at, updated_at FROM stores
+WHERE user_id = $1 LIMIT 1
+`
+
+// Get a store by user_id
+func (q *Queries) GetStoreByUserId(ctx context.Context, userID uuid.UUID) (Store, error) {
+	row := q.db.QueryRowContext(ctx, getStoreByUserId, userID)
+	var i Store
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Name,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listStores = `-- name: ListStores :many
 SELECT id, user_id, name, description, created_at, updated_at FROM stores
 WHERE user_id = $1

@@ -1,7 +1,6 @@
 package user
 
 import (
-	"database/sql"
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
@@ -32,7 +31,7 @@ func (u *UserHandler) CreateUser(ctx *gin.Context) {
 		FirstName: "",
 		LastName:  "",
 		Email:     user.Email,
-		GoogleID:  sql.NullString{String: "", Valid: true},
+		GoogleID:  "",
 		Image:     "",
 		Role:      repository.UserRoleCustomer,
 	})

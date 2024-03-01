@@ -57,6 +57,8 @@ type Querier interface {
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	// Get a store by ID
 	GetStore(ctx context.Context, id uuid.UUID) (Store, error)
+	// Get a store by user_id
+	GetStoreByUserId(ctx context.Context, userID uuid.UUID) (Store, error)
 	// Get a user by ID
 	GetUser(ctx context.Context, id uuid.UUID) (User, error)
 	// Get a user by email
