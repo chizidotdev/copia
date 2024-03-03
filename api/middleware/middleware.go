@@ -30,7 +30,7 @@ func IsAuthenticated(ctx *gin.Context) {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusForbidden,
 			MessageID: "",
-			Message:   "Forbidden",
+			Message:   "User is not authenticated",
 			Reason:    "User is not authenticated",
 		})
 		return

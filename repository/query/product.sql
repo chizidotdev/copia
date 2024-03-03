@@ -23,7 +23,7 @@ INSERT INTO products (
 RETURNING *;
 
 -- Update a product by ID
--- name: UpdateProduct :exec
+-- name: UpdateProduct :one
 UPDATE products
 SET
   title = $3,
@@ -31,7 +31,8 @@ SET
   price = $5,
   out_of_stock = $6,
   updated_at = NOW()
-WHERE id = $1 AND store_id = $2;
+WHERE id = $1 AND store_id = $2
+RETURNING *;
 
 -- Delete a product by ID
 -- name: DeleteProduct :exec

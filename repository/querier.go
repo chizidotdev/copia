@@ -100,7 +100,7 @@ type Querier interface {
 	// Update an order item by ID
 	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error
 	// Update a product by ID
-	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
+	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	// Update a product image by ID:
 	UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) error
 	// Update a store by ID

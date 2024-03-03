@@ -52,7 +52,9 @@ func createRoutes(server *Server) {
 		storeProductRoutes := storeRoutes.Group("/:storeID/products")
 		{
 			storeProductRoutes.GET("", productHandler.ListUserProducts)
-			storeProductRoutes.POST("", middleware.IsAuthenticated, productHandler.CreateProduct)
+			storeProductRoutes.Use(middleware.IsAuthenticated)
+			storeProductRoutes.POST("", productHandler.CreateProduct)
+			storeProductRoutes.PATCH("/:productID", productHandler.UpdateProduct)
 			storeProductRoutes.DELETE("/:productID", productHandler.DeleteProduct)
 		}
 	}

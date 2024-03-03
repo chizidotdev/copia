@@ -165,7 +165,7 @@ func (q *Queries) ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([
 	return items, nil
 }
 
-const updateProduct = `-- name: UpdateProduct :exec
+const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET
   title = $3,
@@ -174,6 +174,7 @@ SET
   out_of_stock = $6,
   updated_at = NOW()
 WHERE id = $1 AND store_id = $2
+RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at
 `
 
 type UpdateProductParams struct {
@@ -186,8 +187,8 @@ type UpdateProductParams struct {
 }
 
 // Update a product by ID
-func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
-	_, err := q.db.ExecContext(ctx, updateProduct,
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error) {
+	row := q.db.QueryRowContext(ctx, updateProduct,
 		arg.ID,
 		arg.StoreID,
 		arg.Title,
@@ -195,5 +196,16 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 		arg.Price,
 		arg.OutOfStock,
 	)
-	return err
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.StoreID,
+		&i.Title,
+		&i.Description,
+		&i.Price,
+		&i.OutOfStock,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
