@@ -23,7 +23,7 @@ RETURNING id, order_id, user_id, commission_amount, paid_status
 type CreateCommissionParams struct {
 	OrderID          uuid.UUID `json:"orderId"`
 	UserID           uuid.UUID `json:"userId"`
-	CommissionAmount string    `json:"commissionAmount"`
+	CommissionAmount float64   `json:"commissionAmount"`
 	PaidStatus       string    `json:"paidStatus"`
 }
 
@@ -125,7 +125,7 @@ type UpdateCommissionParams struct {
 	ID               uuid.UUID `json:"id"`
 	OrderID          uuid.UUID `json:"orderId"`
 	UserID           uuid.UUID `json:"userId"`
-	CommissionAmount string    `json:"commissionAmount"`
+	CommissionAmount float64   `json:"commissionAmount"`
 	PaidStatus       string    `json:"paidStatus"`
 }
 

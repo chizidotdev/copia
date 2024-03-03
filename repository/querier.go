@@ -23,6 +23,8 @@ type Querier interface {
 	CreateOrderItem(ctx context.Context, arg CreateOrderItemParams) (OrderItem, error)
 	// Create a new product
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	// Create a product image for a product:
+	CreateProductImage(ctx context.Context, arg CreateProductImageParams) (ProductImage, error)
 	// Create a new store
 	CreateStore(ctx context.Context, arg CreateStoreParams) (Store, error)
 	// Create a new user
@@ -38,7 +40,9 @@ type Querier interface {
 	// Delete an order item by ID
 	DeleteOrderItem(ctx context.Context, id uuid.UUID) error
 	// Delete a product by ID
-	DeleteProduct(ctx context.Context, id uuid.UUID) error
+	DeleteProduct(ctx context.Context, arg DeleteProductParams) error
+	// Delete a product image by ID:
+	DeleteProductImage(ctx context.Context, id uuid.UUID) error
 	// Delete a store by ID
 	DeleteStore(ctx context.Context, id uuid.UUID) error
 	// Delete a user by ID
@@ -55,6 +59,8 @@ type Querier interface {
 	GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error)
 	// Get a product by ID
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
+	// Get a product image by ID:
+	GetProductImage(ctx context.Context, id uuid.UUID) (ProductImage, error)
 	// Get a store by ID
 	GetStore(ctx context.Context, id uuid.UUID) (Store, error)
 	// Get a store by user_id
@@ -73,8 +79,12 @@ type Querier interface {
 	ListOrderItems(ctx context.Context) ([]OrderItem, error)
 	// List all orders
 	ListOrders(ctx context.Context) ([]Order, error)
+	// List all product images for a product:
+	ListProductImagesForProduct(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
 	// List all products
 	ListProducts(ctx context.Context) ([]Product, error)
+	// List all products by store ID
+	ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([]Product, error)
 	// List all stores
 	ListStores(ctx context.Context, userID uuid.UUID) ([]Store, error)
 	// List all users
@@ -91,6 +101,8 @@ type Querier interface {
 	UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error
 	// Update a product by ID
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) error
+	// Update a product image by ID:
+	UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) error
 	// Update a store by ID
 	UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Store, error)
 	// Update a user by ID

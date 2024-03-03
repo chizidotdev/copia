@@ -15,8 +15,9 @@ import (
 
 type Server struct {
 	router     *gin.Engine
-	pgStore    *repository.Queries
-	redisStore *adapters.RedisClient
+	pgStore    *repository.Repository
+	redisStore *adapters.RedisStore
+	s3Store    *adapters.S3Store
 }
 
 // Start runs the HTTP server on a specific address
@@ -48,14 +49,21 @@ func NewHTTPServer() *Server {
 	})
 	router.Use(sessions.Sessions("am_store_auth", store))
 
-	redisStore := adapters.NewRedisClient(config.EnvVars.RedisUrl)
+	redisStore := adapters.NewRedisStore(config.EnvVars.RedisUrl)
 	pgConn := adapters.NewPostgresClient(config.EnvVars.DBSource)
-	pgStore := repository.New(pgConn)
+	s3Store := adapters.NewS3Store(adapters.S3StoreArgs{
+		Region:    config.EnvVars.AWSRegion,
+		AccessKey: config.EnvVars.AWSAccessKey,
+		SecretKey: config.EnvVars.AWSSecretAccessKey,
+	})
+
+	pgStore := repository.NewRepository(pgConn)
 
 	server := &Server{
 		router:     router,
 		pgStore:    pgStore,
 		redisStore: redisStore,
+		s3Store:    s3Store,
 	}
 
 	corsConfig(server)

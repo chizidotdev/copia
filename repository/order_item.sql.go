@@ -24,8 +24,8 @@ type CreateOrderItemParams struct {
 	OrderID   uuid.UUID `json:"orderId"`
 	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unitPrice"`
-	Subtotal  string    `json:"subtotal"`
+	UnitPrice float64   `json:"unitPrice"`
+	Subtotal  float64   `json:"subtotal"`
 }
 
 // Create a new order item
@@ -132,8 +132,8 @@ type UpdateOrderItemParams struct {
 	OrderID   uuid.UUID `json:"orderId"`
 	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unitPrice"`
-	Subtotal  string    `json:"subtotal"`
+	UnitPrice float64   `json:"unitPrice"`
+	Subtotal  float64   `json:"subtotal"`
 }
 
 // Update an order item by ID

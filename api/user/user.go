@@ -25,7 +25,7 @@ const (
 )
 
 type UserHandler struct {
-	pgStore *repository.Queries
+	pgStore *repository.Repository
 	Config  oauth2.Config
 }
 
@@ -34,7 +34,7 @@ type UserResponse struct {
 	Store *repository.Store `json:"store,omitempty"`
 }
 
-func NewUserHandler(pgStore *repository.Queries) *UserHandler {
+func NewUserHandler(pgStore *repository.Repository) *UserHandler {
 	gob.Register(repository.User{})
 
 	oauthConfig := oauth2.Config{

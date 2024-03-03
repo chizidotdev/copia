@@ -59,7 +59,7 @@ type Commission struct {
 	ID               uuid.UUID `json:"id"`
 	OrderID          uuid.UUID `json:"orderId"`
 	UserID           uuid.UUID `json:"userId"`
-	CommissionAmount string    `json:"commissionAmount"`
+	CommissionAmount float64   `json:"commissionAmount"`
 	PaidStatus       string    `json:"paidStatus"`
 }
 
@@ -84,7 +84,7 @@ type Order struct {
 	ID              uuid.UUID `json:"id"`
 	UserID          uuid.UUID `json:"userId"`
 	OrderDate       time.Time `json:"orderDate"`
-	TotalAmount     string    `json:"totalAmount"`
+	TotalAmount     float64   `json:"totalAmount"`
 	Status          string    `json:"status"`
 	PaymentStatus   string    `json:"paymentStatus"`
 	ShippingAddress string    `json:"shippingAddress"`
@@ -97,20 +97,25 @@ type OrderItem struct {
 	OrderID   uuid.UUID `json:"orderId"`
 	ProductID uuid.UUID `json:"productId"`
 	Quantity  int32     `json:"quantity"`
-	UnitPrice string    `json:"unitPrice"`
-	Subtotal  string    `json:"subtotal"`
+	UnitPrice float64   `json:"unitPrice"`
+	Subtotal  float64   `json:"subtotal"`
 }
 
 type Product struct {
-	ID            uuid.UUID `json:"id"`
-	StoreID       uuid.UUID `json:"storeId"`
-	Sku           string    `json:"sku"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stockQuantity"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	ID          uuid.UUID `json:"id"`
+	StoreID     uuid.UUID `json:"storeId"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
+	OutOfStock  bool      `json:"outOfStock"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+type ProductImage struct {
+	ID        uuid.UUID `json:"id"`
+	ProductID uuid.UUID `json:"productId"`
+	Url       string    `json:"url"`
 }
 
 type Store struct {

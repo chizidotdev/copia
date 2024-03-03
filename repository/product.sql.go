@@ -7,52 +7,44 @@ package repository
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 )
 
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO products (
-  store_id, sku, name, description, price, stock_quantity, created_at, updated_at
+  store_id, title, description, price, out_of_stock
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5
 )
-RETURNING id, store_id, sku, name, description, price, stock_quantity, created_at, updated_at
+RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at
 `
 
 type CreateProductParams struct {
-	StoreID       uuid.UUID `json:"storeId"`
-	Sku           string    `json:"sku"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stockQuantity"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	StoreID     uuid.UUID `json:"storeId"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
+	OutOfStock  bool      `json:"outOfStock"`
 }
 
 // Create a new product
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error) {
 	row := q.db.QueryRowContext(ctx, createProduct,
 		arg.StoreID,
-		arg.Sku,
-		arg.Name,
+		arg.Title,
 		arg.Description,
 		arg.Price,
-		arg.StockQuantity,
-		arg.CreatedAt,
-		arg.UpdatedAt,
+		arg.OutOfStock,
 	)
 	var i Product
 	err := row.Scan(
 		&i.ID,
 		&i.StoreID,
-		&i.Sku,
-		&i.Name,
+		&i.Title,
 		&i.Description,
 		&i.Price,
-		&i.StockQuantity,
+		&i.OutOfStock,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -61,17 +53,22 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 
 const deleteProduct = `-- name: DeleteProduct :exec
 DELETE FROM products
-WHERE id = $1
+WHERE id = $1 AND store_id = $2
 `
 
+type DeleteProductParams struct {
+	ID      uuid.UUID `json:"id"`
+	StoreID uuid.UUID `json:"storeId"`
+}
+
 // Delete a product by ID
-func (q *Queries) DeleteProduct(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteProduct, id)
+func (q *Queries) DeleteProduct(ctx context.Context, arg DeleteProductParams) error {
+	_, err := q.db.ExecContext(ctx, deleteProduct, arg.ID, arg.StoreID)
 	return err
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, store_id, sku, name, description, price, stock_quantity, created_at, updated_at FROM products
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
 WHERE id = $1 LIMIT 1
 `
 
@@ -82,11 +79,10 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	err := row.Scan(
 		&i.ID,
 		&i.StoreID,
-		&i.Sku,
-		&i.Name,
+		&i.Title,
 		&i.Description,
 		&i.Price,
-		&i.StockQuantity,
+		&i.OutOfStock,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -94,8 +90,8 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, store_id, sku, name, description, price, stock_quantity, created_at, updated_at FROM products
-ORDER BY name
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
+ORDER BY title
 `
 
 // List all products
@@ -111,11 +107,48 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.StoreID,
-			&i.Sku,
-			&i.Name,
+			&i.Title,
 			&i.Description,
 			&i.Price,
-			&i.StockQuantity,
+			&i.OutOfStock,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listProductsByStore = `-- name: ListProductsByStore :many
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
+WHERE store_id = $1
+`
+
+// List all products by store ID
+func (q *Queries) ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, listProductsByStore, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.StoreID,
+			&i.Title,
+			&i.Description,
+			&i.Price,
+			&i.OutOfStock,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -135,27 +168,21 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 const updateProduct = `-- name: UpdateProduct :exec
 UPDATE products
 SET
-  store_id = $2,
-  sku = $3,
-  name = $4,
-  description = $5,
-  price = $6,
-  stock_quantity = $7,
-  created_at = $8,
-  updated_at = $9
-WHERE id = $1
+  title = $3,
+  description = $4,
+  price = $5,
+  out_of_stock = $6,
+  updated_at = NOW()
+WHERE id = $1 AND store_id = $2
 `
 
 type UpdateProductParams struct {
-	ID            uuid.UUID `json:"id"`
-	StoreID       uuid.UUID `json:"storeId"`
-	Sku           string    `json:"sku"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Price         string    `json:"price"`
-	StockQuantity int32     `json:"stockQuantity"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	ID          uuid.UUID `json:"id"`
+	StoreID     uuid.UUID `json:"storeId"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
+	OutOfStock  bool      `json:"outOfStock"`
 }
 
 // Update a product by ID
@@ -163,13 +190,10 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) er
 	_, err := q.db.ExecContext(ctx, updateProduct,
 		arg.ID,
 		arg.StoreID,
-		arg.Sku,
-		arg.Name,
+		arg.Title,
 		arg.Description,
 		arg.Price,
-		arg.StockQuantity,
-		arg.CreatedAt,
-		arg.UpdatedAt,
+		arg.OutOfStock,
 	)
 	return err
 }

@@ -5,9 +5,9 @@ import (
 )
 
 type StoreHandler struct {
-	pgStore *repository.Queries
+	pgStore *repository.Repository
 }
 
-func NewStoreHandler(pgStore *repository.Queries) *StoreHandler {
+func NewStoreHandler(pgStore *repository.Repository) *StoreHandler {
 	return &StoreHandler{pgStore: pgStore}
 }

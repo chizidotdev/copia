@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/chizidotdev/shop/api/middleware"
+	"github.com/chizidotdev/shop/api/product"
 	"github.com/chizidotdev/shop/api/store"
 	"github.com/chizidotdev/shop/api/user"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,7 @@ func createRoutes(server *Server) {
 
 	userHandler := user.NewUserHandler(server.pgStore)
 	storeHandler := store.NewStoreHandler(server.pgStore)
+	productHandler := product.NewProductHandler(server.pgStore)
 
 	// Auth routes
 	server.router.POST("/register", userHandler.CreateUser)
@@ -44,26 +46,30 @@ func createRoutes(server *Server) {
 	storeRoutes := server.router.Group("/stores")
 	{
 		storeRoutes.GET("", storeHandler.ListStores)
-		storeRoutes.GET("/:id", storeHandler.GetStore)
-		// storeRoutes.DELETE("/:id", storeHandler.DeleteStore)
+		storeRoutes.GET("/:storeID", storeHandler.GetStore)
+
+		// store product routes
+		storeProductRoutes := storeRoutes.Group("/:storeID/products")
+		{
+			storeProductRoutes.GET("", productHandler.ListUserProducts)
+			storeProductRoutes.POST("", middleware.IsAuthenticated, productHandler.CreateProduct)
+			storeProductRoutes.DELETE("/:productID", productHandler.DeleteProduct)
+		}
 	}
 
-	// // Product routes
-	// productHandler := NewProductHandler(server.ProductService)
+	// Product routes
 	// productRoutes := server.router.Group("/products")
-	// productRoutes.Use(middleware.IsAuthenticated)
 	// {
-	// 	productRoutes.POST("", productHandler.createProduct)
-	// 	productRoutes.GET("", productHandler.listProducts)
-	// 	productRoutes.GET("/:id", productHandler.getProduct)
-	// 	productRoutes.DELETE("/:id", productHandler.deleteProduct)
+	// productRoutes.POST("", productHandler.CreateProduct)
+	// productRoutes.GET("/:id", productHandler.getProduct)
+	// productRoutes.DELETE("/:id", productHandler.deleteProduct)
 
-	// 	productRoutes.PUT("/:id", productHandler.updateProduct)
-	// 	productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
-	// 	productRoutes.PATCH("/:id/quantity", productHandler.updateProductQuantity)
+	// productRoutes.PUT("/:id", productHandler.updateProduct)
+	// productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
+	// productRoutes.PATCH("/:id/quantity", productHandler.updateProductQuantity)
 
-	// 	productRoutes.GET("/settings", productHandler.getProductSettings)
-	// 	productRoutes.PATCH("/settings", productHandler.updateProductSettings)
+	// productRoutes.GET("/settings", productHandler.getProductSettings)
+	// productRoutes.PATCH("/settings", productHandler.updateProductSettings)
 	// }
 
 	// // Order routes
