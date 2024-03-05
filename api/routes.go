@@ -60,19 +60,10 @@ func createRoutes(server *Server) {
 	}
 
 	// Product routes
-	// productRoutes := server.router.Group("/products")
-	// {
-	// productRoutes.POST("", productHandler.CreateProduct)
-	// productRoutes.GET("/:id", productHandler.getProduct)
-	// productRoutes.DELETE("/:id", productHandler.deleteProduct)
-
-	// productRoutes.PUT("/:id", productHandler.updateProduct)
-	// productRoutes.PATCH("/:id/image", productHandler.updateProductImage)
-	// productRoutes.PATCH("/:id/quantity", productHandler.updateProductQuantity)
-
-	// productRoutes.GET("/settings", productHandler.getProductSettings)
-	// productRoutes.PATCH("/settings", productHandler.updateProductSettings)
-	// }
+	productRoutes := server.router.Group("/products")
+	{
+		productRoutes.GET("/:productID", productHandler.GetProduct)
+	}
 
 	// // Order routes
 	// orderHandler := NewOrderHandler(server.OrderService)

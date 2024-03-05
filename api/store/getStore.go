@@ -12,7 +12,7 @@ import (
 )
 
 func (u *StoreHandler) GetStore(ctx *gin.Context) {
-	storeId, err := repository.ParseUUID(ctx.Param("id"))
+	storeId, err := repository.ParseUUID(ctx.Param(storeIDParam))
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusBadRequest,
