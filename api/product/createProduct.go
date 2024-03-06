@@ -6,6 +6,7 @@ import (
 
 	"github.com/chizidotdev/shop/api/httpUtil"
 	"github.com/chizidotdev/shop/repository"
+	"github.com/chizidotdev/shop/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +20,7 @@ type createProductRequest struct {
 
 type createProductResponse struct {
 	*repository.Product
-	Images []repository.ProductImage
+	Images []repository.ProductImage `json:"images"`
 }
 
 func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
@@ -51,22 +52,24 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 		}
 
 		if len(product.Images) > 0 {
-			/*image, err := util.ParseImage(product.Images[0])
-			if err != nil {
-				return err
-			}
+			for _, img := range product.Images {
+				image, err := util.ParseImage(img)
+				if err != nil {
+					return err
+				}
 
-			imageUrl, err := p.s3Store.UploadFile(newProduct.ID.String(), image)
-			if err != nil {
-				return err
-			}*/
+				imageUrl, err := p.s3Store.UploadFile(newProduct.ID.String(), image)
+				if err != nil {
+					return err
+				}
 
-			_, txErr = p.pgStore.CreateProductImage(ctx, repository.CreateProductImageParams{
-				ProductID: newProduct.ID,
-				Url:       "",
-			})
-			if txErr != nil {
-				return txErr
+				_, txErr = p.pgStore.CreateProductImage(ctx, repository.CreateProductImageParams{
+					ProductID: newProduct.ID,
+					Url:       imageUrl,
+				})
+				if txErr != nil {
+					return txErr
+				}
 			}
 		}
 
@@ -82,9 +85,20 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
+	images, err := p.pgStore.ListProductImages(ctx, newProduct.ID)
+	if err != nil {
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			MessageID: "",
+			Message:   "Failed to retrieve product images",
+			Reason:    err.Error(),
+		})
+		return
+	}
+
 	resp := createProductResponse{
 		Product: &newProduct,
-		Images:  []repository.ProductImage{},
+		Images:  images,
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{

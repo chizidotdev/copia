@@ -4,7 +4,7 @@ SELECT * FROM product_images
 WHERE id = $1 LIMIT 1;
 
 -- List all product images for a product:
--- name: ListProductImagesForProduct :many
+-- name: ListProductImages :many
 SELECT * FROM product_images
 WHERE product_id = $1;
 
@@ -12,6 +12,14 @@ WHERE product_id = $1;
 -- name: CreateProductImage :one
 INSERT INTO product_images (product_id, url)
 VALUES ($1, $2)
+RETURNING *;
+
+-- Create product images for a product:
+-- name: BulkCreateProductImages :many
+INSERT INTO product_images (product_id, url)
+SELECT 
+  unnest($1::uuid[]),
+  unnest($2::varchar[])
 RETURNING *;
 
 -- Update a product image by ID:

@@ -9,7 +9,45 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
+
+const bulkCreateProductImages = `-- name: BulkCreateProductImages :many
+INSERT INTO product_images (product_id, url)
+SELECT 
+  unnest($1::uuid[]),
+  unnest($2::varchar[])
+RETURNING id, product_id, url
+`
+
+type BulkCreateProductImagesParams struct {
+	Column1 []uuid.UUID `json:"column1"`
+	Column2 []string    `json:"column2"`
+}
+
+// Create product images for a product:
+func (q *Queries) BulkCreateProductImages(ctx context.Context, arg BulkCreateProductImagesParams) ([]ProductImage, error) {
+	rows, err := q.db.QueryContext(ctx, bulkCreateProductImages, pq.Array(arg.Column1), pq.Array(arg.Column2))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductImage{}
+	for rows.Next() {
+		var i ProductImage
+		if err := rows.Scan(&i.ID, &i.ProductID, &i.Url); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
 
 const createProductImage = `-- name: CreateProductImage :one
 INSERT INTO product_images (product_id, url)
@@ -55,14 +93,14 @@ func (q *Queries) GetProductImage(ctx context.Context, id uuid.UUID) (ProductIma
 	return i, err
 }
 
-const listProductImagesForProduct = `-- name: ListProductImagesForProduct :many
+const listProductImages = `-- name: ListProductImages :many
 SELECT id, product_id, url FROM product_images
 WHERE product_id = $1
 `
 
 // List all product images for a product:
-func (q *Queries) ListProductImagesForProduct(ctx context.Context, productID uuid.UUID) ([]ProductImage, error) {
-	rows, err := q.db.QueryContext(ctx, listProductImagesForProduct, productID)
+func (q *Queries) ListProductImages(ctx context.Context, productID uuid.UUID) ([]ProductImage, error) {
+	rows, err := q.db.QueryContext(ctx, listProductImages, productID)
 	if err != nil {
 		return nil, err
 	}

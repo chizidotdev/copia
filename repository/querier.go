@@ -11,6 +11,8 @@ import (
 )
 
 type Querier interface {
+	// Create product images for a product:
+	BulkCreateProductImages(ctx context.Context, arg BulkCreateProductImagesParams) ([]ProductImage, error)
 	// Create a new commission
 	CreateCommission(ctx context.Context, arg CreateCommissionParams) (Commission, error)
 	// Create a new customer
@@ -84,7 +86,7 @@ type Querier interface {
 	// List all orders
 	ListOrders(ctx context.Context) ([]Order, error)
 	// List all product images for a product:
-	ListProductImagesForProduct(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
+	ListProductImages(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
 	// List all products
 	ListProducts(ctx context.Context) ([]Product, error)
 	// List all products by store ID

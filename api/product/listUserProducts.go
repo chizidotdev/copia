@@ -31,9 +31,25 @@ func (p *ProductHandler) ListUserProducts(ctx *gin.Context) {
 		return
 	}
 
+	productResponse := make([]createProductResponse, len(products))
+	for i, product := range products {
+		productResponse[i].Product = &product
+		images, err := p.pgStore.ListProductImages(ctx, product.ID)
+		if err != nil {
+			httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+				Code:      http.StatusInternalServerError,
+				MessageID: "",
+				Message:   "Failed to get product images",
+				Reason:    err.Error(),
+			})
+			return
+		}
+		productResponse[i].Images = images
+	}
+
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
 		Code:    http.StatusOK,
-		Data:    products,
+		Data:    productResponse,
 		Message: "User products retrieved successfully",
 	})
 }
