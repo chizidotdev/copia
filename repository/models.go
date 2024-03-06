@@ -55,6 +55,15 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type CartItem struct {
+	ID        uuid.UUID `json:"id"`
+	UserID    uuid.UUID `json:"userId"`
+	ProductID uuid.UUID `json:"productId"`
+	Quantity  int32     `json:"quantity"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 type Commission struct {
 	ID               uuid.UUID `json:"id"`
 	OrderID          uuid.UUID `json:"orderId"`

@@ -29,6 +29,8 @@ type Querier interface {
 	CreateStore(ctx context.Context, arg CreateStoreParams) (Store, error)
 	// Create a new user
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Remove a cart item
+	DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) (CartItem, error)
 	// Delete a commission by ID
 	DeleteCommission(ctx context.Context, id uuid.UUID) error
 	// Delete a customer by ID
@@ -47,6 +49,8 @@ type Querier interface {
 	DeleteStore(ctx context.Context, id uuid.UUID) error
 	// Delete a user by ID
 	DeleteUser(ctx context.Context, id uuid.UUID) error
+	// Get cart items by user id
+	GetCartItems(ctx context.Context, userID uuid.UUID) ([]GetCartItemsRow, error)
 	// Get a commission by ID
 	GetCommission(ctx context.Context, id uuid.UUID) (Commission, error)
 	// Get a customer by ID
@@ -89,6 +93,8 @@ type Querier interface {
 	ListStores(ctx context.Context, userID uuid.UUID) ([]Store, error)
 	// List all users
 	ListUsers(ctx context.Context) ([]User, error)
+	// Update cart item quantity
+	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
 	// Update a commission by ID
 	UpdateCommission(ctx context.Context, arg UpdateCommissionParams) error
 	// Update a customer by ID
@@ -107,6 +113,8 @@ type Querier interface {
 	UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Store, error)
 	// Update a user by ID
 	UpdateUser(ctx context.Context, arg UpdateUserParams) error
+	// Add or update a cart item
+	UpsertCartItem(ctx context.Context, arg UpsertCartItemParams) (CartItem, error)
 	// Upsert a user by email
 	UpsertUser(ctx context.Context, arg UpsertUserParams) (User, error)
 }

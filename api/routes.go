@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/chizidotdev/shop/api/cart"
 	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/api/product"
 	"github.com/chizidotdev/shop/api/store"
@@ -20,6 +21,7 @@ func createRoutes(server *Server) {
 	userHandler := user.NewUserHandler(server.pgStore)
 	storeHandler := store.NewStoreHandler(server.pgStore)
 	productHandler := product.NewProductHandler(server.pgStore)
+	cartHandler := cart.NewCartHandler(server.pgStore)
 
 	// Auth routes
 	server.router.POST("/register", userHandler.CreateUser)
@@ -32,7 +34,7 @@ func createRoutes(server *Server) {
 	userRoutes := server.router.Group("/users")
 	{
 		userRoutes.Use(middleware.IsAuthenticated)
-		userRoutes.GET("/me", middleware.IsAuthenticated, userHandler.GetUser)
+		userRoutes.GET("/me", userHandler.GetUser)
 
 		// user store routes
 		userStoreRoutes := userRoutes.Group("/store")
@@ -40,6 +42,14 @@ func createRoutes(server *Server) {
 			userStoreRoutes.GET("", storeHandler.GetUserStore)
 			userStoreRoutes.PUT("", storeHandler.UpdateUserStore)
 			userStoreRoutes.POST("", storeHandler.CreateStore)
+		}
+
+		userCartRoutes := userRoutes.Group("/cart")
+		{
+			userCartRoutes.GET("", cartHandler.GetCart)
+			userCartRoutes.POST("", cartHandler.AddToCart)
+			userCartRoutes.PATCH("/:cartID", cartHandler.UpdateCart)
+			userCartRoutes.DELETE("/:cartID", cartHandler.DeleteCart)
 		}
 	}
 
