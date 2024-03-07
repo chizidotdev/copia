@@ -1,10 +1,12 @@
 package product
 
 import (
+	"fmt"
 	"mime/multipart"
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
+	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/chizidotdev/shop/util"
 	"github.com/gin-gonic/gin"
@@ -36,6 +38,7 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 	}
 
 	storeID := p.validateStorePermissions(ctx)
+	user := middleware.GetAuthenticatedUser(ctx)
 
 	var newProduct repository.Product
 	err := p.pgStore.ExecTx(ctx, func(tx *repository.Queries) error {
@@ -58,7 +61,8 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 					return err
 				}
 
-				imageUrl, err := p.s3Store.UploadFile(newProduct.ID.String(), image)
+				fileName := fmt.Sprintf("%s-%s-%s", user.FirstName, newProduct.ID.String(), image.Name)
+				imageUrl, err := p.s3Store.UploadFile(fileName, image.File)
 				if err != nil {
 					return err
 				}

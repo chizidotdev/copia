@@ -19,8 +19,23 @@ func GenerateRandString(size int) (string, error) {
 	return state, nil
 }
 
-func ParseImage(image *multipart.FileHeader) (io.Reader, error) {
-	//file := imgString[strings.IndexByte(imgString, ',')+1:]
+type ParseImageResult struct {
+	File io.Reader
+	Name string
+	Size int64
+}
 
-	return image.Open()
+func ParseImage(image *multipart.FileHeader) (ParseImageResult, error) {
+	//file := imgString[strings.IndexByte(imgString, ',')+1:]
+	var result ParseImageResult
+	result.Name = image.Filename
+	result.Size = image.Size
+
+	file, err := image.Open()
+	if err != nil {
+		return result, err
+	}
+
+	result.File = file
+	return result, nil
 }

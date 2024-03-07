@@ -4,6 +4,7 @@ import (
 	"github.com/chizidotdev/shop/api/cart"
 	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/api/product"
+	"github.com/chizidotdev/shop/api/seed"
 	"github.com/chizidotdev/shop/api/store"
 	"github.com/chizidotdev/shop/api/user"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,7 @@ func createRoutes(server *Server) {
 	storeHandler := store.NewStoreHandler(server.pgStore)
 	productHandler := product.NewProductHandler(server.pgStore)
 	cartHandler := cart.NewCartHandler(server.pgStore)
+	seedHandler := seed.NewSeedHandler(server.pgStore)
 
 	// Auth routes
 	server.router.POST("/register", userHandler.CreateUser)
@@ -57,6 +59,8 @@ func createRoutes(server *Server) {
 	{
 		storeRoutes.GET("", storeHandler.ListStores)
 		storeRoutes.GET("/:storeID", storeHandler.GetStore)
+
+		storeRoutes.POST("/:storeID/seed", middleware.IsAuthenticated, seedHandler.SeedStore)
 
 		// store product routes
 		storeProductRoutes := storeRoutes.Group("/:storeID/products")

@@ -90,6 +90,16 @@ CREATE TABLE "customers" (
   "address" varchar NOT NULL
 );
 
+CREATE TABLE "cart_items" (
+    "id" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
+    "user_id" uuid NOT NULL,
+    "product_id" uuid NOT NULL,
+    "quantity" integer NOT NULL,
+    "created_at" timestamp NOT NULL DEFAULT (now()),
+    "updated_at" timestamp NOT NULL DEFAULT (now()),
+    UNIQUE ("user_id", "product_id")
+);
+
 CREATE INDEX "idx_stores_user_id" ON "stores" ("user_id");
 
 CREATE INDEX "idx_products_store_id" ON "products" ("store_id");
@@ -110,6 +120,10 @@ CREATE INDEX "idx_links_user_id" ON "links" ("user_id");
 
 CREATE INDEX "idx_customers_store_id" ON "customers" ("store_id");
 
+CREATE INDEX "idx_cart_items_user_id" ON "cart_items" ("user_id");
+
+CREATE INDEX "idx_cart_items_product_id" ON "cart_items" ("product_id");
+
 ALTER TABLE "stores" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 
 ALTER TABLE "orders" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
@@ -129,3 +143,7 @@ ALTER TABLE "customers" ADD FOREIGN KEY ("store_id") REFERENCES "stores" ("id") 
 ALTER TABLE "products" ADD FOREIGN KEY ("store_id") REFERENCES "stores" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "product_images" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "cart_items" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
+
+ALTER TABLE "cart_items" ADD FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE;

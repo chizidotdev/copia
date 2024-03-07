@@ -32,19 +32,26 @@ func (p *ProductHandler) ListUserProducts(ctx *gin.Context) {
 	}
 
 	productResponse := make([]createProductResponse, len(products))
-	for i, product := range products {
-		productResponse[i].Product = &product
-		images, err := p.pgStore.ListProductImages(ctx, product.ID)
-		if err != nil {
-			httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-				Code:      http.StatusInternalServerError,
-				MessageID: "",
-				Message:   "Failed to get product images",
-				Reason:    err.Error(),
-			})
-			return
+	err = p.pgStore.ExecTx(ctx, func(tx *repository.Queries) error {
+		for i, product := range products {
+			productResponse[i].Product = &product
+			images, err := p.pgStore.ListProductImages(ctx, product.ID)
+			if err != nil {
+				return err
+			}
+			productResponse[i].Images = images
 		}
-		productResponse[i].Images = images
+
+		return nil
+	})
+	if err != nil {
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			MessageID: "",
+			Message:   "Failed to get product images",
+			Reason:    err.Error(),
+		})
+		return
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{

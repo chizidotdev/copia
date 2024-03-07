@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.7
 	github.com/aws/aws-sdk-go-v2/feature/s3/manager v1.15.2
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.47.0
+	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.9.1

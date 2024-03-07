@@ -8,9 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProductResponse struct {
+type getProductResponse struct {
 	*repository.Product
-	Store *repository.Store `json:"store"`
+	Images *[]repository.ProductImage `json:"images"`
+	Store  *repository.Store          `json:"store"`
 }
 
 func (p *ProductHandler) GetProduct(ctx *gin.Context) {
@@ -47,9 +48,21 @@ func (p *ProductHandler) GetProduct(ctx *gin.Context) {
 		return
 	}
 
-	productResponse := &ProductResponse{
+	images, err := p.pgStore.ListProductImages(ctx, product.ID)
+	if err != nil {
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusInternalServerError,
+			MessageID: "",
+			Message:   "Failed to get product images",
+			Reason:    err.Error(),
+		})
+		return
+	}
+
+	productResponse := &getProductResponse{
 		Product: &product,
 		Store:   &store,
+		Images:  &images,
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
