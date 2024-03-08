@@ -129,6 +129,42 @@ func (q *Queries) ListStores(ctx context.Context, userID uuid.UUID) ([]Store, er
 	return items, nil
 }
 
+const searchStores = `-- name: SearchStores :many
+SELECT id, name FROM stores
+WHERE name ILIKE '%' || $1::text || '%'
+ORDER BY name
+LIMIT 10
+`
+
+type SearchStoresRow struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+// Search a store by name
+func (q *Queries) SearchStores(ctx context.Context, query string) ([]SearchStoresRow, error) {
+	rows, err := q.db.QueryContext(ctx, searchStores, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchStoresRow{}
+	for rows.Next() {
+		var i SearchStoresRow
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateStore = `-- name: UpdateStore :many
 UPDATE stores
 SET

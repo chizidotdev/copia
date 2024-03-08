@@ -52,6 +52,5 @@ SET
   first_name = $2,
   last_name = $3,
   image = $4,
-  google_id = $5,
-  role = $6
+  google_id = $5
 RETURNING *;

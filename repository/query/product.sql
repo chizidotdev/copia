@@ -39,3 +39,9 @@ RETURNING *;
 DELETE FROM products
 WHERE id = $1 AND store_id = $2;
 
+-- Search a stores product by title and description
+-- name: SearchProducts :many
+SELECT * FROM products
+WHERE (title ILIKE '%' || sqlc.arg(query)::text || '%' OR description ILIKE '%' || sqlc.arg(query)::text || '%')
+ORDER BY title
+LIMIT 10;

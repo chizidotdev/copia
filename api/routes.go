@@ -57,6 +57,7 @@ func createRoutes(server *Server) {
 
 	storeRoutes := server.router.Group("/stores")
 	{
+		storeRoutes.POST("/search", storeHandler.SearchStores)
 		storeRoutes.GET("", storeHandler.ListStores)
 		storeRoutes.GET("/:storeID", storeHandler.GetStore)
 

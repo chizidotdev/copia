@@ -22,5 +22,11 @@ redis-cli:
 server:
 	air
 
+migrate-up:
+	go run cmd/migrations/init/init.sql.go up
+
+migrate-down:
+	go run cmd/migrations/init/init.sql.go down
+
 
 .PHONY: postgres postgres-cli createdb dropdb sqlc redis redis-cli server

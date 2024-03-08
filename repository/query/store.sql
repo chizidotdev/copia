@@ -38,3 +38,9 @@ RETURNING *;
 DELETE FROM stores
 WHERE id = $1;
 
+-- Search a store by name
+-- name: SearchStores :many
+SELECT id, name FROM stores
+WHERE name ILIKE '%' || sqlc.arg(query)::text || '%'
+ORDER BY name
+LIMIT 10;

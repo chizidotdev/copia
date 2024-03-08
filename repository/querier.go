@@ -95,6 +95,10 @@ type Querier interface {
 	ListStores(ctx context.Context, userID uuid.UUID) ([]Store, error)
 	// List all users
 	ListUsers(ctx context.Context) ([]User, error)
+	// Search a stores product by title and description
+	SearchProducts(ctx context.Context, query string) ([]Product, error)
+	// Search a store by name
+	SearchStores(ctx context.Context, query string) ([]SearchStoresRow, error)
 	// Update cart item quantity
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
 	// Update a commission by ID

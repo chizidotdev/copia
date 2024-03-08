@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 CREATE TYPE "user_role" AS ENUM (
   'master',
@@ -102,7 +103,13 @@ CREATE TABLE "cart_items" (
 
 CREATE INDEX "idx_stores_user_id" ON "stores" ("user_id");
 
+CREATE INDEX "idx_stores_name_search" ON "stores" USING gin ("name" gin_trgm_ops);
+
 CREATE INDEX "idx_products_store_id" ON "products" ("store_id");
+
+CREATE INDEX "idx_products_title_search" ON "products" USING gin ("title" gin_trgm_ops);
+
+CREATE INDEX "idx_products_description_search" ON "products" USING gin ("description" gin_trgm_ops);
 
 CREATE INDEX "idx_product_images_product_id" ON "product_images" ("product_id");
 

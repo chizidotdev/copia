@@ -165,6 +165,46 @@ func (q *Queries) ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([
 	return items, nil
 }
 
+const searchProducts = `-- name: SearchProducts :many
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
+WHERE (title ILIKE '%' || $1::text || '%' OR description ILIKE '%' || $1::text || '%')
+ORDER BY title
+LIMIT 10
+`
+
+// Search a stores product by title and description
+func (q *Queries) SearchProducts(ctx context.Context, query string) ([]Product, error) {
+	rows, err := q.db.QueryContext(ctx, searchProducts, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ID,
+			&i.StoreID,
+			&i.Title,
+			&i.Description,
+			&i.Price,
+			&i.OutOfStock,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
 SET
