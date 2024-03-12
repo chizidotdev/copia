@@ -18,17 +18,26 @@ RETURNING *;
 -- name: BulkCreateProductImages :many
 INSERT INTO product_images (product_id, url)
 SELECT 
-  unnest($1::uuid[]),
-  unnest($2::varchar[])
+  unnest(sqlc.arg(product_ids)::uuid[]),
+  unnest(sqlc.arg(urls)::varchar[])
 RETURNING *;
 
 -- Update a product image by ID:
--- name: UpdateProductImage :exec
+-- name: UpdateProductImageURL :exec
 UPDATE product_images
 SET
   url = $2
 WHERE id = $1
 RETURNING *;
+
+-- Set a product image as primary and others as non-primary:
+-- name: SetPrimaryImage :exec
+UPDATE product_images
+SET is_primary = CASE
+  WHEN id = $1 THEN true
+  ELSE false
+END
+WHERE product_id = $2;
 
 -- Delete a product image by ID:
 -- name: DeleteProductImage :exec

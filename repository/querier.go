@@ -87,8 +87,6 @@ type Querier interface {
 	ListOrders(ctx context.Context) ([]Order, error)
 	// List all product images for a product:
 	ListProductImages(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
-	// List all products
-	ListProducts(ctx context.Context) ([]Product, error)
 	// List all products by store ID
 	ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([]Product, error)
 	// List all stores
@@ -99,6 +97,8 @@ type Querier interface {
 	SearchProducts(ctx context.Context, query string) ([]Product, error)
 	// Search a store by name
 	SearchStores(ctx context.Context, query string) ([]SearchStoresRow, error)
+	// Set a product image as primary and others as non-primary:
+	SetPrimaryImage(ctx context.Context, arg SetPrimaryImageParams) error
 	// Update cart item quantity
 	UpdateCartItemQuantity(ctx context.Context, arg UpdateCartItemQuantityParams) (CartItem, error)
 	// Update a commission by ID
@@ -114,7 +114,7 @@ type Querier interface {
 	// Update a product by ID
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	// Update a product image by ID:
-	UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) error
+	UpdateProductImageURL(ctx context.Context, arg UpdateProductImageURLParams) error
 	// Update a store by ID
 	UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Store, error)
 	// Update a user by ID

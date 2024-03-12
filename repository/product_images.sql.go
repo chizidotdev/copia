@@ -17,17 +17,17 @@ INSERT INTO product_images (product_id, url)
 SELECT 
   unnest($1::uuid[]),
   unnest($2::varchar[])
-RETURNING id, product_id, url
+RETURNING id, product_id, is_primary, url
 `
 
 type BulkCreateProductImagesParams struct {
-	Column1 []uuid.UUID `json:"column1"`
-	Column2 []string    `json:"column2"`
+	ProductIds []uuid.UUID `json:"productIds"`
+	Urls       []string    `json:"urls"`
 }
 
 // Create product images for a product:
 func (q *Queries) BulkCreateProductImages(ctx context.Context, arg BulkCreateProductImagesParams) ([]ProductImage, error) {
-	rows, err := q.db.QueryContext(ctx, bulkCreateProductImages, pq.Array(arg.Column1), pq.Array(arg.Column2))
+	rows, err := q.db.QueryContext(ctx, bulkCreateProductImages, pq.Array(arg.ProductIds), pq.Array(arg.Urls))
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,12 @@ func (q *Queries) BulkCreateProductImages(ctx context.Context, arg BulkCreatePro
 	items := []ProductImage{}
 	for rows.Next() {
 		var i ProductImage
-		if err := rows.Scan(&i.ID, &i.ProductID, &i.Url); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.IsPrimary,
+			&i.Url,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -52,7 +57,7 @@ func (q *Queries) BulkCreateProductImages(ctx context.Context, arg BulkCreatePro
 const createProductImage = `-- name: CreateProductImage :one
 INSERT INTO product_images (product_id, url)
 VALUES ($1, $2)
-RETURNING id, product_id, url
+RETURNING id, product_id, is_primary, url
 `
 
 type CreateProductImageParams struct {
@@ -64,14 +69,19 @@ type CreateProductImageParams struct {
 func (q *Queries) CreateProductImage(ctx context.Context, arg CreateProductImageParams) (ProductImage, error) {
 	row := q.db.QueryRowContext(ctx, createProductImage, arg.ProductID, arg.Url)
 	var i ProductImage
-	err := row.Scan(&i.ID, &i.ProductID, &i.Url)
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.IsPrimary,
+		&i.Url,
+	)
 	return i, err
 }
 
 const deleteProductImage = `-- name: DeleteProductImage :exec
 DELETE FROM product_images
 WHERE id = $1
-RETURNING id, product_id, url
+RETURNING id, product_id, is_primary, url
 `
 
 // Delete a product image by ID:
@@ -81,7 +91,7 @@ func (q *Queries) DeleteProductImage(ctx context.Context, id uuid.UUID) error {
 }
 
 const getProductImage = `-- name: GetProductImage :one
-SELECT id, product_id, url FROM product_images
+SELECT id, product_id, is_primary, url FROM product_images
 WHERE id = $1 LIMIT 1
 `
 
@@ -89,12 +99,17 @@ WHERE id = $1 LIMIT 1
 func (q *Queries) GetProductImage(ctx context.Context, id uuid.UUID) (ProductImage, error) {
 	row := q.db.QueryRowContext(ctx, getProductImage, id)
 	var i ProductImage
-	err := row.Scan(&i.ID, &i.ProductID, &i.Url)
+	err := row.Scan(
+		&i.ID,
+		&i.ProductID,
+		&i.IsPrimary,
+		&i.Url,
+	)
 	return i, err
 }
 
 const listProductImages = `-- name: ListProductImages :many
-SELECT id, product_id, url FROM product_images
+SELECT id, product_id, is_primary, url FROM product_images
 WHERE product_id = $1
 `
 
@@ -108,7 +123,12 @@ func (q *Queries) ListProductImages(ctx context.Context, productID uuid.UUID) ([
 	items := []ProductImage{}
 	for rows.Next() {
 		var i ProductImage
-		if err := rows.Scan(&i.ID, &i.ProductID, &i.Url); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProductID,
+			&i.IsPrimary,
+			&i.Url,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -122,21 +142,41 @@ func (q *Queries) ListProductImages(ctx context.Context, productID uuid.UUID) ([
 	return items, nil
 }
 
-const updateProductImage = `-- name: UpdateProductImage :exec
+const setPrimaryImage = `-- name: SetPrimaryImage :exec
+UPDATE product_images
+SET is_primary = CASE
+  WHEN id = $1 THEN true
+  ELSE false
+END
+WHERE product_id = $2
+`
+
+type SetPrimaryImageParams struct {
+	ID        uuid.UUID `json:"id"`
+	ProductID uuid.UUID `json:"productId"`
+}
+
+// Set a product image as primary and others as non-primary:
+func (q *Queries) SetPrimaryImage(ctx context.Context, arg SetPrimaryImageParams) error {
+	_, err := q.db.ExecContext(ctx, setPrimaryImage, arg.ID, arg.ProductID)
+	return err
+}
+
+const updateProductImageURL = `-- name: UpdateProductImageURL :exec
 UPDATE product_images
 SET
   url = $2
 WHERE id = $1
-RETURNING id, product_id, url
+RETURNING id, product_id, is_primary, url
 `
 
-type UpdateProductImageParams struct {
+type UpdateProductImageURLParams struct {
 	ID  uuid.UUID `json:"id"`
 	Url string    `json:"url"`
 }
 
 // Update a product image by ID:
-func (q *Queries) UpdateProductImage(ctx context.Context, arg UpdateProductImageParams) error {
-	_, err := q.db.ExecContext(ctx, updateProductImage, arg.ID, arg.Url)
+func (q *Queries) UpdateProductImageURL(ctx context.Context, arg UpdateProductImageURLParams) error {
+	_, err := q.db.ExecContext(ctx, updateProductImageURL, arg.ID, arg.Url)
 	return err
 }

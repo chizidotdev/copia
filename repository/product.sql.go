@@ -89,47 +89,10 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	return i, err
 }
 
-const listProducts = `-- name: ListProducts :many
-SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
-ORDER BY title
-`
-
-// List all products
-func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.QueryContext(ctx, listProducts)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Product{}
-	for rows.Next() {
-		var i Product
-		if err := rows.Scan(
-			&i.ID,
-			&i.StoreID,
-			&i.Title,
-			&i.Description,
-			&i.Price,
-			&i.OutOfStock,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const listProductsByStore = `-- name: ListProductsByStore :many
 SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
 WHERE store_id = $1
+ORDER BY created_at ASC
 `
 
 // List all products by store ID

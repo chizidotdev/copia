@@ -3,15 +3,11 @@
 SELECT * FROM products
 WHERE id = $1 LIMIT 1;
 
--- List all products
--- name: ListProducts :many
-SELECT * FROM products
-ORDER BY title;
-
 -- List all products by store ID
 -- name: ListProductsByStore :many
 SELECT * FROM products
-WHERE store_id = $1;
+WHERE store_id = $1
+ORDER BY created_at ASC;
 
 -- Create a new product
 -- name: CreateProduct :one

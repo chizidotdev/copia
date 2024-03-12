@@ -42,6 +42,7 @@ CREATE TABLE "products" (
 CREATE TABLE "product_images" (
   "id" uuid PRIMARY KEY DEFAULT (uuid_generate_v4()),
   "product_id" uuid NOT NULL,
+  "is_primary" boolean NOT NULL DEFAULT false,
   "url" varchar NOT NULL
 );
 

@@ -124,6 +124,7 @@ type Product struct {
 type ProductImage struct {
 	ID        uuid.UUID `json:"id"`
 	ProductID uuid.UUID `json:"productId"`
+	IsPrimary bool      `json:"isPrimary"`
 	Url       string    `json:"url"`
 }
 
