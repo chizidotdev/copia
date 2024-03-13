@@ -102,20 +102,36 @@ func (q *Queries) GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, er
 }
 
 const listOrderItems = `-- name: ListOrderItems :many
-SELECT id, order_id, product_id, store_id, status, quantity, unit_price, subtotal FROM order_items
-ORDER BY order_id, product_id
+SELECT oi.id, oi.order_id, oi.product_id, oi.store_id, oi.status, oi.quantity, oi.unit_price, oi.subtotal ,
+  p.title AS product_title
+FROM order_items oi
+JOIN products p ON oi.product_id = p.id
+WHERE oi.order_id = $1
+ORDER BY oi.order_id, oi.product_id
 `
 
-// List all order items
-func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
-	rows, err := q.db.QueryContext(ctx, listOrderItems)
+type ListOrderItemsRow struct {
+	ID           uuid.UUID   `json:"id"`
+	OrderID      uuid.UUID   `json:"orderId"`
+	ProductID    uuid.UUID   `json:"productId"`
+	StoreID      uuid.UUID   `json:"storeId"`
+	Status       OrderStatus `json:"status"`
+	Quantity     int32       `json:"quantity"`
+	UnitPrice    float64     `json:"unitPrice"`
+	Subtotal     float64     `json:"subtotal"`
+	ProductTitle string      `json:"productTitle"`
+}
+
+// List all order items for an order
+func (q *Queries) ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]ListOrderItemsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listOrderItems, orderID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []OrderItem{}
+	items := []ListOrderItemsRow{}
 	for rows.Next() {
-		var i OrderItem
+		var i ListOrderItemsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.OrderID,
@@ -125,6 +141,7 @@ func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
 			&i.Quantity,
 			&i.UnitPrice,
 			&i.Subtotal,
+			&i.ProductTitle,
 		); err != nil {
 			return nil, err
 		}

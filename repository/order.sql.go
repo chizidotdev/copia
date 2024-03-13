@@ -109,7 +109,7 @@ func (q *Queries) GetOrder(ctx context.Context, id uuid.UUID) (Order, error) {
 const listUserOrders = `-- name: ListUserOrders :many
 SELECT id, user_id, order_date, total_amount, payment_status, shipping_address, created_at, updated_at FROM orders
 WHERE user_id = $1
-ORDER BY order_date
+ORDER BY order_date DESC
 `
 
 // List all orders for a user

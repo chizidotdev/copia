@@ -7,7 +7,7 @@ WHERE id = $1 LIMIT 1;
 -- name: ListUserOrders :many
 SELECT * FROM orders
 WHERE user_id = $1
-ORDER BY order_date;
+ORDER BY order_date DESC;
 
 -- Create a new order
 -- name: CreateOrder :one

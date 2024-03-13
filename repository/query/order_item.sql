@@ -3,10 +3,14 @@
 SELECT * FROM order_items
 WHERE id = $1 LIMIT 1;
 
--- List all order items
+-- List all order items for an order
 -- name: ListOrderItems :many
-SELECT * FROM order_items
-ORDER BY order_id, product_id;
+SELECT oi.* ,
+  p.title AS product_title
+FROM order_items oi
+JOIN products p ON oi.product_id = p.id
+WHERE oi.order_id = $1
+ORDER BY oi.order_id, oi.product_id;
 
 -- List all order items for a store
 -- name: ListStoreOrderItems :many

@@ -67,8 +67,8 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	// List all customers for a store
 	ListCustomers(ctx context.Context, storeID uuid.UUID) ([]ListCustomersRow, error)
-	// List all order items
-	ListOrderItems(ctx context.Context) ([]OrderItem, error)
+	// List all order items for an order
+	ListOrderItems(ctx context.Context, orderID uuid.UUID) ([]ListOrderItemsRow, error)
 	// List all product images for a product:
 	ListProductImages(ctx context.Context, productID uuid.UUID) ([]ProductImage, error)
 	// List all products by store ID
