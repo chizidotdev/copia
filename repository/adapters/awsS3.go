@@ -2,7 +2,6 @@ package adapters
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -37,7 +36,6 @@ func NewS3Store(args S3StoreArgs) *S3Store {
 	}
 	client := s3.NewFromConfig(cfg)
 
-	fmt.Println("Uploading file to s3", *client)
 	return &S3Store{
 		s3Client: client,
 	}

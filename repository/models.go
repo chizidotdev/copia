@@ -12,6 +12,95 @@ import (
 	"github.com/google/uuid"
 )
 
+type OrderStatus string
+
+const (
+	OrderStatusPending    OrderStatus = "pending"
+	OrderStatusProcessing OrderStatus = "processing"
+	OrderStatusShipped    OrderStatus = "shipped"
+	OrderStatusDelivered  OrderStatus = "delivered"
+	OrderStatusCancelled  OrderStatus = "cancelled"
+)
+
+func (e *OrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrderStatus(s)
+	case string:
+		*e = OrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrderStatus struct {
+	OrderStatus OrderStatus `json:"orderStatus"`
+	Valid       bool        `json:"valid"` // Valid is true if OrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrderStatus), nil
+}
+
+type PaymentStatus string
+
+const (
+	PaymentStatusPending  PaymentStatus = "pending"
+	PaymentStatusPaid     PaymentStatus = "paid"
+	PaymentStatusFailed   PaymentStatus = "failed"
+	PaymentStatusRefunded PaymentStatus = "refunded"
+)
+
+func (e *PaymentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PaymentStatus(s)
+	case string:
+		*e = PaymentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PaymentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPaymentStatus struct {
+	PaymentStatus PaymentStatus `json:"paymentStatus"`
+	Valid         bool          `json:"valid"` // Valid is true if PaymentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPaymentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PaymentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PaymentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPaymentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PaymentStatus), nil
+}
+
 type UserRole string
 
 const (
@@ -64,50 +153,34 @@ type CartItem struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-type Commission struct {
-	ID               uuid.UUID `json:"id"`
-	OrderID          uuid.UUID `json:"orderId"`
-	UserID           uuid.UUID `json:"userId"`
-	CommissionAmount float64   `json:"commissionAmount"`
-	PaidStatus       string    `json:"paidStatus"`
-}
-
 type Customer struct {
 	ID        uuid.UUID `json:"id"`
 	StoreID   uuid.UUID `json:"storeId"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
-}
-
-type Link struct {
-	ID         uuid.UUID `json:"id"`
-	UserID     uuid.UUID `json:"userId"`
-	UniqueLink string    `json:"uniqueLink"`
-	LinkType   string    `json:"linkType"`
+	UserID    uuid.UUID `json:"userId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Order struct {
-	ID              uuid.UUID `json:"id"`
-	UserID          uuid.UUID `json:"userId"`
-	OrderDate       time.Time `json:"orderDate"`
-	TotalAmount     float64   `json:"totalAmount"`
-	Status          string    `json:"status"`
-	PaymentStatus   string    `json:"paymentStatus"`
-	ShippingAddress string    `json:"shippingAddress"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	ID              uuid.UUID     `json:"id"`
+	UserID          uuid.UUID     `json:"userId"`
+	OrderDate       time.Time     `json:"orderDate"`
+	TotalAmount     float64       `json:"totalAmount"`
+	PaymentStatus   PaymentStatus `json:"paymentStatus"`
+	ShippingAddress string        `json:"shippingAddress"`
+	CreatedAt       time.Time     `json:"createdAt"`
+	UpdatedAt       time.Time     `json:"updatedAt"`
 }
 
 type OrderItem struct {
-	ID        uuid.UUID `json:"id"`
-	OrderID   uuid.UUID `json:"orderId"`
-	ProductID uuid.UUID `json:"productId"`
-	Quantity  int32     `json:"quantity"`
-	UnitPrice float64   `json:"unitPrice"`
-	Subtotal  float64   `json:"subtotal"`
+	ID        uuid.UUID   `json:"id"`
+	OrderID   uuid.UUID   `json:"orderId"`
+	ProductID uuid.UUID   `json:"productId"`
+	StoreID   uuid.UUID   `json:"storeId"`
+	Status    OrderStatus `json:"status"`
+	Quantity  int32       `json:"quantity"`
+	UnitPrice float64     `json:"unitPrice"`
+	Subtotal  float64     `json:"subtotal"`
 }
 
 type Product struct {
@@ -133,6 +206,7 @@ type Store struct {
 	UserID      uuid.UUID `json:"userId"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Image       string    `json:"image"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }

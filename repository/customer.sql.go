@@ -7,106 +7,146 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createCustomer = `-- name: CreateCustomer :one
 INSERT INTO customers (
-  store_id, first_name, last_name, email, phone, address
+  store_id, user_id
 ) VALUES (
-  $1, $2, $3, $4, $5, $6
+  $1, $2
 )
-RETURNING id, store_id, first_name, last_name, email, phone, address
+RETURNING id, store_id, user_id, created_at, updated_at
 `
 
 type CreateCustomerParams struct {
-	StoreID   uuid.UUID `json:"storeId"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
+	StoreID uuid.UUID `json:"storeId"`
+	UserID  uuid.UUID `json:"userId"`
 }
 
 // Create a new customer
 func (q *Queries) CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error) {
-	row := q.db.QueryRowContext(ctx, createCustomer,
-		arg.StoreID,
-		arg.FirstName,
-		arg.LastName,
-		arg.Email,
-		arg.Phone,
-		arg.Address,
-	)
+	row := q.db.QueryRowContext(ctx, createCustomer, arg.StoreID, arg.UserID)
 	var i Customer
 	err := row.Scan(
 		&i.ID,
 		&i.StoreID,
-		&i.FirstName,
-		&i.LastName,
-		&i.Email,
-		&i.Phone,
-		&i.Address,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const deleteCustomer = `-- name: DeleteCustomer :exec
 DELETE FROM customers
-WHERE id = $1
+WHERE id = $1 AND store_id = $2
 `
 
+type DeleteCustomerParams struct {
+	ID      uuid.UUID `json:"id"`
+	StoreID uuid.UUID `json:"storeId"`
+}
+
 // Delete a customer by ID
-func (q *Queries) DeleteCustomer(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteCustomer, id)
+func (q *Queries) DeleteCustomer(ctx context.Context, arg DeleteCustomerParams) error {
+	_, err := q.db.ExecContext(ctx, deleteCustomer, arg.ID, arg.StoreID)
 	return err
 }
 
 const getCustomer = `-- name: GetCustomer :one
-SELECT id, store_id, first_name, last_name, email, phone, address FROM customers
-WHERE id = $1 LIMIT 1
+SELECT c.id, c.store_id, c.user_id, c.created_at, c.updated_at,
+  u.first_name,
+  u.last_name,
+  u.email,
+  u.image
+FROM customers c
+JOIN users u ON c.user_id = u.id
+WHERE c.id = $1 AND c.store_id = $2
+LIMIT 1
 `
 
+type GetCustomerParams struct {
+	ID      uuid.UUID `json:"id"`
+	StoreID uuid.UUID `json:"storeId"`
+}
+
+type GetCustomerRow struct {
+	ID        uuid.UUID `json:"id"`
+	StoreID   uuid.UUID `json:"storeId"`
+	UserID    uuid.UUID `json:"userId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Email     string    `json:"email"`
+	Image     string    `json:"image"`
+}
+
 // Get a customer by ID
-func (q *Queries) GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error) {
-	row := q.db.QueryRowContext(ctx, getCustomer, id)
-	var i Customer
+func (q *Queries) GetCustomer(ctx context.Context, arg GetCustomerParams) (GetCustomerRow, error) {
+	row := q.db.QueryRowContext(ctx, getCustomer, arg.ID, arg.StoreID)
+	var i GetCustomerRow
 	err := row.Scan(
 		&i.ID,
 		&i.StoreID,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
 		&i.FirstName,
 		&i.LastName,
 		&i.Email,
-		&i.Phone,
-		&i.Address,
+		&i.Image,
 	)
 	return i, err
 }
 
 const listCustomers = `-- name: ListCustomers :many
-SELECT id, store_id, first_name, last_name, email, phone, address FROM customers
-ORDER BY store_id, first_name, last_name
+SELECT c.id, c.store_id, c.user_id, c.created_at, c.updated_at,
+  u.first_name,
+  u.last_name,
+  u.email,
+  u.image
+FROM customers c
+JOIN users u ON c.user_id = u.id
+WHERE c.store_id = $1
+ORDER BY c.created_at
 `
 
-// List all customers
-func (q *Queries) ListCustomers(ctx context.Context) ([]Customer, error) {
-	rows, err := q.db.QueryContext(ctx, listCustomers)
+type ListCustomersRow struct {
+	ID        uuid.UUID `json:"id"`
+	StoreID   uuid.UUID `json:"storeId"`
+	UserID    uuid.UUID `json:"userId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Email     string    `json:"email"`
+	Image     string    `json:"image"`
+}
+
+// List all customers for a store
+func (q *Queries) ListCustomers(ctx context.Context, storeID uuid.UUID) ([]ListCustomersRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCustomers, storeID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Customer{}
+	items := []ListCustomersRow{}
 	for rows.Next() {
-		var i Customer
+		var i ListCustomersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.StoreID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
 			&i.FirstName,
 			&i.LastName,
 			&i.Email,
-			&i.Phone,
-			&i.Address,
+			&i.Image,
 		); err != nil {
 			return nil, err
 		}
@@ -119,40 +159,4 @@ func (q *Queries) ListCustomers(ctx context.Context) ([]Customer, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const updateCustomer = `-- name: UpdateCustomer :exec
-UPDATE customers
-SET
-  store_id = $2,
-  first_name = $3,
-  last_name = $4,
-  email = $5,
-  phone = $6,
-  address = $7
-WHERE id = $1
-`
-
-type UpdateCustomerParams struct {
-	ID        uuid.UUID `json:"id"`
-	StoreID   uuid.UUID `json:"storeId"`
-	FirstName string    `json:"firstName"`
-	LastName  string    `json:"lastName"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
-}
-
-// Update a customer by ID
-func (q *Queries) UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) error {
-	_, err := q.db.ExecContext(ctx, updateCustomer,
-		arg.ID,
-		arg.StoreID,
-		arg.FirstName,
-		arg.LastName,
-		arg.Email,
-		arg.Phone,
-		arg.Address,
-	)
-	return err
 }

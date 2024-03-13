@@ -16,8 +16,6 @@ type updateStoreRequest struct {
 }
 
 func (s *StoreHandler) UpdateUserStore(ctx *gin.Context) {
-	user := middleware.GetAuthenticatedUser(ctx)
-
 	var store updateStoreRequest
 	err := ctx.BindJSON(&store)
 	if err != nil {
@@ -30,33 +28,13 @@ func (s *StoreHandler) UpdateUserStore(ctx *gin.Context) {
 		return
 	}
 
-	existingStore, err := s.pgStore.GetStoreByUserId(ctx, user.ID)
-	if err != nil {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusNotFound,
-			MessageID: "",
-			Message:   "Store not found",
-			Reason:    err.Error(),
-		})
-		return
-	}
-
-	if existingStore.UserID != user.ID {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusForbidden,
-			MessageID: "",
-			Message:   "You are not authorized to update this store",
-			Reason:    err.Error(),
-		})
-		return
-	}
+	user := middleware.GetAuthenticatedUser(ctx)
 
 	storeProfile, err := s.pgStore.UpdateStore(ctx, repository.UpdateStoreParams{
-		ID:          existingStore.ID,
+		ID:          user.StoreID.UUID,
 		Name:        store.Name,
 		Description: store.Description,
 	})
-
 	if err != nil {
 		code := http.StatusInternalServerError
 		message := "Failed to update store"

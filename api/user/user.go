@@ -37,6 +37,7 @@ type UserResponse struct {
 
 func NewUserHandler(pgStore *repository.Repository) *UserHandler {
 	gob.Register(repository.User{})
+	gob.Register(repository.GetUserRow{})
 
 	oauthConfig := oauth2.Config{
 		ClientID:     config.EnvVars.GoogleClientID,

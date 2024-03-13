@@ -16,10 +16,11 @@ RETURNING *;
 -- name: GetCartItems :many
 SELECT
   ci.*,
+  p.store_id,
   p.title,
   p.description,
   p.price,
-  p.out_of_stock
+  p.out_of_stock 
 FROM
   cart_items ci
 JOIN
@@ -32,6 +33,11 @@ WHERE
 DELETE FROM cart_items
 WHERE id = $1 AND user_id = $2
 RETURNING *;
+
+-- Clear cart items
+-- name: ClearCartItems :exec
+DELETE FROM cart_items
+WHERE user_id = $1;
 
 -- Update cart item quantity
 -- name: UpdateCartItemQuantity :one

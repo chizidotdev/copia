@@ -13,12 +13,12 @@ const (
 	ProfileKey = "profile"
 )
 
-func GetAuthenticatedUser(ctx *gin.Context) repository.User {
+func GetAuthenticatedUser(ctx *gin.Context) repository.GetUserRow {
 	session := sessions.Default(ctx)
 	profile := session.Get(ProfileKey)
-	user, ok := profile.(repository.User)
+	user, ok := profile.(repository.GetUserRow)
 	if !ok {
-		return repository.User{}
+		return repository.GetUserRow{}
 	}
 
 	return user
@@ -26,12 +26,37 @@ func GetAuthenticatedUser(ctx *gin.Context) repository.User {
 
 func IsAuthenticated(ctx *gin.Context) {
 	user := GetAuthenticatedUser(ctx)
-	if user == (repository.User{}) {
+	if user == (repository.GetUserRow{}) {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusForbidden,
 			MessageID: "",
 			Message:   "User is not authenticated",
 			Reason:    "User is not authenticated",
+		})
+		return
+	}
+
+	ctx.Next()
+}
+
+func IsVendor(ctx *gin.Context) {
+	user := GetAuthenticatedUser(ctx)
+	if user == (repository.GetUserRow{}) {
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusForbidden,
+			MessageID: "",
+			Message:   "User is not authenticated",
+			Reason:    "User is not authenticated",
+		})
+		return
+	}
+
+	if user.Role != repository.UserRoleVendor {
+		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
+			Code:      http.StatusForbidden,
+			MessageID: "",
+			Message:   "User is not a vendor",
+			Reason:    "User is not a vendor",
 		})
 		return
 	}

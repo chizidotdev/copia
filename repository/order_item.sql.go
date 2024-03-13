@@ -7,25 +7,28 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 const createOrderItem = `-- name: CreateOrderItem :one
 INSERT INTO order_items (
-  order_id, product_id, quantity, unit_price, subtotal
+  order_id, product_id, store_id, status, quantity, unit_price, subtotal
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, order_id, product_id, quantity, unit_price, subtotal
+RETURNING id, order_id, product_id, store_id, status, quantity, unit_price, subtotal
 `
 
 type CreateOrderItemParams struct {
-	OrderID   uuid.UUID `json:"orderId"`
-	ProductID uuid.UUID `json:"productId"`
-	Quantity  int32     `json:"quantity"`
-	UnitPrice float64   `json:"unitPrice"`
-	Subtotal  float64   `json:"subtotal"`
+	OrderID   uuid.UUID   `json:"orderId"`
+	ProductID uuid.UUID   `json:"productId"`
+	StoreID   uuid.UUID   `json:"storeId"`
+	Status    OrderStatus `json:"status"`
+	Quantity  int32       `json:"quantity"`
+	UnitPrice float64     `json:"unitPrice"`
+	Subtotal  float64     `json:"subtotal"`
 }
 
 // Create a new order item
@@ -33,6 +36,8 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	row := q.db.QueryRowContext(ctx, createOrderItem,
 		arg.OrderID,
 		arg.ProductID,
+		arg.StoreID,
+		arg.Status,
 		arg.Quantity,
 		arg.UnitPrice,
 		arg.Subtotal,
@@ -42,6 +47,8 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 		&i.ID,
 		&i.OrderID,
 		&i.ProductID,
+		&i.StoreID,
+		&i.Status,
 		&i.Quantity,
 		&i.UnitPrice,
 		&i.Subtotal,
@@ -49,19 +56,31 @@ func (q *Queries) CreateOrderItem(ctx context.Context, arg CreateOrderItemParams
 	return i, err
 }
 
-const deleteOrderItem = `-- name: DeleteOrderItem :exec
+const deleteOrderItem = `-- name: DeleteOrderItem :one
 DELETE FROM order_items
 WHERE id = $1
+RETURNING id, order_id, product_id, store_id, status, quantity, unit_price, subtotal
 `
 
 // Delete an order item by ID
-func (q *Queries) DeleteOrderItem(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteOrderItem, id)
-	return err
+func (q *Queries) DeleteOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, error) {
+	row := q.db.QueryRowContext(ctx, deleteOrderItem, id)
+	var i OrderItem
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.ProductID,
+		&i.StoreID,
+		&i.Status,
+		&i.Quantity,
+		&i.UnitPrice,
+		&i.Subtotal,
+	)
+	return i, err
 }
 
 const getOrderItem = `-- name: GetOrderItem :one
-SELECT id, order_id, product_id, quantity, unit_price, subtotal FROM order_items
+SELECT id, order_id, product_id, store_id, status, quantity, unit_price, subtotal FROM order_items
 WHERE id = $1 LIMIT 1
 `
 
@@ -73,6 +92,8 @@ func (q *Queries) GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, er
 		&i.ID,
 		&i.OrderID,
 		&i.ProductID,
+		&i.StoreID,
+		&i.Status,
 		&i.Quantity,
 		&i.UnitPrice,
 		&i.Subtotal,
@@ -81,7 +102,7 @@ func (q *Queries) GetOrderItem(ctx context.Context, id uuid.UUID) (OrderItem, er
 }
 
 const listOrderItems = `-- name: ListOrderItems :many
-SELECT id, order_id, product_id, quantity, unit_price, subtotal FROM order_items
+SELECT id, order_id, product_id, store_id, status, quantity, unit_price, subtotal FROM order_items
 ORDER BY order_id, product_id
 `
 
@@ -99,6 +120,8 @@ func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
 			&i.ID,
 			&i.OrderID,
 			&i.ProductID,
+			&i.StoreID,
+			&i.Status,
 			&i.Quantity,
 			&i.UnitPrice,
 			&i.Subtotal,
@@ -116,35 +139,97 @@ func (q *Queries) ListOrderItems(ctx context.Context) ([]OrderItem, error) {
 	return items, nil
 }
 
-const updateOrderItem = `-- name: UpdateOrderItem :exec
+const listStoreOrderItems = `-- name: ListStoreOrderItems :many
+SELECT oi.id, oi.order_id, oi.product_id, oi.store_id, oi.status, oi.quantity, oi.unit_price, oi.subtotal,
+  p.title AS product_title, 
+  o.order_date AS order_date,
+  o.payment_status AS payment_status,
+  o.shipping_address AS shipping_address
+FROM order_items oi
+JOIN products p ON oi.product_id = p.id
+JOIN orders o ON oi.order_id = o.id
+WHERE oi.store_id = $1
+ORDER BY o.order_date DESC
+`
+
+type ListStoreOrderItemsRow struct {
+	ID              uuid.UUID     `json:"id"`
+	OrderID         uuid.UUID     `json:"orderId"`
+	ProductID       uuid.UUID     `json:"productId"`
+	StoreID         uuid.UUID     `json:"storeId"`
+	Status          OrderStatus   `json:"status"`
+	Quantity        int32         `json:"quantity"`
+	UnitPrice       float64       `json:"unitPrice"`
+	Subtotal        float64       `json:"subtotal"`
+	ProductTitle    string        `json:"productTitle"`
+	OrderDate       time.Time     `json:"orderDate"`
+	PaymentStatus   PaymentStatus `json:"paymentStatus"`
+	ShippingAddress string        `json:"shippingAddress"`
+}
+
+// List all order items for a store
+func (q *Queries) ListStoreOrderItems(ctx context.Context, storeID uuid.UUID) ([]ListStoreOrderItemsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listStoreOrderItems, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListStoreOrderItemsRow{}
+	for rows.Next() {
+		var i ListStoreOrderItemsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.OrderID,
+			&i.ProductID,
+			&i.StoreID,
+			&i.Status,
+			&i.Quantity,
+			&i.UnitPrice,
+			&i.Subtotal,
+			&i.ProductTitle,
+			&i.OrderDate,
+			&i.PaymentStatus,
+			&i.ShippingAddress,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateOrderItem = `-- name: UpdateOrderItem :one
 UPDATE order_items
-SET
-  order_id = $2,
-  product_id = $3,
-  quantity = $4,
-  unit_price = $5,
-  subtotal = $6
-WHERE id = $1
+SET status = $3
+WHERE id = $1 AND store_id = $2
+RETURNING id, order_id, product_id, store_id, status, quantity, unit_price, subtotal
 `
 
 type UpdateOrderItemParams struct {
-	ID        uuid.UUID `json:"id"`
-	OrderID   uuid.UUID `json:"orderId"`
-	ProductID uuid.UUID `json:"productId"`
-	Quantity  int32     `json:"quantity"`
-	UnitPrice float64   `json:"unitPrice"`
-	Subtotal  float64   `json:"subtotal"`
+	ID      uuid.UUID   `json:"id"`
+	StoreID uuid.UUID   `json:"storeId"`
+	Status  OrderStatus `json:"status"`
 }
 
-// Update an order item by ID
-func (q *Queries) UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) error {
-	_, err := q.db.ExecContext(ctx, updateOrderItem,
-		arg.ID,
-		arg.OrderID,
-		arg.ProductID,
-		arg.Quantity,
-		arg.UnitPrice,
-		arg.Subtotal,
+// Update an order item status
+func (q *Queries) UpdateOrderItem(ctx context.Context, arg UpdateOrderItemParams) (OrderItem, error) {
+	row := q.db.QueryRowContext(ctx, updateOrderItem, arg.ID, arg.StoreID, arg.Status)
+	var i OrderItem
+	err := row.Scan(
+		&i.ID,
+		&i.OrderID,
+		&i.ProductID,
+		&i.StoreID,
+		&i.Status,
+		&i.Quantity,
+		&i.UnitPrice,
+		&i.Subtotal,
 	)
-	return err
+	return i, err
 }

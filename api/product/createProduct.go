@@ -37,14 +37,14 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	storeID := p.validateStorePermissions(ctx)
 	user := middleware.GetAuthenticatedUser(ctx)
 
 	var newProduct repository.Product
+	var productImages []repository.ProductImage
 	err := p.pgStore.ExecTx(ctx, func(tx *repository.Queries) error {
 		var txErr error
 		newProduct, txErr = p.pgStore.CreateProduct(ctx, repository.CreateProductParams{
-			StoreID:     storeID,
+			StoreID:     user.StoreID.UUID,
 			Title:       product.Title,
 			Description: product.Description,
 			Price:       product.Price,
@@ -67,13 +67,14 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 					return err
 				}
 
-				_, txErr = p.pgStore.CreateProductImage(ctx, repository.CreateProductImageParams{
+				productImage, txErr := p.pgStore.CreateProductImage(ctx, repository.CreateProductImageParams{
 					ProductID: newProduct.ID,
 					Url:       imageUrl,
 				})
 				if txErr != nil {
 					return txErr
 				}
+				productImages = append(productImages, productImage)
 			}
 		}
 
@@ -89,20 +90,9 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	images, err := p.pgStore.ListProductImages(ctx, newProduct.ID)
-	if err != nil {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusInternalServerError,
-			MessageID: "",
-			Message:   "Failed to retrieve product images",
-			Reason:    err.Error(),
-		})
-		return
-	}
-
 	resp := createProductResponse{
 		Product: &newProduct,
-		Images:  images,
+		Images:  productImages,
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{

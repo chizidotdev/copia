@@ -1,4 +1,4 @@
-package cart
+package order
 
 import (
 	"net/http"
@@ -9,23 +9,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type updateCartReq struct {
-	Quantity int32 `json:"quantity" binding:"required,gt=0"`
+type updateOrderItemReq struct {
+	Status          repository.OrderStatus   `json:"status" binding:"required"`
+	PaymentStatus   repository.PaymentStatus `json:"paymentStatus" binding:"required"`
+	ShippingAddress string                   `json:"shippingAddress" binding:"required"`
 }
 
-func (c *CartHandler) UpdateCart(ctx *gin.Context) {
-	cartID, err := repository.ParseUUID(ctx.Param(cartIDParam))
+func (c *OrderHandler) UpdateOrderItem(ctx *gin.Context) {
+	orderID, err := repository.ParseUUID(ctx.Param(orderItemIDParam))
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusBadRequest,
-			Message:   "Invalid cart ID",
+			Message:   "Invalid order item ID",
 			MessageID: "",
 			Reason:    err.Error(),
 		})
 		return
 	}
 
-	var req updateCartReq
+	var req updateOrderItemReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusBadRequest,
@@ -37,15 +39,16 @@ func (c *CartHandler) UpdateCart(ctx *gin.Context) {
 	}
 
 	user := middleware.GetAuthenticatedUser(ctx)
-	cartItem, err := c.pgStore.UpdateCartItemQuantity(ctx, repository.UpdateCartItemQuantityParams{
-		UserID:   user.ID,
-		ID:       cartID,
-		Quantity: req.Quantity,
+
+	orderItem, err := c.pgStore.UpdateOrderItem(ctx, repository.UpdateOrderItemParams{
+		ID:      orderID,
+		StoreID: user.StoreID.UUID,
+		Status:  req.Status,
 	})
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusInternalServerError,
-			Message:   "failed to update item in cart",
+			Message:   "failed to update item status",
 			MessageID: "",
 			Reason:    err.Error(),
 		})
@@ -53,8 +56,8 @@ func (c *CartHandler) UpdateCart(ctx *gin.Context) {
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
-		Data:    cartItem,
-		Message: "Cart item updated successfully",
+		Data:    orderItem,
+		Message: "Order Item updated successfully",
 		Code:    http.StatusOK,
 	})
 }

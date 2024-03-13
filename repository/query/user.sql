@@ -1,12 +1,20 @@
 -- Get a user by ID
 -- name: GetUser :one
-SELECT * FROM users
-WHERE id = $1 LIMIT 1;
+SELECT 
+  u.*,
+  s.id as store_id
+FROM users u
+LEFT OUTER JOIN stores s ON u.id = s.user_id
+WHERE u.id = $1 LIMIT 1;
 
 -- Get a user by email
 -- name: GetUserByEmail :one
-SELECT * FROM users
-WHERE email = $1 LIMIT 1;
+SELECT 
+    u.*,
+    s.id as store_id
+FROM users u
+JOIN stores s ON u.id = s.user_id
+WHERE u.email = $1 LIMIT 1;
 
 -- List all users
 -- name: ListUsers :many

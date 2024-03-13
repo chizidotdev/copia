@@ -17,7 +17,7 @@ INSERT INTO stores (
 ) VALUES (
   $1, $2, $3
 )
-RETURNING id, user_id, name, description, created_at, updated_at
+RETURNING id, user_id, name, description, image, created_at, updated_at
 `
 
 type CreateStoreParams struct {
@@ -35,6 +35,7 @@ func (q *Queries) CreateStore(ctx context.Context, arg CreateStoreParams) (Store
 		&i.UserID,
 		&i.Name,
 		&i.Description,
+		&i.Image,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -53,7 +54,7 @@ func (q *Queries) DeleteStore(ctx context.Context, id uuid.UUID) error {
 }
 
 const getStore = `-- name: GetStore :one
-SELECT id, user_id, name, description, created_at, updated_at FROM stores
+SELECT id, user_id, name, description, image, created_at, updated_at FROM stores
 WHERE id = $1 LIMIT 1
 `
 
@@ -66,6 +67,7 @@ func (q *Queries) GetStore(ctx context.Context, id uuid.UUID) (Store, error) {
 		&i.UserID,
 		&i.Name,
 		&i.Description,
+		&i.Image,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -73,7 +75,7 @@ func (q *Queries) GetStore(ctx context.Context, id uuid.UUID) (Store, error) {
 }
 
 const getStoreByUserId = `-- name: GetStoreByUserId :one
-SELECT id, user_id, name, description, created_at, updated_at FROM stores
+SELECT id, user_id, name, description, image, created_at, updated_at FROM stores
 WHERE user_id = $1 LIMIT 1
 `
 
@@ -86,6 +88,7 @@ func (q *Queries) GetStoreByUserId(ctx context.Context, userID uuid.UUID) (Store
 		&i.UserID,
 		&i.Name,
 		&i.Description,
+		&i.Image,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -93,7 +96,7 @@ func (q *Queries) GetStoreByUserId(ctx context.Context, userID uuid.UUID) (Store
 }
 
 const listStores = `-- name: ListStores :many
-SELECT id, user_id, name, description, created_at, updated_at FROM stores
+SELECT id, user_id, name, description, image, created_at, updated_at FROM stores
 WHERE user_id = $1
 ORDER BY name
 `
@@ -113,6 +116,7 @@ func (q *Queries) ListStores(ctx context.Context, userID uuid.UUID) ([]Store, er
 			&i.UserID,
 			&i.Name,
 			&i.Description,
+			&i.Image,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -172,7 +176,7 @@ SET
   description = $3,
   updated_at = NOW()
 WHERE id = $1
-RETURNING id, user_id, name, description, created_at, updated_at
+RETURNING id, user_id, name, description, image, created_at, updated_at
 `
 
 type UpdateStoreParams struct {
@@ -196,6 +200,7 @@ func (q *Queries) UpdateStore(ctx context.Context, arg UpdateStoreParams) ([]Sto
 			&i.UserID,
 			&i.Name,
 			&i.Description,
+			&i.Image,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

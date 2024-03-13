@@ -8,28 +8,37 @@ WHERE id = $1 LIMIT 1;
 SELECT * FROM order_items
 ORDER BY order_id, product_id;
 
+-- List all order items for a store
+-- name: ListStoreOrderItems :many
+SELECT oi.*,
+  p.title AS product_title, 
+  o.order_date AS order_date,
+  o.payment_status AS payment_status,
+  o.shipping_address AS shipping_address
+FROM order_items oi
+JOIN products p ON oi.product_id = p.id
+JOIN orders o ON oi.order_id = o.id
+WHERE oi.store_id = $1
+ORDER BY o.order_date DESC;
+
 -- Create a new order item
 -- name: CreateOrderItem :one
 INSERT INTO order_items (
-  order_id, product_id, quantity, unit_price, subtotal
+  order_id, product_id, store_id, status, quantity, unit_price, subtotal
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6, $7
 )
 RETURNING *;
 
--- Update an order item by ID
--- name: UpdateOrderItem :exec
+-- Update an order item status
+-- name: UpdateOrderItem :one
 UPDATE order_items
-SET
-  order_id = $2,
-  product_id = $3,
-  quantity = $4,
-  unit_price = $5,
-  subtotal = $6
-WHERE id = $1;
+SET status = $3
+WHERE id = $1 AND store_id = $2
+RETURNING *;
 
 -- Delete an order item by ID
--- name: DeleteOrderItem :exec
+-- name: DeleteOrderItem :one
 DELETE FROM order_items
-WHERE id = $1;
-
+WHERE id = $1
+RETURNING *;

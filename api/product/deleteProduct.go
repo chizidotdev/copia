@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
+	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-gonic/gin"
 )
 
 func (p *ProductHandler) DeleteProduct(ctx *gin.Context) {
-	storeID := p.validateStorePermissions(ctx)
+	user := middleware.GetAuthenticatedUser(ctx)
 
 	productID, err := repository.ParseUUID(ctx.Param(productIDParam))
 	if err != nil {
@@ -24,7 +25,7 @@ func (p *ProductHandler) DeleteProduct(ctx *gin.Context) {
 
 	err = p.pgStore.DeleteProduct(ctx, repository.DeleteProductParams{
 		ID:      productID,
-		StoreID: storeID,
+		StoreID: user.StoreID.UUID,
 	})
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{

@@ -1,4 +1,4 @@
-package cart
+package order
 
 import (
 	"net/http"
@@ -9,12 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (c *CartHandler) DeleteCart(ctx *gin.Context) {
-	cartID, err := repository.ParseUUID(ctx.Param(cartIDParam))
+func (c *OrderHandler) DeleteOrder(ctx *gin.Context) {
+	orderID, err := repository.ParseUUID(ctx.Param(orderIDParam))
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusBadRequest,
-			Message:   "Invalid cart ID",
+			Message:   "Invalid order ID",
 			MessageID: "",
 			Reason:    err.Error(),
 		})
@@ -22,14 +22,14 @@ func (c *CartHandler) DeleteCart(ctx *gin.Context) {
 	}
 
 	user := middleware.GetAuthenticatedUser(ctx)
-	cart, err := c.pgStore.DeleteCartItem(ctx, repository.DeleteCartItemParams{
+	order, err := c.pgStore.DeleteOrder(ctx, repository.DeleteOrderParams{
 		UserID: user.ID,
-		ID:     cartID,
+		ID:     orderID,
 	})
 	if err != nil {
 		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
 			Code:      http.StatusInternalServerError,
-			Message:   "failed to delete item from cart",
+			Message:   "failed to delete order",
 			MessageID: "",
 			Reason:    err.Error(),
 		})
@@ -37,8 +37,8 @@ func (c *CartHandler) DeleteCart(ctx *gin.Context) {
 	}
 
 	httpUtil.Success(ctx, &httpUtil.SuccessResponse{
-		Data:    cart,
-		Message: "Cart item deleted successfully",
+		Data:    order,
+		Message: "Item deleted from cart successfully",
 		Code:    http.StatusOK,
 	})
 }

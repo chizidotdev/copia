@@ -7,6 +7,7 @@ package repository
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -66,14 +67,31 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, email, first_name, last_name, image, google_id, role, created_at, updated_at FROM users
-WHERE id = $1 LIMIT 1
+SELECT 
+  u.id, u.email, u.first_name, u.last_name, u.image, u.google_id, u.role, u.created_at, u.updated_at,
+  s.id as store_id
+FROM users u
+LEFT OUTER JOIN stores s ON u.id = s.user_id
+WHERE u.id = $1 LIMIT 1
 `
 
+type GetUserRow struct {
+	ID        uuid.UUID     `json:"id"`
+	Email     string        `json:"email"`
+	FirstName string        `json:"firstName"`
+	LastName  string        `json:"lastName"`
+	Image     string        `json:"image"`
+	GoogleID  string        `json:"googleId"`
+	Role      UserRole      `json:"role"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
+	StoreID   uuid.NullUUID `json:"storeId"`
+}
+
 // Get a user by ID
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (GetUserRow, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
-	var i User
+	var i GetUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -84,19 +102,37 @@ func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.StoreID,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, first_name, last_name, image, google_id, role, created_at, updated_at FROM users
-WHERE email = $1 LIMIT 1
+SELECT 
+    u.id, u.email, u.first_name, u.last_name, u.image, u.google_id, u.role, u.created_at, u.updated_at,
+    s.id as store_id
+FROM users u
+JOIN stores s ON u.id = s.user_id
+WHERE u.email = $1 LIMIT 1
 `
 
+type GetUserByEmailRow struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	FirstName string    `json:"firstName"`
+	LastName  string    `json:"lastName"`
+	Image     string    `json:"image"`
+	GoogleID  string    `json:"googleId"`
+	Role      UserRole  `json:"role"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	StoreID   uuid.UUID `json:"storeId"`
+}
+
 // Get a user by email
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
-	var i User
+	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
@@ -107,6 +143,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.StoreID,
 	)
 	return i, err
 }

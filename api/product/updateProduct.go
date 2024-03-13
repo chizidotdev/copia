@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
+	"github.com/chizidotdev/shop/api/middleware"
 	"github.com/chizidotdev/shop/repository"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +30,7 @@ func (p *ProductHandler) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	storeID := p.validateStorePermissions(ctx)
+	user := middleware.GetAuthenticatedUser(ctx)
 
 	productID, err := repository.ParseUUID(ctx.Param(productIDParam))
 	if err != nil {
@@ -72,7 +73,7 @@ func (p *ProductHandler) UpdateProduct(ctx *gin.Context) {
 
 	product, err := p.pgStore.UpdateProduct(ctx, repository.UpdateProductParams{
 		ID:          productID,
-		StoreID:     storeID,
+		StoreID:     user.StoreID.UUID,
 		Title:       existingProduct.Title,
 		Description: existingProduct.Description,
 		Price:       existingProduct.Price,

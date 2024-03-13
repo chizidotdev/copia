@@ -25,45 +25,14 @@ func NewSeedHandler(pgStore *repository.Repository) *SeedHandler {
 }
 
 func (s *SeedHandler) SeedStore(ctx *gin.Context) {
-	storeID, err := repository.ParseUUID(ctx.Param(storeIDParam))
-	if err != nil {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusBadRequest,
-			MessageID: "",
-			Message:   "Invalid store id",
-			Reason:    err.Error(),
-		})
-		return
-	}
-
-	store, err := s.pgStore.GetStore(ctx, storeID)
-	if err != nil {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusNotFound,
-			MessageID: "",
-			Message:   "Failed to retrieve store",
-			Reason:    err.Error(),
-		})
-		return
-	}
-
 	user := middleware.GetAuthenticatedUser(ctx)
-	if user.ID != store.UserID {
-		httpUtil.Error(ctx, &httpUtil.ErrorResponse{
-			Code:      http.StatusForbidden,
-			MessageID: "",
-			Message:   "User does not have permission to seed store",
-			Reason:    "",
-		})
-		return
-	}
 
-	err = s.pgStore.ExecTx(ctx, func(tx *repository.Queries) error {
+	err := s.pgStore.ExecTx(ctx, func(tx *repository.Queries) error {
 		for i := 0; i < 10; i++ {
 			product := seedProduct()
 			var txErr error
 			_, txErr = s.pgStore.CreateProduct(ctx, repository.CreateProductParams{
-				StoreID:     storeID,
+				StoreID:     user.StoreID.UUID,
 				Title:       product.Title,
 				Description: product.Description,
 				Price:       product.Price,

@@ -12,6 +12,17 @@ import (
 	"github.com/google/uuid"
 )
 
+const clearCartItems = `-- name: ClearCartItems :exec
+DELETE FROM cart_items
+WHERE user_id = $1
+`
+
+// Clear cart items
+func (q *Queries) ClearCartItems(ctx context.Context, userID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, clearCartItems, userID)
+	return err
+}
+
 const deleteCartItem = `-- name: DeleteCartItem :one
 DELETE FROM cart_items
 WHERE id = $1 AND user_id = $2
@@ -41,10 +52,11 @@ func (q *Queries) DeleteCartItem(ctx context.Context, arg DeleteCartItemParams) 
 const getCartItems = `-- name: GetCartItems :many
 SELECT
   ci.id, ci.user_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at,
+  p.store_id,
   p.title,
   p.description,
   p.price,
-  p.out_of_stock
+  p.out_of_stock 
 FROM
   cart_items ci
 JOIN
@@ -60,6 +72,7 @@ type GetCartItemsRow struct {
 	Quantity    int32     `json:"quantity"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
+	StoreID     uuid.UUID `json:"storeId"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Price       float64   `json:"price"`
@@ -83,6 +96,7 @@ func (q *Queries) GetCartItems(ctx context.Context, userID uuid.UUID) ([]GetCart
 			&i.Quantity,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.StoreID,
 			&i.Title,
 			&i.Description,
 			&i.Price,
