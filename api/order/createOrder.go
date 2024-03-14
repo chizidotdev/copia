@@ -42,7 +42,7 @@ func (c *OrderHandler) CreateOrder(ctx *gin.Context) {
 			UserID:          user.ID,
 			OrderDate:       time.Now(),
 			TotalAmount:     cartTotal,
-			PaymentStatus:   repository.PaymentStatusPending,
+			PaymentStatus:   repository.PaymentStatusPaid,
 			ShippingAddress: "",
 		})
 		if txErr != nil {
