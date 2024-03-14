@@ -62,7 +62,7 @@ func (p *ProductHandler) CreateProduct(ctx *gin.Context) {
 				}
 
 				fileName := fmt.Sprintf("%s-%s-%s", user.FirstName, newProduct.ID.String(), image.Name)
-				imageUrl, err := p.s3Store.UploadFile(fileName, image.File)
+				imageUrl, err := p.s3Store.UploadFile(fileName, image)
 				if err != nil {
 					return err
 				}

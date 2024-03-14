@@ -20,16 +20,16 @@ func GenerateRandString(size int) (string, error) {
 }
 
 type ParseImageResult struct {
-	File io.Reader
-	Name string
-	Size int64
+	File        io.Reader
+	Name        string
+	ContentType string
 }
 
 func ParseImage(image *multipart.FileHeader) (ParseImageResult, error) {
 	//file := imgString[strings.IndexByte(imgString, ',')+1:]
 	var result ParseImageResult
 	result.Name = image.Filename
-	result.Size = image.Size
+	result.ContentType = image.Header.Get("Content-Type")
 
 	file, err := image.Open()
 	if err != nil {

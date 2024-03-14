@@ -2,13 +2,13 @@ package adapters
 
 import (
 	"context"
-	"io"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/chizidotdev/shop/config"
+	"github.com/chizidotdev/shop/util"
 )
 
 var (
@@ -41,7 +41,7 @@ func NewS3Store(args S3StoreArgs) *S3Store {
 	}
 }
 
-func (s *S3Store) UploadFile(key string, file io.Reader) (string, error) {
+func (s *S3Store) UploadFile(key string, file util.ParseImageResult) (string, error) {
 	region := config.EnvVars.AWSRegion
 	accessKey := config.EnvVars.AWSAccessKey
 	secretKey := config.EnvVars.AWSSecretAccessKey
@@ -59,10 +59,11 @@ func (s *S3Store) UploadFile(key string, file io.Reader) (string, error) {
 	uploader := manager.NewUploader(client)
 
 	result, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
-		Bucket: aws.String(s3BucketName),
-		Key:    aws.String(key),
-		Body:   file,
-		ACL:    "public-read",
+		Bucket:      aws.String(s3BucketName),
+		Key:         aws.String(key),
+		Body:        file.File,
+		ACL:         "public-read",
+		ContentType: aws.String(file.ContentType),
 	})
 	if err != nil {
 		return "", err

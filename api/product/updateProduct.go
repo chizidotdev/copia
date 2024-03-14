@@ -1,8 +1,7 @@
 package product
 
 import (
-	"encoding/json"
-	"fmt"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/chizidotdev/shop/api/httpUtil"
@@ -12,10 +11,11 @@ import (
 )
 
 type updateProductRequest struct {
-	Title       *string  `json:"title,omitempty"`
-	Description *string  `json:"description,omitempty"`
-	Price       *float64 `json:"price,omitempty"`
-	OutOfStock  *bool    `json:"outOfStock,omitempty"`
+	Title       *string                 `form:"title,omitempty"`
+	Description *string                 `form:"description,omitempty"`
+	Price       *float64                `form:"price,omitempty"`
+	OutOfStock  *bool                   `form:"outOfStock,omitempty"`
+	Images      []*multipart.FileHeader `form:"images,omitempty"`
 }
 
 func (p *ProductHandler) UpdateProduct(ctx *gin.Context) {
@@ -54,17 +54,13 @@ func (p *ProductHandler) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	reqJSON, _ := json.Marshal(req)
-	fmt.Println("reqJSON: ", string(reqJSON))
-	fmt.Println("req: ", req)
-
-	if req.Title != nil {
+	if req.Title != nil && *req.Title != existingProduct.Title {
 		existingProduct.Title = *req.Title
 	}
-	if req.Description != nil {
+	if req.Description != nil && *req.Description != existingProduct.Description {
 		existingProduct.Description = *req.Description
 	}
-	if req.Price != nil {
+	if req.Price != nil && *req.Price != existingProduct.Price {
 		existingProduct.Price = *req.Price
 	}
 	if req.OutOfStock != nil {
