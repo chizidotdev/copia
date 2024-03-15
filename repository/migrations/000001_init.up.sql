@@ -52,7 +52,8 @@ CREATE TABLE "products" (
   "price" float NOT NULL,
   "out_of_stock" boolean NOT NULL,
   "created_at" timestamp NOT NULL DEFAULT (now()),
-  "updated_at" timestamp NOT NULL DEFAULT (now())
+  "updated_at" timestamp NOT NULL DEFAULT (now()),
+  "deleted_at" timestamp
 );
 
 CREATE TABLE "product_images" (

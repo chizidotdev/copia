@@ -17,7 +17,7 @@ INSERT INTO products (
 ) VALUES (
   $1, $2, $3, $4, $5
 )
-RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at
+RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at, deleted_at
 `
 
 type CreateProductParams struct {
@@ -47,12 +47,14 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.OutOfStock,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const deleteProduct = `-- name: DeleteProduct :exec
-DELETE FROM products
+UPDATE products
+SET deleted_at = NOW()
 WHERE id = $1 AND store_id = $2
 `
 
@@ -68,8 +70,10 @@ func (q *Queries) DeleteProduct(ctx context.Context, arg DeleteProductParams) er
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
-WHERE id = $1 LIMIT 1
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at, deleted_at FROM products
+WHERE id = $1 
+AND deleted_at IS NULL 
+LIMIT 1
 `
 
 // Get a product by ID
@@ -85,13 +89,15 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 		&i.OutOfStock,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const listProductsByStore = `-- name: ListProductsByStore :many
-SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at, deleted_at FROM products
 WHERE store_id = $1
+AND deleted_at IS NULL
 ORDER BY created_at ASC
 `
 
@@ -114,6 +120,7 @@ func (q *Queries) ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([
 			&i.OutOfStock,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -129,8 +136,9 @@ func (q *Queries) ListProductsByStore(ctx context.Context, storeID uuid.UUID) ([
 }
 
 const searchProducts = `-- name: SearchProducts :many
-SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at FROM products
+SELECT id, store_id, title, description, price, out_of_stock, created_at, updated_at, deleted_at FROM products
 WHERE (title ILIKE '%' || $1::text || '%' OR description ILIKE '%' || $1::text || '%')
+AND deleted_at IS NULL
 ORDER BY title
 LIMIT 10
 `
@@ -154,6 +162,7 @@ func (q *Queries) SearchProducts(ctx context.Context, query string) ([]Product, 
 			&i.OutOfStock,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DeletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -177,7 +186,7 @@ SET
   out_of_stock = $6,
   updated_at = NOW()
 WHERE id = $1 AND store_id = $2
-RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at
+RETURNING id, store_id, title, description, price, out_of_stock, created_at, updated_at, deleted_at
 `
 
 type UpdateProductParams struct {
@@ -209,6 +218,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.OutOfStock,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

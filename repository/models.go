@@ -5,6 +5,7 @@
 package repository
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"time"
@@ -184,14 +185,15 @@ type OrderItem struct {
 }
 
 type Product struct {
-	ID          uuid.UUID `json:"id"`
-	StoreID     uuid.UUID `json:"storeId"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Price       float64   `json:"price"`
-	OutOfStock  bool      `json:"outOfStock"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID          uuid.UUID    `json:"id"`
+	StoreID     uuid.UUID    `json:"storeId"`
+	Title       string       `json:"title"`
+	Description string       `json:"description"`
+	Price       float64      `json:"price"`
+	OutOfStock  bool         `json:"outOfStock"`
+	CreatedAt   time.Time    `json:"createdAt"`
+	UpdatedAt   time.Time    `json:"updatedAt"`
+	DeletedAt   sql.NullTime `json:"deletedAt"`
 }
 
 type ProductImage struct {
